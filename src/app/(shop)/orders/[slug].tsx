@@ -27,7 +27,9 @@ const OrderDetails = () => {
             <Image source={item.heroImage} style={styles.heroImage} />
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>{item.title}</Text>
-              <Text style={styles.itemPrice}>Harga: Rp.{item.price.toFixed(3)}</Text>
+              <Text style={styles.itemPrice}>
+                Harga: Rp.{item.price.toFixed(3)}
+              </Text>
             </View>
           </View>
         )}

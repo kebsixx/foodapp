@@ -5,7 +5,8 @@ import * as aesjs from "aes-js";
 import "react-native-get-random-values";
 
 const supabaseUrl = "https://ftcctrtnvcytcuuljjik.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2N0cnRudmN5dGN1dWxqamlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjcwMDYsImV4cCI6MjA0Mzg0MzAwNn0.f50826tZVFIonMkabr2xNjY2_6-BVF4XQo951gsMkuE";
+const supabaseAnonKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2N0cnRudmN5dGN1dWxqamlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgyNjcwMDYsImV4cCI6MjA0Mzg0MzAwNn0.f50826tZVFIonMkabr2xNjY2_6-BVF4XQo951gsMkuE";
 
 // As Expo's SecureStore does not support values larger than 2048
 // bytes, an AES-256 key is generated and stored in SecureStore, while
@@ -14,10 +15,16 @@ class LargeSecureStore {
   private async _encrypt(key: string, value: string) {
     const encryptionKey = crypto.getRandomValues(new Uint8Array(256 / 8));
 
-    const cipher = new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(1));
+    const cipher = new aesjs.ModeOfOperation.ctr(
+      encryptionKey,
+      new aesjs.Counter(1)
+    );
     const encryptedBytes = cipher.encrypt(aesjs.utils.utf8.toBytes(value));
 
-    await SecureStore.setItemAsync(key, aesjs.utils.hex.fromBytes(encryptionKey));
+    await SecureStore.setItemAsync(
+      key,
+      aesjs.utils.hex.fromBytes(encryptionKey)
+    );
 
     return aesjs.utils.hex.fromBytes(encryptedBytes);
   }
@@ -28,7 +35,10 @@ class LargeSecureStore {
       return encryptionKeyHex;
     }
 
-    const cipher = new aesjs.ModeOfOperation.ctr(aesjs.utils.hex.toBytes(encryptionKeyHex), new aesjs.Counter(1));
+    const cipher = new aesjs.ModeOfOperation.ctr(
+      aesjs.utils.hex.toBytes(encryptionKeyHex),
+      new aesjs.Counter(1)
+    );
     const decryptedBytes = cipher.decrypt(aesjs.utils.hex.toBytes(value));
 
     return aesjs.utils.utf8.fromBytes(decryptedBytes);

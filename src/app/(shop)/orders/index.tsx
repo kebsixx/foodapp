@@ -1,4 +1,11 @@
-import { FlatList, ListRenderItem, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  ListRenderItem,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { ORDERS } from "../../../../assets/orders";
 import { Order, OrderStatus } from "../../../../assets/types/order";
 import { Link, Stack } from "expo-router";
@@ -19,8 +26,11 @@ const renderItem: ListRenderItem<Order> = ({ item }) => (
           <Text style={styles.orderDetails}>{item.details}</Text>
           <Text style={styles.orderDate}>{item.date}</Text>
         </View>
-        <View style={[styles.statusBadge, styles[`statusBadge_${item.status}`]]}>
-          <Text style={styles.statusText}>{statusDisplayText[item.status]}</Text>
+        <View
+          style={[styles.statusBadge, styles[`statusBadge_${item.status}`]]}>
+          <Text style={styles.statusText}>
+            {statusDisplayText[item.status]}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -30,8 +40,12 @@ const renderItem: ListRenderItem<Order> = ({ item }) => (
 const Orders = () => {
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: "Orders" }} />
-      <FlatList data={ORDERS} keyExtractor={(item) => item.id.toString()} renderItem={renderItem} />
+      <Stack.Screen options={{ title: "Orders", headerShown: false }} />
+      <FlatList
+        data={ORDERS}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+      />
     </View>
   );
 };

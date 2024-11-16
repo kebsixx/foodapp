@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, ImageBackground, TextInput, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import * as zod from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +16,9 @@ import { Redirect } from "expo-router";
 
 const authSchema = zod.object({
   email: zod.string().email({ message: "Invalid email address" }),
-  password: zod.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: zod
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
 
 export default function Auth() {
@@ -31,7 +40,11 @@ export default function Auth() {
     if (error) {
       alert(error.message);
     } else {
-      Toast.show("Signed in successfully", { type: "success", placement: "top", duration: 1500 });
+      Toast.show("Signed in successfully", {
+        type: "success",
+        placement: "top",
+        duration: 1500,
+      });
     }
   };
 
@@ -41,7 +54,11 @@ export default function Auth() {
     if (error) {
       alert(error.message);
     } else {
-      Toast.show("Signed up successfully", { type: "success", placement: "top", duration: 1500 });
+      Toast.show("Signed up successfully", {
+        type: "success",
+        placement: "top",
+        duration: 1500,
+      });
     }
   };
 
@@ -50,8 +67,7 @@ export default function Auth() {
       source={{
         uri: "https://images.unsplash.com/photo-1511081692775-05d0f180a065?q=80&w=1972&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       }}
-      style={styles.backgroundImage}
-    >
+      style={styles.backgroundImage}>
       <View style={styles.overlay} />
 
       <View style={styles.container}>
@@ -61,9 +77,21 @@ export default function Auth() {
         <Controller
           control={control}
           name="email"
-          render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
+          render={({
+            field: { value, onChange, onBlur },
+            fieldState: { error },
+          }) => (
             <>
-              <TextInput placeholder="Email" style={styles.input} value={value} onChangeText={onChange} onBlur={onBlur} placeholderTextColor="#aaa" autoCapitalize="none" editable={!formState.isSubmitting} />
+              <TextInput
+                placeholder="Email"
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholderTextColor="#aaa"
+                autoCapitalize="none"
+                editable={!formState.isSubmitting}
+              />
               {error && <Text style={styles.error}>{error.message}</Text>}
             </>
           )}
@@ -72,18 +100,37 @@ export default function Auth() {
         <Controller
           control={control}
           name="password"
-          render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
+          render={({
+            field: { value, onChange, onBlur },
+            fieldState: { error },
+          }) => (
             <>
-              <TextInput placeholder="Password" style={styles.input} value={value} onChangeText={onChange} onBlur={onBlur} secureTextEntry placeholderTextColor="#aaa" autoCapitalize="none" editable={!formState.isSubmitting} />
+              <TextInput
+                placeholder="Password"
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                placeholderTextColor="#aaa"
+                autoCapitalize="none"
+                editable={!formState.isSubmitting}
+              />
               {error && <Text style={styles.error}>{error.message}</Text>}
             </>
           )}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit(signIn)} disabled={formState.isSubmitting}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSubmit(signIn)}
+          disabled={formState.isSubmitting}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.signUpButton]} onPress={handleSubmit(signUp)} disabled={formState.isSubmitting}>
+        <TouchableOpacity
+          style={[styles.button, styles.signUpButton]}
+          onPress={handleSubmit(signUp)}
+          disabled={formState.isSubmitting}>
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>

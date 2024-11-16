@@ -4,7 +4,10 @@ import { ActivityIndicator, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../../providers/auth-provider";
 
-function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>["name"]; color: string }) {
+function TabBarIcon(props: {
+  name: React.ComponentProps<typeof FontAwesome>["name"];
+  color: string;
+}) {
   return <FontAwesome size={24} style={{ color: "#000" }} {...props} />;
 }
 
@@ -12,7 +15,7 @@ const TabsLayout = () => {
   const { session, mounting } = useAuth();
 
   if (mounting) return <ActivityIndicator />;
-  if (!session) return <Redirect href="auth" />;
+  if (!session) return <Redirect href="/auth" />;
 
   return (
     <SafeAreaView edges={["top"]} style={styles.safeArea}>
@@ -27,20 +30,23 @@ const TabsLayout = () => {
             paddingTop: 10,
           },
           headerShown: false,
-        }}
-      >
+        }}>
         <Tabs.Screen
           name="index"
           options={{
             title: "Shop",
-            tabBarIcon: (props) => <TabBarIcon name="shopping-cart" {...props} />,
+            tabBarIcon: (props) => (
+              <TabBarIcon name="shopping-cart" {...props} />
+            ),
           }}
         />
         <Tabs.Screen
           name="orders"
           options={{
             title: "Orders",
-            tabBarIcon: (props) => <TabBarIcon name="shopping-bag" {...props} />,
+            tabBarIcon: (props) => (
+              <TabBarIcon name="shopping-bag" {...props} />
+            ),
           }}
         />
       </Tabs>

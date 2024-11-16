@@ -14,7 +14,7 @@ export const ListHeader = () => {
   };
 
   return (
-    <View style={[styles.headerContainer]}>
+    <View style={styles.headerContainer}>
       <View style={styles.headerTop}>
         <View style={styles.headerLeft}>
           <View style={styles.avatarContainer}>
