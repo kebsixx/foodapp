@@ -1,13 +1,21 @@
-import { View, FlatList, StyleSheet } from "react-native";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+} from "react-native";
 import { PRODUCTS } from "../../../assets/products";
 import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
-import { useAuth } from "../../providers/auth-provider";
+import { getProductsAndCategories } from "../../api/api";
 
 const Home = () => {
-  const { user } = useAuth();
+  const { data, error, isLoading } = getProductsAndCategories();
 
-  console.log("user ", user);
+  if (isLoading) return <ActivityIndicator />;
+
+  if (error || data) return <Text>{error?.message || "An error accured"}</Text>;
 
   return (
     <View>
