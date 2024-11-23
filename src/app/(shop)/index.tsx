@@ -15,16 +15,17 @@ const Home = () => {
 
   if (isLoading) return <ActivityIndicator />;
 
-  if (error || data) return <Text>{error?.message || "An error accured"}</Text>;
+  if (error || !data)
+    return <Text>{error?.message || "An error accured"}</Text>;
 
   return (
     <View>
       <FlatList
-        data={PRODUCTS}
+        data={data.products}
         renderItem={({ item }) => <ProductListItem product={item} />}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
-        ListHeaderComponent={ListHeader}
+        ListHeaderComponent={<ListHeader categories={data.categories} />}
         contentContainerStyle={styles.flatListContent}
         columnWrapperStyle={styles.flatListColumn}
         style={{ paddingHorizontal: 10, paddingVertical: 5 }}

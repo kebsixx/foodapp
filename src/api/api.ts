@@ -6,8 +6,8 @@ export const getProductsAndCategories = () => {
     queryKey: ["products", "categories"],
     queryFn: async () => {
       const [products, categories] = await Promise.all([
-        supabase.from("products").select("*"),
-        supabase.from("categories").select("*"),
+        supabase.from("product").select("*"),
+        supabase.from("category").select("*"),
       ]);
 
       if (products.error || categories.error) {

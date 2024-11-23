@@ -1,12 +1,25 @@
-import { FlatList, Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
-import { CATEGORIES } from "../../assets/categories";
+
 import { useCartStore } from "../store/cart-store";
 import { supabase } from "../lib/supabase";
+import { Tables } from "../types/database.types";
 
-export const ListHeader = () => {
+export const ListHeader = ({
+  categories,
+}: {
+  categories: Tables<"category">[];
+}) => {
   const { getItemCount } = useCartStore();
 
   const handleSignOut = async () => {
@@ -18,7 +31,10 @@ export const ListHeader = () => {
       <View style={styles.headerTop}>
         <View style={styles.headerLeft}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: "https://via.placeholder.com/40" }} style={styles.avatarImage} />
+            <Image
+              source={{ uri: "https://via.placeholder.com/40" }}
+              style={styles.avatarImage}
+            />
             <Text style={styles.avatarText}>Cerita Senja</Text>
           </View>
         </View>
@@ -27,7 +43,12 @@ export const ListHeader = () => {
             <Pressable>
               {({ pressed }) => (
                 <View>
-                  <FontAwesome name="shopping-cart" size={25} color="gray" style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }} />
+                  <FontAwesome
+                    name="shopping-cart"
+                    size={25}
+                    color="gray"
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
 
                   <View style={styles.badgeContainer}>
                     <Text style={styles.badgeText}>{getItemCount()}</Text>
@@ -36,22 +57,30 @@ export const ListHeader = () => {
               )}
             </Pressable>
           </Link>
-          <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+          <TouchableOpacity
+            onPress={handleSignOut}
+            style={styles.signOutButton}>
             <FontAwesome name="sign-out" size={25} color="red" />
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.heroContainer}>
-        <Image source={require("../../assets/images/hero.jpg")} style={styles.heroImage} />
+        <Image
+          source={require("../../assets/images/hero.jpg")}
+          style={styles.heroImage}
+        />
       </View>
       <View style={styles.categoriesContainer}>
         <Text style={styles.sectionTitle}>Categories</Text>
         <FlatList
-          data={CATEGORIES}
+          data={categories}
           renderItem={({ item }) => (
             <Link asChild href={`/categories/${item.slug}`}>
               <Pressable style={styles.category}>
-                <Image source={{ uri: item.imageUrl }} style={styles.categoryImage} />
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.categoryImage}
+                />
                 <Text style={styles.categoryText}>{item.name}</Text>
               </Pressable>
             </Link>
