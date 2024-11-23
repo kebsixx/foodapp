@@ -21,3 +21,22 @@ export const getProductsAndCategories = () => {
     },
   });
 };
+
+export const getProduct = (slug: string) => {
+  return useQuery({
+    queryKey: ["product", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product")
+        .select("*")
+        .eq("slug", slug)
+        .single();
+
+      if (error) {
+        throw new Error("Failed to fetch product : " + error?.message);
+      }
+
+      return data;
+    },
+  });
+};
