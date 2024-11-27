@@ -1,13 +1,22 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity, FlatList, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  FlatList,
+  Image,
+} from "react-native";
 import { useCartStore } from "../store/cart-store";
 import React from "react";
 
 type CartItemType = {
   id: number;
   title: string;
-  image: any;
+  heroImage: string;
   price: number;
   quantity: number;
+  maxQuantity: number;
 };
 
 type CartItemProps = {
@@ -17,24 +26,35 @@ type CartItemProps = {
   onDecrement: (id: number) => void;
 };
 
-const CartItem = ({ item, onDecrement, onIncrement, onRemove }: CartItemProps) => {
+const CartItem = ({
+  item,
+  onDecrement,
+  onIncrement,
+  onRemove,
+}: CartItemProps) => {
   return (
     <View style={styles.cartItem}>
-      <Image source={item.image} style={styles.itemImage} />
+      <Image source={{ uri: item.heroImage }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle}>{item.title}</Text>
         <Text style={styles.itemPrice}>Rp {item.price.toFixed(3)}</Text>
         <View style={styles.quantityContainer}>
-          <TouchableOpacity onPress={() => onDecrement(item.id)} style={styles.quantityButton}>
+          <TouchableOpacity
+            onPress={() => onDecrement(item.id)}
+            style={styles.quantityButton}>
             <Text style={styles.quantityButtonText}>-</Text>
           </TouchableOpacity>
           <Text style={styles.itemQuantity}>{item.quantity}</Text>
-          <TouchableOpacity onPress={() => onIncrement(item.id)} style={styles.quantityButton}>
+          <TouchableOpacity
+            onPress={() => onIncrement(item.id)}
+            style={styles.quantityButton}>
             <Text style={styles.quantityButtonText}>+</Text>
           </TouchableOpacity>
         </View>
       </View>
-      <TouchableOpacity onPress={() => onRemove(item.id)} style={styles.removeButton}>
+      <TouchableOpacity
+        onPress={() => onRemove(item.id)}
+        style={styles.removeButton}>
         <Text style={styles.removeButtonText}>Hapus</Text>
       </TouchableOpacity>
     </View>
@@ -42,7 +62,8 @@ const CartItem = ({ item, onDecrement, onIncrement, onRemove }: CartItemProps) =
 };
 
 export default function Cart() {
-  const { items, removeItem, incrementItem, decrementItem, getTotalPrice } = useCartStore();
+  const { items, removeItem, incrementItem, decrementItem, getTotalPrice } =
+    useCartStore();
 
   const handleCheckout = () => {
     Alert.alert("Pesanan berhasil dipesan", `Total harga: ${getTotalPrice()}`);
@@ -52,11 +73,25 @@ export default function Cart() {
     <View style={styles.container}>
       {/* <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} /> */}
 
-      <FlatList data={items} keyExtractor={(item) => item.id.toString()} renderItem={({ item }) => <CartItem item={item} onRemove={removeItem} onIncrement={incrementItem} onDecrement={decrementItem} />} style={styles.cartList} />
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <CartItem
+            item={item}
+            onRemove={removeItem}
+            onIncrement={incrementItem}
+            onDecrement={decrementItem}
+          />
+        )}
+        style={styles.cartList}
+      />
 
       <View style={styles.footer}>
         <Text style={styles.totalText}>Total: Rp.{getTotalPrice()}</Text>
-        <TouchableOpacity onPress={handleCheckout} style={styles.checkoutButton}>
+        <TouchableOpacity
+          onPress={handleCheckout}
+          style={styles.checkoutButton}>
           <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
       </View>
