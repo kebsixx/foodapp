@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/auth-provider";
 
@@ -92,6 +92,56 @@ export const getMyOrders = () => {
       }
 
       return data;
+    },
+  });
+};
+
+export const createOrderItem = () => {
+  return useMutation({
+    mutationFn: async (
+      insertData: {
+        productId: number;
+        quantity: number;
+        orderId: number;
+      }[]
+    ) => {
+      const { data, error } = await supabase
+        .from("order_item")
+        .insert(
+          insertData.map(({ orderId, quantity, productId }) => {
+            return {
+              order: orderId,
+              product: productId,
+              quantity,
+            };
+          })
+        )
+        .select("*, product:product(*)")
+        .single();
+
+      const productQuantities = insertData.reduce(
+        (acc, { productId, quantity }) => {
+          if (!acc[productId]) {
+            acc[productId] = 0;
+          }
+          acc[productId] += quantity;
+          return acc;
+        },
+        {} as Record<number, number>
+      );
+
+      await Promise.all(
+        Object.entries(productQuantities).map(([productId, totalQuantity]) =>
+          supabase.rpc("decrement_product_quantity", {
+            product_id: Number(productId),
+            quantity: totalQuantity,
+          })
+        )
+      );
+
+      if (error) {
+        throw new Error("Failed to create order item : " + error?.message);
+      }
     },
   });
 };
