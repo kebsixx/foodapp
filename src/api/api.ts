@@ -40,3 +40,34 @@ export const getProduct = (slug: string) => {
     },
   });
 };
+
+export const getCategoryAndProducts = (categorySlug: string) => {
+  return useQuery({
+    queryKey: ["categoryAndProducts", categorySlug],
+    queryFn: async () => {
+      const { data: category, error: categoryError } = await supabase
+        .from("category")
+        .select("*")
+        .eq("slug", categorySlug)
+        .single();
+
+      if (categoryError || !category) {
+        throw new Error("Failed to fetch category : " + categoryError?.message);
+      }
+
+      const { data: products, error: productsError } = await supabase
+        .from("product")
+        .select("*")
+        .eq("category", category.id);
+
+      if (productsError) {
+        throw new Error("Failed to fetch products : " + productsError?.message);
+      }
+
+      return {
+        category,
+        products,
+      };
+    },
+  });
+};
