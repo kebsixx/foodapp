@@ -17,6 +17,7 @@ type CartState = {
   decrementItem: (id: number) => void;
   getTotalPrice: () => string;
   getItemCount: () => number;
+  resetCart: () => void;
 };
 
 const initialCartItems: CartItemType[] = [];
@@ -74,4 +75,5 @@ export const useCartStore = create<CartState>((set, get) => ({
     const { items } = get();
     return items.reduce((count, item) => count + item.quantity, 0);
   },
+  resetCart: () => set({ items: initialCartItems }),
 }));
