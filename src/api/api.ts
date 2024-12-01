@@ -189,7 +189,7 @@ export const getMyOrder = (slug: string) => {
   } = useAuth();
 
   return useQuery({
-    queryKey: ["order", slug],
+    queryKey: ["orders", slug],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("order")
