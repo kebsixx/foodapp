@@ -34,7 +34,9 @@
     "stripe": "^17.4.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.0-rc.2",
-    "@stripe/stripe-react-native": "0.37.2"
+    "@stripe/stripe-react-native": "0.37.2",
+    "expo-notifications": "~0.28.19",
+    "expo-device": "~6.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
