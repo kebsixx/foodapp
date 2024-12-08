@@ -162,6 +162,7 @@ export type Database = {
           avatar_url: string
           create_at: string | null
           email: string
+          expo_notification_token: string | null
           id: string
           type: string | null
         }
@@ -169,6 +170,7 @@ export type Database = {
           avatar_url: string
           create_at?: string | null
           email: string
+          expo_notification_token?: string | null
           id: string
           type?: string | null
         }
@@ -176,6 +178,7 @@ export type Database = {
           avatar_url?: string
           create_at?: string | null
           email?: string
+          expo_notification_token?: string | null
           id?: string
           type?: string | null
         }
