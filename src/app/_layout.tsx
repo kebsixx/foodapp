@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { ToastProvider } from "react-native-toast-notifications";
 import AuthProvider from "../providers/auth-provider";
 import { QueryProvider } from "../providers/query-provider";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 export default function RootLayout() {
   return (
