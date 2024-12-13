@@ -2,13 +2,14 @@ import { Redirect, Tabs } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { useAuth } from "../../providers/auth-provider";
 
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
+  name: React.ComponentProps<typeof AntDesign>["name"];
   color: string;
 }) {
-  return <FontAwesome size={24} style={{ color: "#000" }} {...props} />;
+  return <AntDesign size={24} style={{ color: "#000" }} {...props} />;
 }
 
 const TabsLayout = () => {
@@ -25,6 +26,7 @@ const TabsLayout = () => {
           tabBarInactiveTintColor: "gray",
           tabBarLabelStyle: { fontSize: 16 },
           tabBarStyle: {
+            height: 60,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             paddingTop: 10,
@@ -34,10 +36,8 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Shop",
-            tabBarIcon: (props) => (
-              <TabBarIcon name="shopping-cart" {...props} />
-            ),
+            title: "Home",
+            tabBarIcon: (props) => <TabBarIcon name="home" {...props} />,
           }}
         />
         <Tabs.Screen
@@ -45,7 +45,7 @@ const TabsLayout = () => {
           options={{
             title: "Orders",
             tabBarIcon: (props) => (
-              <TabBarIcon name="shopping-bag" {...props} />
+              <TabBarIcon name="shoppingcart" {...props} />
             ),
           }}
         />
