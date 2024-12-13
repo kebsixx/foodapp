@@ -1,4 +1,4 @@
-import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import {
   FlatList,
   StyleSheet,
@@ -8,9 +8,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-import { ORDERS } from "../../../../assets/orders";
 import { getMyOrder } from "../../../api/api";
 import { format } from "date-fns";
+import CustomHeader from "../../../components/customHeader";
 
 const OrderDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -33,7 +33,8 @@ const OrderDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: `${order.slug}` }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title="Order" />
       <Text style={styles.item}>{order.slug}</Text>
       <Text style={styles.details}>{order.description}</Text>
       <View style={[styles.statusBadge, styles[`statusBadge_${order.status}`]]}>
@@ -113,7 +114,7 @@ const styles: { [key: string]: any } = StyleSheet.create({
   },
   orderItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "center",
     marginTop: 8,
     padding: 16,
@@ -125,7 +126,9 @@ const styles: { [key: string]: any } = StyleSheet.create({
     height: 100,
     borderRadius: 10,
   },
-  itemInfo: {},
+  itemInfo: {
+    marginLeft: 10,
+  },
   itemName: {
     fontSize: 16,
     fontWeight: "bold",

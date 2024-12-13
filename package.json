@@ -13,13 +13,16 @@
     "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-navigation/native": "^6.1.18",
     "@rneui/themed": "^4.0.0-rc.8",
+    "@stripe/stripe-react-native": "0.37.2",
     "@supabase/supabase-js": "^2.45.6",
     "@tanstack/react-query": "^5.60.5",
     "aes-js": "^3.1.2",
     "date-fns": "^4.1.0",
     "expo": "^51.0.36",
     "expo-constants": "~16.0.2",
+    "expo-device": "~6.0.2",
     "expo-linking": "~6.3.1",
+    "expo-notifications": "~0.28.19",
     "expo-router": "~3.5.23",
     "expo-secure-store": "~13.0.2",
     "expo-status-bar": "~1.12.1",
@@ -33,10 +36,7 @@
     "react-native-toast-notifications": "^3.4.0",
     "stripe": "^17.4.0",
     "zod": "^3.23.8",
-    "zustand": "^5.0.0-rc.2",
-    "@stripe/stripe-react-native": "0.37.2",
-    "expo-notifications": "~0.28.19",
-    "expo-device": "~6.0.2"
+    "zustand": "^5.0.0-rc.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
