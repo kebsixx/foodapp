@@ -76,14 +76,12 @@ const ProductDetails = () => {
       <Image source={{ uri: product.heroImage }} style={styles.heroImage} />
 
       <View style={{ padding: 16, flex: 1 }}>
-        <Text style={styles.title}>{product.title}</Text>
-        <Text style={styles.slug}>{product.slug}</Text>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>
-            Harga : Rp.{product.price.toFixed(3)}
-          </Text>
-          <Text style={styles.price}>Total Harga : Rp.{totalPrice}</Text>
+          <Text style={styles.price}>Rp. {product.price.toFixed(3)}</Text>
         </View>
+        <Text style={styles.slug}>{product.slug}</Text>
+
+        <Text style={styles.slug}>Produk lain</Text>
 
         <FlatList
           data={product.imagesUrl}
@@ -95,28 +93,28 @@ const ProductDetails = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.imagesContainer}
         />
+      </View>
+      <Text style={styles.totalPrice}>Total Harga : Rp.{totalPrice}</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.quantityButton}
+          onPress={decreaseQuantity}
+          disabled={quantity <= 1}>
+          <Text style={styles.quantityButtonText}>-</Text>
+        </TouchableOpacity>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.quantityButton}
-            onPress={decreaseQuantity}
-            disabled={quantity <= 1}>
-            <Text style={styles.quantityButtonText}>-</Text>
-          </TouchableOpacity>
+        <Text style={styles.quantity}>{quantity}</Text>
 
-          <Text style={styles.quantity}>{quantity}</Text>
+        <TouchableOpacity
+          style={styles.quantityButton}
+          onPress={increaseQuantity}
+          disabled={quantity >= product.maxQuantity}>
+          <Text style={styles.quantityButtonText}>+</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.quantityButton}
-            onPress={increaseQuantity}
-            disabled={quantity >= product.maxQuantity}>
-            <Text style={styles.quantityButtonText}>+</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.addToCartButton} onPress={addToCart}>
-            <Text style={styles.addToCartText}>Add to Cart</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.addToCartButton} onPress={addToCart}>
+          <Text style={styles.addToCartText}>Masukkan Keranjang</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -152,9 +150,9 @@ const styles = StyleSheet.create({
   },
   price: {
     fontWeight: "bold",
+    fontSize: 30,
     color: "#000",
   },
-
   imagesContainer: {
     marginBottom: 16,
   },
@@ -164,17 +162,21 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderRadius: 8,
   },
+  totalPrice: {
+    textAlign: "center",
+    fontWeight: "bold",
+  },
   buttonContainer: {
+    backgroundColor: "#FFF",
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 16,
+    padding: 16,
   },
   quantityButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#007bff",
+    backgroundColor: "#997C70",
     alignItems: "center",
     justifyContent: "center",
     marginHorizontal: 8,
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
   },
   addToCartButton: {
     flex: 1,
-    backgroundColor: "#28a745",
+    backgroundColor: "#F0BB78",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
