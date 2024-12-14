@@ -37,9 +37,10 @@ const ProductDetails = () => {
       setQuantity(quantity + 1);
     } else {
       toast.show("Maksimal pembelian adalah " + product.maxQuantity + " item", {
-        type: "warning",
-        placement: "top",
-        duration: 1500,
+        type: "custom_toast",
+        data: {
+          title: `Maksimal pembelian adalah ${product.maxQuantity} item`,
+        },
       });
     }
   };
@@ -51,19 +52,20 @@ const ProductDetails = () => {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
     addItem({
       id: product.id,
       title: product.title,
-      heroImage: product.heroImage,
       price: product.price,
       quantity,
+      heroImage: product.heroImage,
       maxQuantity: product.maxQuantity,
     });
     toast.show("Produk berhasil ditambahkan ke keranjang", {
-      type: "success",
-      placement: "top",
-      duration: 1500,
+      type: "custom_toast",
+      data: {
+        title: `Produk berhasil ditambahkan ke keranjang`,
+      },
     });
   };
 
@@ -94,7 +96,7 @@ const ProductDetails = () => {
           contentContainerStyle={styles.imagesContainer}
         />
       </View>
-      <Text style={styles.totalPrice}>Total Harga : Rp.{totalPrice}</Text>
+      <Text style={styles.totalPrice}>Total Harga : Rp. {totalPrice}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.quantityButton}

@@ -10,6 +10,7 @@ import {
 import { useCartStore } from "../store/cart-store";
 import React from "react";
 import { createOrder, createOrderItem } from "../api/api";
+import { useToast } from "react-native-toast-notifications";
 
 type CartItemType = {
   id: number;
@@ -75,6 +76,8 @@ export default function Cart() {
   const { mutateAsync: createSupabaseOrder } = createOrder();
   const { mutateAsync: createSupabaseOrderItem } = createOrderItem();
 
+  const Toast = useToast();
+
   const handleCheckout = async () => {
     const totalPrice = parseFloat(getTotalPrice());
 
@@ -91,7 +94,12 @@ export default function Cart() {
               })),
               {
                 onSuccess: () => {
-                  alert("Order created successfully!");
+                  Toast.show(`${items.length} berhasil dipesan`, {
+                    type: "custom_toast",
+                    data: {
+                      title: `Pesanan berhasil dibuat`,
+                    },
+                  });
                   resetCart();
                 },
               }
@@ -124,10 +132,11 @@ export default function Cart() {
       />
 
       <View style={styles.footer}>
-        <Text style={styles.totalText}>Total: Rp.{getTotalPrice()}</Text>
+        <Text style={styles.totalText}>Total: Rp. {getTotalPrice()}</Text>
         <TouchableOpacity
           onPress={handleCheckout}
-          style={styles.checkoutButton}>
+          style={styles.checkoutButton}
+          disabled={items.length === 0}>
           <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
       </View>

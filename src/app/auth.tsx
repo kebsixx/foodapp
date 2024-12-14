@@ -10,9 +10,10 @@ import { useForm, Controller } from "react-hook-form";
 import * as zod from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabase";
-import { Toast } from "react-native-toast-notifications";
+import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { Redirect } from "expo-router";
+import React from "react";
 
 const authSchema = zod.object({
   email: zod.string().email({ message: "Invalid email address" }),
@@ -23,6 +24,7 @@ const authSchema = zod.object({
 
 export default function Auth() {
   const { session } = useAuth();
+  const Toast = useToast();
 
   if (session) return <Redirect href="/" />;
 
@@ -40,10 +42,12 @@ export default function Auth() {
     if (error) {
       alert(error.message);
     } else {
-      Toast.show("Signed in successfully", {
-        type: "success",
-        placement: "top",
-        duration: 1500,
+      Toast.show("Selamat datang kembali!", {
+        type: "custom_toast",
+        animationDuration: 100,
+        data: {
+          title: `Sign in successfully 🎉`,
+        },
       });
     }
   };
@@ -54,10 +58,12 @@ export default function Auth() {
     if (error) {
       alert(error.message);
     } else {
-      Toast.show("Signed up successfully", {
-        type: "success",
-        placement: "top",
-        duration: 1500,
+      Toast.show("Selamat datang! Selamat berbelanja!", {
+        type: "custom_toast",
+        animationDuration: 100,
+        data: {
+          title: `Sign up successfully 🎉`,
+        },
       });
     }
   };
