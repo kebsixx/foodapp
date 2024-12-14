@@ -65,6 +65,10 @@ export default function RootLayout() {
                 options={{ headerShown: false, title: "Auth" }}
               />
               <Stack.Screen
+                name="register"
+                options={{ headerShown: false, title: "Register" }}
+              />
+              <Stack.Screen
                 name="profile"
                 options={{ title: "Account", presentation: "modal" }}
               />

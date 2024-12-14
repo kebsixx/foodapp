@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { Redirect } from "expo-router";
+import { Link, Redirect } from "expo-router";
 import React from "react";
 
 const authSchema = zod.object({
@@ -52,22 +52,6 @@ export default function Auth() {
     }
   };
 
-  const signUp = async (data: zod.infer<typeof authSchema>) => {
-    const { error } = await supabase.auth.signUp(data);
-
-    if (error) {
-      alert(error.message);
-    } else {
-      Toast.show("Selamat datang! Selamat berbelanja!", {
-        type: "custom_toast",
-        animationDuration: 100,
-        data: {
-          title: `Sign up successfully 🎉`,
-        },
-      });
-    }
-  };
-
   return (
     <ImageBackground
       source={{
@@ -78,7 +62,7 @@ export default function Auth() {
 
       <View style={styles.container}>
         <Text style={styles.title}>Welcome</Text>
-        <Text style={styles.subtitle}>Please Authenticate to continue</Text>
+        <Text style={styles.subtitle}>Silahkan login untuk berbelanja</Text>
 
         <Controller
           control={control}
@@ -133,12 +117,20 @@ export default function Auth() {
           disabled={formState.isSubmitting}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.signUpButton]}
-          onPress={handleSubmit(signUp)}
-          disabled={formState.isSubmitting}>
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          marginBottom: 16,
+        }}>
+        <Text style={{ color: "#fff", fontSize: 16 }}>Belum punya Akun?</Text>
+        <Link href="/register" style={styles.signUpButton}>
           <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
+        </Link>
       </View>
     </ImageBackground>
   );
@@ -163,7 +155,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   title: {
-    fontSize: 36,
+    fontSize: 50,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 8,
@@ -176,23 +168,23 @@ const styles = StyleSheet.create({
   input: {
     width: "90%",
     padding: 12,
+    paddingLeft: 20,
     marginBottom: 16,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 8,
+    borderRadius: 50,
     fontSize: 16,
     color: "#000",
   },
   button: {
     backgroundColor: "#B17457",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 50,
     marginBottom: 16,
     width: "90%",
     alignItems: "center",
   },
   signUpButton: {
     backgroundColor: "transparent",
-    borderColor: "#fff",
     borderWidth: 1,
   },
   signUpButtonText: {
