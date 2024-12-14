@@ -3,6 +3,19 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/auth-provider";
 import { generateOrderSlug } from "../utils/utils";
 
+export const getUsers = () => {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("users").select("*");
+      if (error) {
+        throw new Error("Failed to fetch users : " + error?.message);
+      }
+      return data;
+    }
+  })
+};
+
 export const getProductsAndCategories = () => {
   return useQuery({
     queryKey: ["products", "categories", "users"],

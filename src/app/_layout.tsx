@@ -64,6 +64,10 @@ export default function RootLayout() {
                 name="auth"
                 options={{ headerShown: false, title: "Auth" }}
               />
+              <Stack.Screen
+                name="profile"
+                options={{ title: "Account", presentation: "modal" }}
+              />
             </Stack>
           </NotificationProvider>
         </QueryProvider>

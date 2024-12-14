@@ -33,10 +33,14 @@ export const ListHeader = ({
       <View style={styles.headerTop}>
         <View style={styles.headerLeft}>
           <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: users[0].avatar_url }}
-              style={styles.avatarImage}
-            />
+            <Link href="/profile" asChild>
+              <Pressable>
+                <Image
+                  source={{ uri: users[0].avatar_url }}
+                  style={styles.avatarImage}
+                />
+              </Pressable>
+            </Link>
             <Text style={styles.avatarText}>Cerita Senja</Text>
           </View>
         </View>
