@@ -5,11 +5,12 @@ import { generateOrderSlug } from "../utils/utils";
 
 export const getProductsAndCategories = () => {
   return useQuery({
-    queryKey: ["products", "categories"],
+    queryKey: ["products", "categories", "users"],
     queryFn: async () => {
-      const [products, categories] = await Promise.all([
+      const [products, categories, users] = await Promise.all([
         supabase.from("product").select("*"),
         supabase.from("category").select("*"),
+        supabase.from("users").select("*"),
       ]);
 
       if (products.error || categories.error) {
@@ -19,6 +20,7 @@ export const getProductsAndCategories = () => {
       return {
         products: products.data,
         categories: categories.data,
+        users: users.data,
       };
     },
   });

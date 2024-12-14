@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   Text,
 } from "react-native";
-import { PRODUCTS } from "../../../assets/products";
+
 import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
 import { getProductsAndCategories } from "../../api/api";
@@ -25,7 +25,9 @@ const Home = () => {
         renderItem={({ item }) => <ProductListItem product={item} />}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
-        ListHeaderComponent={<ListHeader categories={data.categories} />}
+        ListHeaderComponent={
+          <ListHeader categories={data.categories} users={data.users!} />
+        }
         contentContainerStyle={styles.flatListContent}
         columnWrapperStyle={styles.flatListColumn}
         style={{ paddingHorizontal: 10, paddingVertical: 5 }}

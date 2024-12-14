@@ -17,8 +17,10 @@ import { Tables } from "../types/database.types";
 
 export const ListHeader = ({
   categories,
+  users,
 }: {
   categories: Tables<"category">[];
+  users: Tables<"users">[];
 }) => {
   const { getItemCount } = useCartStore();
 
@@ -32,7 +34,7 @@ export const ListHeader = ({
         <View style={styles.headerLeft}>
           <View style={styles.avatarContainer}>
             <Image
-              source={{ uri: "https://via.placeholder.com/40" }}
+              source={{ uri: users[0].avatar_url }}
               style={styles.avatarImage}
             />
             <Text style={styles.avatarText}>Cerita Senja</Text>
