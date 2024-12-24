@@ -30,7 +30,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     id: string;
     type: string | null;
     address: string | null;
-    gender: boolean | null;
+    gender: string | null;
     phone: number | null;
     name: string | null;
   } | null>(null);

@@ -95,6 +95,7 @@ export const getMyOrders = () => {
   } = useAuth();
 
   return useQuery({
+    enabled: !!id,
     queryKey: ["orders", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -104,10 +105,11 @@ export const getMyOrders = () => {
         .eq("user", id);
 
       if (error) {
-        throw new Error("Failed to fetch orders : " + error?.message);
+        console.error("Order Fetch Error:", error);
+        throw new Error("Gagal mengambil orders: " + error?.message);
       }
 
-      return data;
+      return data || [];
     },
   });
 };
@@ -214,7 +216,7 @@ export const getMyOrder = (slug: string) => {
         .single();
 
       if (error || !data) {
-        throw new Error("Failed to fetch order : " + error?.message);
+        throw new Error("Gagal mengambil order: " + error?.message);
       }
 
       return data;

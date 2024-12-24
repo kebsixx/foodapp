@@ -164,7 +164,7 @@ export type Database = {
           create_at: string | null
           email: string
           expo_notification_token: string | null
-          gender: boolean | null
+          gender: string | null
           id: string
           name: string | null
           phone: number | null
@@ -176,7 +176,7 @@ export type Database = {
           create_at?: string | null
           email: string
           expo_notification_token?: string | null
-          gender?: boolean | null
+          gender?: string | null
           id: string
           name?: string | null
           phone?: number | null
@@ -188,7 +188,7 @@ export type Database = {
           create_at?: string | null
           email?: string
           expo_notification_token?: string | null
-          gender?: boolean | null
+          gender?: string | null
           id?: string
           name?: string | null
           phone?: number | null
