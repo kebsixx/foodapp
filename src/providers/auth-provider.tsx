@@ -29,10 +29,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     expo_notification_token: string | null;
     id: string;
     type: string | null;
-    address: string | null;
-    gender: string | null;
-    phone: number | null;
-    name: string | null;
   } | null>(null);
   const [mounting, setMounting] = useState(true);
 
@@ -55,16 +51,12 @@ export default function AuthProvider({ children }: PropsWithChildren) {
           console.error("error", error);
         } else {
           setUser({
-            avatar_url: user?.avatar_url,
-            created_at: user?.create_at,
-            email: user?.email,
-            expo_notification_token: user?.expo_notification_token,
-            id: user?.id,
-            type: user?.type,
-            address: user?.address,
-            gender: user?.gender,
-            phone: user?.phone,
-            name: user?.name,
+            avatar_url: user.avatar_url,
+            created_at: user.create_at,
+            email: user.email,
+            expo_notification_token: user.expo_notification_token,
+            id: user.id,
+            type: user.type,
           });
         }
       }

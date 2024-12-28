@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
-    "@react-native-async-storage/async-storage": "^2.0.0",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/native": "^6.1.18",
     "@rneui/themed": "^4.0.0-rc.8",
     "@stripe/stripe-react-native": "0.37.2",
-    "@supabase/supabase-js": "^2.45.6",
+    "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.60.5",
     "aes-js": "^3.1.2",
     "date-fns": "^4.1.0",
@@ -37,6 +37,7 @@
     "react-native-select-dropdown": "^4.0.1",
     "react-native-svg": "^15.10.1",
     "react-native-toast-notifications": "^3.4.0",
+    "react-native-url-polyfill": "^2.0.0",
     "stripe": "^17.4.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.0-rc.2"

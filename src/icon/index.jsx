@@ -1,9 +1,15 @@
 import { View, Text } from "react-native";
 import React from "react";
 import ArrowLeft from "./ArrowLeft";
+import Mail from "./Mail";
+import Lock from "./Lock";
+import User from "./User";
 
 const icons = {
   arrowLeft: ArrowLeft,
+  mail: Mail,
+  lock: Lock,
+  user: User,
 };
 
 const Icon = ({ name, ...props }) => {

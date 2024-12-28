@@ -13,15 +13,9 @@ import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { Link, Redirect } from "expo-router";
 import React from "react";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import SelectDropdown from "react-native-select-dropdown";
 import { ScrollView } from "react-native";
 
 export const authSchema = zod.object({
-  name: zod.string().min(1, { message: "Nama harus diisi" }),
-  address: zod.string().min(1, { message: "Alamat harus diisi" }),
-  phone: zod.string().min(10, { message: "Nomor HP minimal 10 digit" }),
-  gender: zod.string().min(1, { message: "Jenis Kelamin harus diisi" }),
   email: zod.string().email(),
   password: zod.string().min(6, { message: "Password minimal 6 karakter" }),
 });
@@ -32,66 +26,33 @@ export default function Register() {
 
   if (session) return <Redirect href="/" />;
 
-  const { control, handleSubmit, formState } = useForm<
-    zod.infer<typeof authSchema>
-  >({
+  const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(authSchema),
     defaultValues: {
-      name: "",
-      address: "",
-      phone: "",
-      gender: "",
       email: "",
       password: "",
     },
   });
 
   const signUp = async (data: zod.infer<typeof authSchema>) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            name: data.name,
-            address: data.address,
-            phone: data.phone,
-            gender: data.gender,
-            avatar_url:
-              "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png", // Default avatar
-          },
-        },
-      });
+    const { error } = await supabase.auth.signUp(data);
 
-      if (error) {
-        console.error(error); // Log the error for debugging
-        // Display a toast message with the error message
-        Toast.show(error.message, {
-          type: "custom_toast",
-          animationDuration: 100,
-          data: {
-            title: `Sign up failed `,
-          },
-        });
-        return; // Exit the function after displaying the error
-      }
-
-      // Successful signup
-      Toast.show("Selamat datang! Selamat berbelanja!", {
-        type: "custom_toast",
-        animationDuration: 100,
-        data: {
-          title: `Sign up successfully `,
-        },
-      });
-    } catch (err) {
-      console.error(err); // Log any unexpected errors
+    if (error) {
+      console.error(error); // Log any unexpected errors
       // Display a toast message with a generic error message
       Toast.show("Terjadi kesalahan saat signup", {
         type: "custom_toast",
         animationDuration: 100,
         data: {
           title: `Error `,
+        },
+      });
+    } else {
+      Toast.show("Selamat datang! Selamat berbelanja!", {
+        type: "custom_toast",
+        animationDuration: 100,
+        data: {
+          title: `Sign up successfully `,
         },
       });
     }
@@ -107,119 +68,6 @@ export default function Register() {
           </Text>
 
           <View style={styles.form}>
-            <Controller
-              control={control}
-              name="name"
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error },
-              }) => (
-                <>
-                  <TextInput
-                    placeholder="Nama"
-                    style={styles.input}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    placeholderTextColor="#536162"
-                    autoCapitalize="none"
-                    editable={!formState.isSubmitting}
-                  />
-                  {error && <Text style={styles.error}>{error.message}</Text>}
-                </>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="address"
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error },
-              }) => (
-                <>
-                  <TextInput
-                    placeholder="Alamat"
-                    style={styles.input}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    placeholderTextColor="#536162"
-                    autoCapitalize="none"
-                    editable={!formState.isSubmitting}
-                  />
-                  {error && <Text style={styles.error}>{error.message}</Text>}
-                </>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="phone"
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error },
-              }) => (
-                <>
-                  <TextInput
-                    placeholder="No. Handphone"
-                    style={styles.input}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    placeholderTextColor="#536162"
-                    autoCapitalize="none"
-                    editable={!formState.isSubmitting}
-                  />
-                  {error && <Text style={styles.error}>{error.message}</Text>}
-                </>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="gender"
-              render={({ field: { onChange }, fieldState: { error } }) => (
-                <>
-                  <SelectDropdown
-                    data={["Laki-laki", "Perempuan"]}
-                    onSelect={(selectedItem) => {
-                      onChange(selectedItem);
-                    }}
-                    renderButton={(selectedItem, isOpened) => {
-                      return (
-                        <View style={styles.dropdownButtonStyle}>
-                          <Text style={styles.dropdownButtonTxtStyle}>
-                            {selectedItem || "Jenis Kelamin"}
-                          </Text>
-                          <AntDesign
-                            name={isOpened ? "upcircleo" : "circledowno"}
-                            size={20}
-                            color="#536162"
-                          />
-                        </View>
-                      );
-                    }}
-                    renderItem={(item) => {
-                      return (
-                        <View
-                          style={{
-                            ...styles.dropdownItemStyle,
-                          }}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {item}
-                          </Text>
-                        </View>
-                      );
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    dropdownStyle={styles.dropdownMenuStyle}
-                  />
-                  {error && <Text style={styles.error}>{error.message}</Text>}
-                </>
-              )}
-            />
-
             <Controller
               control={control}
               name="email"
