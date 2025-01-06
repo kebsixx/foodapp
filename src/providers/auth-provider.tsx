@@ -12,19 +12,21 @@ type AuthData = {
   session: Session | null;
   mounting: boolean;
   user: any;
+  setUser: (user: any) => void;
 };
 
 const AuthContext = createContext<AuthData>({
   session: null,
   mounting: true,
   user: null,
+  setUser: () => {},
 });
 
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<{
     avatar_url: string;
-    created_at: string | null;
+    create_at: string | null;
     email: string;
     expo_notification_token: string | null;
     id: string;
@@ -50,14 +52,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         if (error) {
           console.error("error", error);
         } else {
-          setUser({
-            avatar_url: user.avatar_url,
-            created_at: user.create_at,
-            email: user.email,
-            expo_notification_token: user.expo_notification_token,
-            id: user.id,
-            type: user.type,
-          });
+          setUser(user);
         }
       }
 
@@ -71,7 +66,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, mounting, user }}>
+    <AuthContext.Provider value={{ session, mounting, user, setUser }}>
       {children}
     </AuthContext.Provider>
   );

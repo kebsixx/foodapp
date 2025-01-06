@@ -13,7 +13,14 @@ import { getProductsAndCategories } from "../../api/api";
 const Home = () => {
   const { data, error, isLoading } = getProductsAndCategories();
 
-  if (isLoading) return <ActivityIndicator />;
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Loading products...</Text>
+      </View>
+    );
+  }
 
   if (error || !data)
     return <Text>{error?.message || "An error accured"}</Text>;

@@ -14,6 +14,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useCartStore } from "../store/cart-store";
 import { supabase } from "../lib/supabase";
 import { Tables } from "../types/database.types";
+import { useAuth } from "../providers/auth-provider";
 
 export const ListHeader = ({
   categories,
@@ -24,8 +25,13 @@ export const ListHeader = ({
 }) => {
   const { getItemCount } = useCartStore();
 
+  const { setUser } = useAuth();
+
+  const currentUser = users?.[0];
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
   };
 
   return (
@@ -36,7 +42,11 @@ export const ListHeader = ({
             <Link href="/profile" asChild>
               <Pressable>
                 <Image
-                  source={{ uri: users[0].avatar_url }}
+                  source={{
+                    uri:
+                      currentUser?.avatar_url ||
+                      "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
+                  }}
                   style={styles.avatarImage}
                 />
               </Pressable>
