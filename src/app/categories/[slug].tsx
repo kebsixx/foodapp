@@ -17,7 +17,14 @@ const Category = () => {
 
   const { data, error, isLoading } = getCategoryAndProducts(slug);
 
-  if (isLoading) return <ActivityIndicator />;
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Loading...</Text>
+      </View>
+    );
+  }
   if (error || !data) return <Text>Error: {error?.message}</Text>;
   if (!data.category || !data.products) return <Redirect href="/404" />;
 

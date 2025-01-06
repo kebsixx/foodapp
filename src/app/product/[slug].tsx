@@ -28,7 +28,14 @@ const ProductDetails = () => {
 
   const [quantity, setQuantity] = useState(initialQuantity);
 
-  if (isLoading) return <ActivityIndicator />;
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Loading...</Text>
+      </View>
+    );
+  }
   if (error) return <Text>Error: {error.message}</Text>;
   if (!product) return <Redirect href="/404" />;
 
@@ -69,7 +76,7 @@ const ProductDetails = () => {
     });
   };
 
-  const totalPrice = (product.price * quantity).toFixed(3);
+  const totalPrice = (product.price * quantity).toFixed(2);
 
   return (
     <View style={styles.container}>
@@ -79,7 +86,7 @@ const ProductDetails = () => {
 
       <View style={{ padding: 16, flex: 1 }}>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>Rp. {product.price.toFixed(3)}</Text>
+          <Text style={styles.price}>Rp. {product.price.toFixed(2)}</Text>
         </View>
         <Text style={styles.slug}>{product.slug}</Text>
 
