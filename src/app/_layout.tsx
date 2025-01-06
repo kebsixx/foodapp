@@ -1,9 +1,59 @@
 import { Stack } from "expo-router";
 import { ToastProvider } from "react-native-toast-notifications";
-import AuthProvider from "../providers/auth-provider";
+import AuthProvider, { useAuth } from "../providers/auth-provider";
 import { QueryProvider } from "../providers/query-provider";
 import NotificationProvider from "../providers/notification-provider";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
+
+function LoadingScreen() {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" />
+      <Text style={{ marginTop: 10 }}>Loading...</Text>
+    </View>
+  );
+}
+
+function StackNavigator() {
+  const { mounting } = useAuth();
+
+  if (mounting) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <Stack>
+      <Stack.Screen
+        name="(shop)"
+        options={{ headerShown: false, title: "Shop" }}
+      />
+      <Stack.Screen
+        name="categories"
+        options={{ headerShown: false, title: "Categories" }}
+      />
+      <Stack.Screen
+        name="product"
+        options={{ headerShown: false, title: "Product" }}
+      />
+      <Stack.Screen
+        name="cart"
+        options={{ presentation: "modal", title: "Shopping Cart" }}
+      />
+      <Stack.Screen
+        name="auth"
+        options={{ headerShown: false, title: "Auth" }}
+      />
+      <Stack.Screen
+        name="register"
+        options={{ headerShown: false, title: "Register" }}
+      />
+      <Stack.Screen
+        name="profile"
+        options={{ title: "Account", presentation: "modal" }}
+      />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   return (
@@ -43,36 +93,7 @@ export default function RootLayout() {
       <AuthProvider>
         <QueryProvider>
           <NotificationProvider>
-            <Stack>
-              <Stack.Screen
-                name="(shop)"
-                options={{ headerShown: false, title: "Shop" }}
-              />
-              <Stack.Screen
-                name="categories"
-                options={{ headerShown: false, title: "Categories" }}
-              />
-              <Stack.Screen
-                name="product"
-                options={{ headerShown: false, title: "Product" }}
-              />
-              <Stack.Screen
-                name="cart"
-                options={{ presentation: "modal", title: "Shopping Cart" }}
-              />
-              <Stack.Screen
-                name="auth"
-                options={{ headerShown: false, title: "Auth" }}
-              />
-              <Stack.Screen
-                name="register"
-                options={{ headerShown: false, title: "Register" }}
-              />
-              <Stack.Screen
-                name="profile"
-                options={{ title: "Account", presentation: "modal" }}
-              />
-            </Stack>
+            <StackNavigator />
           </NotificationProvider>
         </QueryProvider>
       </AuthProvider>

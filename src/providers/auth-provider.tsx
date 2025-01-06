@@ -36,33 +36,59 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const fetchSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        setMounting(true); // Ensure mounting is true at start
 
-      setSession(session);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (session) {
-        const { data: user, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+        setSession(session);
 
-        if (error) {
-          console.error("error", error);
-        } else {
+        if (session?.user?.id) {
+          const { data: user, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+          if (error) throw error;
           setUser(user);
+        } else {
+          setUser(null);
         }
+      } catch (error) {
+        console.log("Error fetching session:", error);
+        setUser(null);
+      } finally {
+        setMounting(false);
       }
-
-      setMounting(false);
     };
 
     fetchSession();
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        setMounting(true);
+
+        if (session?.user?.id) {
+          const { data: user } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+          setUser(user);
+        } else {
+          setUser(null);
+        }
+        setMounting(false);
+      }
+    );
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
   }, []);
 
   return (
