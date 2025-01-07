@@ -44,12 +44,20 @@ function StackNavigator() {
         options={{ headerShown: false, title: "Auth" }}
       />
       <Stack.Screen
-        name="register"
+        name="signup"
         options={{ headerShown: false, title: "Register" }}
       />
       <Stack.Screen
         name="profile"
         options={{ title: "Account", presentation: "modal" }}
+      />
+      <Stack.Screen
+        name="register"
+        options={{
+          headerShown: false,
+          title: "Register",
+          gestureEnabled: false,
+        }}
       />
     </Stack>
   );

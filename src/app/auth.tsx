@@ -128,7 +128,7 @@ export default function Auth() {
           marginBottom: 16,
         }}>
         <Text style={{ color: "#fff", fontSize: 16 }}>Belum punya Akun?</Text>
-        <Link href="/register" style={styles.signUpButton}>
+        <Link href="/signup" style={styles.signUpButton}>
           <Text style={styles.buttonText}>Sign Up</Text>
         </Link>
       </View>

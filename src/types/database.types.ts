@@ -164,10 +164,10 @@ export type Database = {
           create_at: string | null
           email: string
           expo_notification_token: string | null
-          gender: string | null
+          gender: boolean | null
           id: string
           name: string | null
-          phone: number | null
+          phone: string | null
           type: string | null
         }
         Insert: {
@@ -176,10 +176,10 @@ export type Database = {
           create_at?: string | null
           email: string
           expo_notification_token?: string | null
-          gender?: string | null
+          gender?: boolean | null
           id: string
           name?: string | null
-          phone?: number | null
+          phone?: string | null
           type?: string | null
         }
         Update: {
@@ -188,10 +188,10 @@ export type Database = {
           create_at?: string | null
           email?: string
           expo_notification_token?: string | null
-          gender?: string | null
+          gender?: boolean | null
           id?: string
           name?: string | null
-          phone?: number | null
+          phone?: string | null
           type?: string | null
         }
         Relationships: []
