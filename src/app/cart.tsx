@@ -11,6 +11,8 @@ import { useCartStore } from "../store/cart-store";
 import React from "react";
 import { createOrder, createOrderItem } from "../api/api";
 import { useToast } from "react-native-toast-notifications";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 type CartItemType = {
   id: number;
@@ -64,6 +66,9 @@ const CartItem = ({
 };
 
 export default function Cart() {
+  const [isStoreOpen, setIsStoreOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
+
   const {
     items,
     removeItem,
@@ -77,6 +82,41 @@ export default function Cart() {
   const { mutateAsync: createSupabaseOrderItem } = createOrderItem();
 
   const Toast = useToast();
+
+  useEffect(() => {
+    const checkStoreStatus = async () => {
+      const { data: isOpen, error } = await supabase.rpc("is_store_open");
+      if (!error) {
+        setIsStoreOpen(isOpen);
+      }
+      setLoading(false);
+    };
+
+    checkStoreStatus();
+
+    const channel = supabase
+      .channel("store_settings_changes")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "store_settings" },
+        () => {
+          checkStoreStatus();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const StoreBanner = () => (
+    <View style={styles.bannerContainer}>
+      <Text style={styles.bannerText}>
+        Maaf, toko sedang tutup. Silahkan kembali lagi nanti.
+      </Text>
+    </View>
+  );
 
   const handleCheckout = async () => {
     const totalPrice = parseFloat(getTotalPrice());
@@ -115,7 +155,7 @@ export default function Cart() {
 
   return (
     <View style={styles.container}>
-      {/* <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} /> */}
+      {!isStoreOpen && <StoreBanner />}
 
       <FlatList
         data={items}
@@ -135,9 +175,14 @@ export default function Cart() {
         <Text style={styles.totalText}>Total: Rp. {getTotalPrice()}</Text>
         <TouchableOpacity
           onPress={handleCheckout}
-          style={styles.checkoutButton}
-          disabled={items.length === 0}>
-          <Text style={styles.checkoutButtonText}>Checkout</Text>
+          style={[
+            styles.checkoutButton,
+            (!isStoreOpen || items.length === 0) && styles.disabledButton,
+          ]}
+          disabled={!isStoreOpen || items.length === 0}>
+          <Text style={styles.checkoutButtonText}>
+            {isStoreOpen ? "Checkout" : "Toko Tutup"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -232,5 +277,21 @@ const styles = StyleSheet.create({
   quantityButtonText: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  bannerContainer: {
+    backgroundColor: "#ffebee",
+    padding: 12,
+    marginBottom: 16,
+    borderRadius: 8,
+  },
+  bannerText: {
+    color: "#c62828",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
+    opacity: 0.7,
   },
 });
