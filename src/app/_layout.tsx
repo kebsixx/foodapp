@@ -73,7 +73,7 @@ export default function RootLayout() {
         custom_toast: (toast) => (
           <View
             style={{
-              maxWidth: "85%",
+              minWidth: "90%",
               paddingHorizontal: 15,
               paddingVertical: 10,
               backgroundColor: "#fff",
