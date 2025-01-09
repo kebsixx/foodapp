@@ -32,7 +32,6 @@ export default function Register() {
     },
   });
 
-  // Move all hooks above any conditional logic
   const signUp = async (data: zod.infer<typeof authSchema>) => {
     const { error } = await supabase.auth.signUp(data);
     if (error) {
@@ -45,7 +44,10 @@ export default function Register() {
         type: "custom_toast",
         data: { title: "Sign up berhasil" },
       });
-      router.push("/register");
+      // Force navigation to register
+      setTimeout(() => {
+        router.replace("/register");
+      }, 1000);
     }
   };
 

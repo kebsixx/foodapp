@@ -73,12 +73,17 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         setMounting(true);
 
         if (session?.user?.id) {
-          const { data: user } = await supabase
+          const { data: user, error } = await supabase
             .from("users")
             .select("*")
             .eq("id", session.user.id)
             .single();
-          setUser(user);
+
+          if (error) {
+            setUser(null);
+          } else {
+            setUser(user);
+          }
         } else {
           setUser(null);
         }

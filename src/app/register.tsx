@@ -27,11 +27,6 @@ export default function Register() {
   const Toast = useToast();
   const router = useRouter();
 
-  // Redirect to signup if no session exists
-  if (!session) return <Redirect href="/signup" />;
-  // Redirect to home if profile is already complete
-  if (user?.name) return <Redirect href="/" />;
-
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -75,6 +70,14 @@ export default function Register() {
       router.push("/");
     }
   };
+
+  if (!session) {
+    return <Redirect href="/signup" />;
+  }
+
+  if (user?.name) {
+    return <Redirect href="/" />;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>

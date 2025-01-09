@@ -5,8 +5,6 @@ import { useAuth } from "../providers/auth-provider";
 const Profile = () => {
   const { user } = useAuth();
 
-  console.log(user);
-
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Image
