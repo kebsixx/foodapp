@@ -82,13 +82,21 @@ export default function Cart() {
   const { mutateAsync: createSupabaseOrderItem } = createOrderItem();
 
   const Toast = useToast();
-
   useEffect(() => {
     const checkStoreStatus = async () => {
-      const { data: isOpen, error } = await supabase.rpc("is_store_open");
-      if (!error) {
-        setIsStoreOpen(isOpen);
+      const { data, error } = await supabase
+        .from("store_settings")
+        .select("is_open")
+        .single();
+
+      if (data) {
+        setIsStoreOpen(data.is_open!);
       }
+
+      if (error) {
+        console.error("Error fetching store status:", error);
+      }
+
       setLoading(false);
     };
 
@@ -98,9 +106,11 @@ export default function Cart() {
       .channel("store_settings_changes")
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "store_settings" },
-        () => {
-          checkStoreStatus();
+        { event: "*", schema: "public", table: "store_settings" },
+        (payload) => {
+          if (payload.new && "is_open" in payload.new) {
+            setIsStoreOpen(payload.new.is_open);
+          }
         }
       )
       .subscribe();
@@ -109,7 +119,6 @@ export default function Cart() {
       supabase.removeChannel(channel);
     };
   }, []);
-
   const StoreBanner = () => (
     <View style={styles.bannerContainer}>
       <Text style={styles.bannerText}>

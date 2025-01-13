@@ -5,6 +5,24 @@ const useStore = () => {
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
+    // Get initial store status
+    const getStoreStatus = async () => {
+      const { data, error } = await supabase
+        .from("store_settings")
+        .select("is_open")
+        .single();
+
+      if (data) {
+        setIsOpen(data.is_open!);
+      }
+
+      if (error) {
+        console.error("Error fetching store status:", error);
+      }
+    };
+
+    getStoreStatus();
+
     // Subscribe to store settings changes
     const subscription = supabase
       .channel("store_settings")
@@ -19,16 +37,12 @@ const useStore = () => {
       )
       .subscribe();
 
-    // Check time-based rules
-    const checkStoreHours = () => {
-      const now = new Date();
-      const currentTime = now.getHours() * 100 + now.getMinutes();
-      // Compare with store hours
-    };
-
     return () => {
       supabase.removeChannel(subscription);
     };
   }, []);
+
   return { isOpen };
 };
+
+export default useStore;
