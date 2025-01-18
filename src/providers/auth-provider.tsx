@@ -13,6 +13,7 @@ type AuthData = {
   mounting: boolean;
   user: any;
   setUser: (user: any) => void;
+  updateProfile: (updates: any) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthData>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthData>({
   mounting: true,
   user: null,
   setUser: () => {},
+  updateProfile: async () => {},
 });
 
 export default function AuthProvider({ children }: PropsWithChildren) {
@@ -96,8 +98,60 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
+  const updateProfile = async (updates: any) => {
+    try {
+      if (!user?.id) return;
+
+      // First upload the avatar if it's a new file
+      let avatar_url = updates.avatar_url;
+      if (updates.avatar_url && updates.avatar_url.startsWith("file://")) {
+        const fileName = `avatar-${user.id}-${Date.now()}`;
+        const response = await fetch(updates.avatar_url);
+        const blob = await response.blob();
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, blob);
+
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+        avatar_url = publicUrl;
+      }
+
+      // Update the user profile
+      const { error } = await supabase
+        .from("users")
+        .update({
+          ...updates,
+          avatar_url,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      // Fetch and set the updated user data
+      const { data: updatedUser, error: fetchError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      setUser(updatedUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ session, mounting, user, setUser }}>
+    <AuthContext.Provider
+      value={{ session, mounting, user, setUser, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
