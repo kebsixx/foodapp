@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "../providers/auth-provider";
@@ -40,106 +41,168 @@ const Profile = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage}>
-        <Image source={{ uri: formData.avatar_url }} style={styles.avatar} />
-        {isEditing && <Text style={styles.changePhotoText}>Change Photo</Text>}
-      </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
+          <Image source={{ uri: formData.avatar_url }} style={styles.avatar} />
+          {isEditing && (
+            <View style={styles.editOverlay}>
+              <Text style={styles.editText}>Change Photo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
 
-      {isEditing ? (
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            value={formData.name}
-            onChangeText={(text) => setFormData({ ...formData, name: text })}
-            placeholder="Name"
-          />
-          <TextInput
-            style={styles.input}
-            value={formData.email}
-            onChangeText={(text) => setFormData({ ...formData, email: text })}
-            placeholder="Email"
-          />
-          <TextInput
-            style={styles.input}
-            value={formData.address}
-            onChangeText={(text) => setFormData({ ...formData, address: text })}
-            placeholder="Address"
-          />
-          <TextInput
-            style={styles.input}
-            value={formData.phone}
-            onChangeText={(text) => setFormData({ ...formData, phone: text })}
-            placeholder="Phone"
-          />
-          <TouchableOpacity style={styles.button} onPress={handleSave}>
-            <Text style={styles.buttonText}>Save</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.info}>
-          <Text style={styles.text}>{formData.name}</Text>
-          <Text style={styles.text}>{formData.email}</Text>
-          <Text style={styles.text}>{formData.address}</Text>
-          <Text style={styles.text}>{formData.phone}</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => setIsEditing(true)}>
-            <Text style={styles.buttonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+      <View style={styles.content}>
+        {isEditing ? (
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              value={formData.name}
+              onChangeText={(text) => setFormData({ ...formData, name: text })}
+              placeholder="Name"
+              placeholderTextColor="#888"
+            />
+            <TextInput
+              style={styles.input}
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
+              placeholder="Email"
+              placeholderTextColor="#888"
+            />
+            <TextInput
+              style={styles.input}
+              value={formData.address}
+              onChangeText={(text) =>
+                setFormData({ ...formData, address: text })
+              }
+              placeholder="Address"
+              placeholderTextColor="#888"
+            />
+            <TextInput
+              style={styles.input}
+              value={formData.phone}
+              onChangeText={(text) => setFormData({ ...formData, phone: text })}
+              placeholder="Phone"
+              placeholderTextColor="#888"
+            />
+            <TouchableOpacity style={styles.button} onPress={handleSave}>
+              <Text style={styles.buttonText}>Save Changes</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.info}>
+            <View style={styles.infoItem}>
+              <Text style={styles.label}>Name</Text>
+              <Text style={styles.text}>{formData.name}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.label}>Email</Text>
+              <Text style={styles.text}>{formData.email}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.label}>Address</Text>
+              <Text style={styles.text}>{formData.address}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.label}>Phone</Text>
+              <Text style={styles.text}>{formData.phone}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setIsEditing(true)}>
+              <Text style={styles.buttonText}>Edit Profile</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
+  },
+  header: {
+    backgroundColor: "#B17457",
+    height: 200,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+  },
+  avatarContainer: {
+    position: "relative",
+    marginTop: 20,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: "#fff",
   },
-  changePhotoText: {
-    color: "#2196F3",
+  editOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    padding: 8,
+    borderBottomLeftRadius: 60,
+    borderBottomRightRadius: 60,
+  },
+  editText: {
+    color: "#fff",
     textAlign: "center",
-    marginBottom: 20,
+    fontSize: 12,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+    marginTop: 20,
   },
   form: {
     width: "100%",
   },
   input: {
+    backgroundColor: "#f8f8f8",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    fontSize: 16,
     borderWidth: 1,
     borderColor: "#ddd",
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    width: "100%",
   },
   info: {
-    alignItems: "center",
+    width: "100%",
+  },
+  infoItem: {
+    marginBottom: 20,
+    backgroundColor: "#f8f8f8",
+    padding: 15,
+    borderRadius: 10,
+  },
+  label: {
+    fontSize: 14,
+    color: "#888",
+    marginBottom: 5,
   },
   text: {
     fontSize: 16,
-    marginBottom: 10,
+    color: "#333",
   },
   button: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#B17457",
     padding: 15,
-    borderRadius: 5,
-    width: "100%",
+    borderRadius: 10,
+    alignItems: "center",
     marginTop: 10,
   },
   buttonText: {
     color: "white",
-    textAlign: "center",
     fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
