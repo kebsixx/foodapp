@@ -1,4 +1,5 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { formatCurrency } from "../utils/utils";
 
 import { Link } from "expo-router";
 import { Tables } from "../types/database.types";
@@ -8,6 +9,10 @@ export const ProductListItem = ({
 }: {
   product: Tables<"product">;
 }) => {
+  // const formatPrice = (price: number) => {
+  //   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  // };
+
   return (
     <Link href={`/product/${product.slug}`} asChild>
       <Pressable style={styles.item}>
@@ -16,7 +21,7 @@ export const ProductListItem = ({
         </View>
         <View style={styles.itemTextContainer}>
           <Text style={styles.itemTitle}>{product.title}</Text>
-          <Text style={styles.itemPrice}>Rp.{product.price.toFixed(2)}</Text>
+          <Text style={styles.itemPrice}>{formatCurrency(product.price)}</Text>
         </View>
       </Pressable>
     </Link>

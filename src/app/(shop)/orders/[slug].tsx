@@ -10,6 +10,7 @@ import {
 
 import { getMyOrder } from "../../../api/api";
 import { format } from "date-fns";
+import { formatCurrency } from "../../../utils/utils";
 import CustomHeader from "../../../components/customHeader";
 
 const OrderDetails = () => {
@@ -53,7 +54,7 @@ const OrderDetails = () => {
             <View style={styles.itemInfo}>
               <Text style={styles.itemName}>{item.title}</Text>
               <Text style={styles.itemPrice}>
-                Harga: Rp.{item.price.toFixed(3)}
+                {formatCurrency(item.price)} x {item.quantity}
               </Text>
             </View>
           </View>

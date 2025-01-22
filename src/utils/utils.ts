@@ -5,3 +5,10 @@ export const generateOrderSlug = () => {
   const timestamp = new Date().getDate();
   return `order-${randomString}-${timestamp}`;
 };
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+  }).format(amount);
+};

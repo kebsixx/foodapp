@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 
+import { formatCurrency } from "../../utils/utils";
 import { useToast } from "react-native-toast-notifications";
 import { useCartStore } from "../../store/cart-store";
 import { useState } from "react";
@@ -76,7 +77,7 @@ const ProductDetails = () => {
     });
   };
 
-  const totalPrice = (product.price * quantity).toFixed(2);
+  const totalPrice = formatCurrency(product.price * quantity);
 
   return (
     <View style={styles.container}>
@@ -86,7 +87,7 @@ const ProductDetails = () => {
 
       <View style={{ padding: 16, flex: 1 }}>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>Rp. {product.price.toFixed(2)}</Text>
+          <Text style={styles.price}>{formatCurrency(product.price)}</Text>
         </View>
         <Text style={styles.slug}>{product.slug}</Text>
 
