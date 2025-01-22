@@ -145,6 +145,7 @@ export const createOrder = () => {
 
     async onSuccess() {
       await queryClient.invalidateQueries({ queryKey: ["order"] });
+      await queryClient.invalidateQueries({ queryKey: ["orders", id] });
     },
   });
 };
