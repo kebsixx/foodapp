@@ -6,12 +6,18 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  Modal,
 } from "react-native";
 import { formatCurrency } from "../utils/utils";
 import { useCartStore } from "../store/cart-store";
 import React from "react";
-import { createOrder, createOrderItem } from "../api/api";
+import {
+  createMidtransPayment,
+  createOrder,
+  createOrderItem,
+} from "../api/api";
 import { useToast } from "react-native-toast-notifications";
+import { WebView } from "react-native-webview";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -69,6 +75,9 @@ const CartItem = ({
 export default function Cart() {
   const [isStoreOpen, setIsStoreOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState("");
+  const { mutateAsync: initiateMidtransPayment } = createMidtransPayment();
 
   const {
     items,
@@ -133,40 +142,56 @@ export default function Cart() {
     const totalPrice = parseFloat(getTotalPrice());
 
     try {
-      await createSupabaseOrder(
-        { totalPrice },
-        {
-          onSuccess: (data) => {
-            createSupabaseOrderItem(
-              items.map((item) => ({
-                orderId: data.id,
-                productId: item.id,
-                quantity: item.quantity,
-              })),
-              {
-                onSuccess: () => {
-                  Toast.show(`${items.length} berhasil dipesan`, {
-                    type: "custom_toast",
-                    data: {
-                      title: `Pesanan berhasil dibuat`,
-                    },
-                  });
-                  resetCart();
-                },
-              }
-            );
-          },
-        }
+      const order = await createSupabaseOrder({ totalPrice });
+
+      await createSupabaseOrderItem(
+        items.map((item) => ({
+          orderId: order.id,
+          productId: item.id,
+          quantity: item.quantity,
+        }))
       );
+
+      const paymentResponse = await initiateMidtransPayment({
+        orderId: order.id.toString(),
+        totalAmount: totalPrice,
+      });
+
+      if (paymentResponse.redirect_url) {
+        setPaymentUrl(paymentResponse.redirect_url);
+        setShowPayment(true);
+      }
     } catch (error) {
-      console.error("Error creating order:", error);
-      Alert.alert("Error", "Failed to create order");
+      console.error("Error processing payment:", error);
+      Alert.alert("Error", "Failed to process payment");
     }
   };
 
   return (
     <View style={styles.container}>
       {!isStoreOpen && <StoreBanner />}
+
+      {showPayment && (
+        <Modal
+          visible={showPayment}
+          onRequestClose={() => setShowPayment(false)}
+          animationType="slide">
+          <WebView
+            source={{ uri: paymentUrl }}
+            onNavigationStateChange={(navState) => {
+              // Handle payment completion
+              if (navState.url.includes("transaction_status=settlement")) {
+                setShowPayment(false);
+                Toast.show("Pembayaran berhasil!", {
+                  type: "custom_toast",
+                  data: { title: "Sukses" },
+                });
+                resetCart();
+              }
+            }}
+          />
+        </Modal>
+      )}
 
       <FlatList
         data={items}
@@ -308,3 +333,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
+function setSnapUrl(redirect_url: any) {
+  throw new Error("Function not implemented.");
+}
