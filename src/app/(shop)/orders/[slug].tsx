@@ -60,6 +60,17 @@ const OrderDetails = () => {
           </View>
         )}
       />
+      <View style={styles.totalContainer}>
+        <Text style={styles.totalLabel}>Total:</Text>
+        <Text style={styles.totalAmount}>
+          {formatCurrency(
+            orderItems.reduce(
+              (total, item) => total + item.price * item.quantity,
+              0
+            )
+          )}
+        </Text>
+      </View>
     </View>
   );
 };
@@ -137,5 +148,21 @@ const styles: { [key: string]: any } = StyleSheet.create({
   itemPrice: {
     fontSize: 14,
     marginTop: 4,
+  },
+  totalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  totalAmount: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#B17457",
   },
 });
