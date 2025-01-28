@@ -131,7 +131,7 @@ export const createOrder = () => {
           totalPrice,
           slug,
           user: id,
-          status: "Pending",
+          status: "Process",
         })
         .select("*")
         .single();

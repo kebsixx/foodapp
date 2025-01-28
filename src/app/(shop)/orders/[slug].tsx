@@ -86,7 +86,7 @@ const styles: { [key: string]: any } = StyleSheet.create({
     borderRadius: 4,
     alignSelf: "flex-start",
   },
-  statusBadge_Pending: {
+  statusBadge_Process: {
     backgroundColor: "orange",
   },
   statusBadge_Completed: {

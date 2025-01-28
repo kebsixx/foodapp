@@ -109,7 +109,7 @@ const styles: { [key: string]: any } = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
-  statusBadge_Pending: {
+  statusBadge_Process: {
     backgroundColor: "#ffcc00",
   },
   statusBadge_Completed: {
