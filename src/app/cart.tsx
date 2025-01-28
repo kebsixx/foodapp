@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
 } from "react-native";
+import { formatCurrency } from "../utils/utils";
 import { useCartStore } from "../store/cart-store";
 import React from "react";
 import { createOrder, createOrderItem } from "../api/api";
@@ -41,7 +42,7 @@ const CartItem = ({
       <Image source={{ uri: item.heroImage }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemPrice}>Rp {item.price.toFixed(3)}</Text>
+        <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
         <View style={styles.quantityContainer}>
           <TouchableOpacity
             onPress={() => onDecrement(item.id)}
@@ -119,6 +120,7 @@ export default function Cart() {
       supabase.removeChannel(channel);
     };
   }, []);
+
   const StoreBanner = () => (
     <View style={styles.bannerContainer}>
       <Text style={styles.bannerText}>
@@ -181,7 +183,9 @@ export default function Cart() {
       />
 
       <View style={styles.footer}>
-        <Text style={styles.totalText}>Total: Rp. {getTotalPrice()}</Text>
+        <Text style={styles.totalText}>
+          Total: {formatCurrency(parseFloat(getTotalPrice()))}
+        </Text>
         <TouchableOpacity
           onPress={handleCheckout}
           style={[
