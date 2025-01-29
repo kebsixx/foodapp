@@ -115,7 +115,7 @@ const styles: { [key: string]: any } = StyleSheet.create({
   statusBadge_Completed: {
     backgroundColor: "#4caf50",
   },
-  statusBadge_Shipped: {
+  statusBadge_Confirmed: {
     backgroundColor: "#2196f3",
   },
   statusBadge_InTransit: {

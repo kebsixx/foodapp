@@ -7,6 +7,8 @@ import {
   FlatList,
   Image,
   Modal,
+  TextInput,
+  ScrollView,
 } from "react-native";
 import { formatCurrency } from "../utils/utils";
 import { useCartStore } from "../store/cart-store";
@@ -78,6 +80,9 @@ export default function Cart() {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const { mutateAsync: initiateMidtransPayment } = createMidtransPayment();
+  const [address, setAddress] = useState("");
+  const [description, setDescription] = useState("");
+  const [selectedPickupMethod, setSelectedPickupMethod] = useState("");
 
   const {
     items,
@@ -92,6 +97,7 @@ export default function Cart() {
   const { mutateAsync: createSupabaseOrderItem } = createOrderItem();
 
   const Toast = useToast();
+
   useEffect(() => {
     const checkStoreStatus = async () => {
       const { data, error } = await supabase
@@ -167,45 +173,113 @@ export default function Cart() {
     }
   };
 
+  const handleSubmitOrder = async () => {
+    if (!selectedPickupMethod) {
+      Alert.alert("Error", "Pilih metode pengambilan");
+      return;
+    }
+
+    if (selectedPickupMethod === "delivery" && !address) {
+      Alert.alert("Error", "Masukkan alamat pengiriman");
+      return;
+    }
+
+    try {
+      const { data: orderData, error: orderError } = await supabase
+        .from("order")
+        .select("id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (orderError) throw orderError;
+
+      await supabase
+        .from("order")
+        .update({
+          pickup_method: selectedPickupMethod,
+          description: description,
+          status: "Confirmed",
+          ...(selectedPickupMethod === "delivery" && { address: address }),
+        })
+        .eq("id", orderData.id);
+
+      resetCart();
+      Toast.show("Pesanan berhasil dikonfirmasi!", {
+        type: "custom_toast",
+        data: { title: "Sukses" },
+      });
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      Alert.alert("Error", "Gagal mengonfirmasi pesanan");
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {!isStoreOpen && <StoreBanner />}
+      <ScrollView>
+        {!isStoreOpen && <StoreBanner />}
 
-      {showPayment && (
-        <Modal
-          visible={showPayment}
-          onRequestClose={() => setShowPayment(false)}
-          animationType="slide">
-          <WebView
-            source={{ uri: paymentUrl }}
-            onNavigationStateChange={(navState) => {
-              // Handle payment completion
-              if (navState.url.includes("transaction_status=settlement")) {
-                setShowPayment(false);
-                Toast.show("Pembayaran berhasil!", {
-                  type: "custom_toast",
-                  data: { title: "Sukses" },
-                });
-                resetCart();
-              }
-            }}
-          />
-        </Modal>
-      )}
+        <FlatList
+          data={items}
+          scrollEnabled={false}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <CartItem
+              item={item}
+              onRemove={removeItem}
+              onIncrement={incrementItem}
+              onDecrement={decrementItem}
+            />
+          )}
+          style={styles.cartList}
+        />
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <CartItem
-            item={item}
-            onRemove={removeItem}
-            onIncrement={incrementItem}
-            onDecrement={decrementItem}
+        <View style={styles.orderDetailsSection}>
+          <Text style={styles.sectionTitle}>Detail Pesanan</Text>
+
+          <Text style={styles.labelText}>Cara Pengambilan:</Text>
+          <TouchableOpacity
+            style={[
+              styles.pickupButton,
+              selectedPickupMethod === "takeaway" && styles.selectedButton,
+            ]}
+            onPress={() => setSelectedPickupMethod("takeaway")}>
+            <Text style={styles.pickupButtonText}>Ambil di Cafe</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.pickupButton,
+              selectedPickupMethod === "delivery" && styles.selectedButton,
+            ]}
+            onPress={() => setSelectedPickupMethod("delivery")}>
+            <Text style={styles.pickupButtonText}>Pesan Antar (GoSend)</Text>
+          </TouchableOpacity>
+
+          {selectedPickupMethod === "delivery" && (
+            <>
+              <Text style={styles.labelText}>Alamat Pengiriman:</Text>
+              <TextInput
+                style={styles.input}
+                value={address}
+                onChangeText={setAddress}
+                multiline
+                placeholder="Masukkan alamat lengkap"
+              />
+            </>
+          )}
+
+          <Text style={styles.labelText}>Catatan Tambahan:</Text>
+          <TextInput
+            style={styles.input}
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            placeholder="Tambahkan catatan untuk pesanan Anda"
           />
-        )}
-        style={styles.cartList}
-      />
+        </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         <Text style={styles.totalText}>
@@ -215,14 +289,40 @@ export default function Cart() {
           onPress={handleCheckout}
           style={[
             styles.checkoutButton,
-            (!isStoreOpen || items.length === 0) && styles.disabledButton,
+            (!isStoreOpen ||
+              items.length === 0 ||
+              !selectedPickupMethod ||
+              (selectedPickupMethod === "delivery" && !address)) &&
+              styles.disabledButton,
           ]}
-          disabled={!isStoreOpen || items.length === 0}>
+          disabled={
+            !isStoreOpen ||
+            items.length === 0 ||
+            !selectedPickupMethod ||
+            (selectedPickupMethod === "delivery" && !address)
+          }>
           <Text style={styles.checkoutButtonText}>
             {isStoreOpen ? "Checkout" : "Toko Tutup"}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {showPayment && (
+        <Modal
+          visible={showPayment}
+          onRequestClose={() => setShowPayment(false)}
+          animationType="slide">
+          <WebView
+            source={{ uri: paymentUrl }}
+            onNavigationStateChange={(navState) => {
+              if (navState.url.includes("transaction_status=settlement")) {
+                setShowPayment(false);
+                handleSubmitOrder();
+              }
+            }}
+          />
+        </Modal>
+      )}
     </View>
   );
 }
@@ -289,7 +389,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   checkoutButton: {
-    backgroundColor: "#28a745",
+    backgroundColor: "#70AF85",
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
@@ -332,7 +432,46 @@ const styles = StyleSheet.create({
     backgroundColor: "#cccccc",
     opacity: 0.7,
   },
+  orderDetailsSection: {
+    padding: 16,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  labelText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    minHeight: 100,
+    backgroundColor: "#fff",
+    textAlignVertical: "top",
+  },
+  pickupButton: {
+    backgroundColor: "#AA8976",
+    padding: 15,
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  pickupButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  selectedButton: {
+    backgroundColor: "#B17457",
+  },
 });
-function setSnapUrl(redirect_url: any) {
-  throw new Error("Function not implemented.");
-}

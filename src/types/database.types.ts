@@ -41,6 +41,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: number
+          pickup_method: string | null
           slug: string
           status: string
           totalPrice: number
@@ -50,6 +51,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          pickup_method?: string | null
           slug: string
           status: string
           totalPrice: number
@@ -59,6 +61,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          pickup_method?: string | null
           slug?: string
           status?: string
           totalPrice?: number
