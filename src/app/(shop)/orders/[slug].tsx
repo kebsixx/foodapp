@@ -38,6 +38,7 @@ const OrderDetails = () => {
       <CustomHeader title="Order" />
       <Text style={styles.item}>{order.slug}</Text>
       <Text style={styles.details}>{order.description}</Text>
+      <Text style={styles.details}>{order.pickup_method}</Text>
       <View style={[styles.statusBadge, styles[`statusBadge_${order.status}`]]}>
         <Text style={styles.statusText}>{order.status}</Text>
       </View>
