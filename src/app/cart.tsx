@@ -254,21 +254,8 @@ export default function Cart() {
               selectedPickupMethod === "delivery" && styles.selectedButton,
             ]}
             onPress={() => setSelectedPickupMethod("delivery")}>
-            <Text style={styles.pickupButtonText}>Pesan Antar (GoSend)</Text>
+            <Text style={styles.pickupButtonText}>Jasa Antar</Text>
           </TouchableOpacity>
-
-          {selectedPickupMethod === "delivery" && (
-            <>
-              <Text style={styles.labelText}>Alamat Pengiriman:</Text>
-              <TextInput
-                style={styles.input}
-                value={address}
-                onChangeText={setAddress}
-                multiline
-                placeholder="Masukkan alamat lengkap"
-              />
-            </>
-          )}
 
           <Text style={styles.labelText}>Catatan Tambahan:</Text>
           <TextInput
