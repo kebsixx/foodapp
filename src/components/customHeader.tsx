@@ -12,8 +12,11 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back-sharp" size={24} color="black" />
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={styles.backButton}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <Ionicons name="arrow-back-sharp" size={24} color="#333" />
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
     </View>
@@ -25,19 +28,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 3,
   },
   backButton: {
-    marginRight: 16,
+    padding: 8,
+    marginRight: 12,
+    marginLeft: -8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "medium",
-    color: "#000",
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    flex: 1,
   },
 });
 
