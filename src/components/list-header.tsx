@@ -93,7 +93,6 @@ export const ListHeader = ({
           )}
           keyExtractor={(item) => item.name}
           horizontal
-          showsHorizontalScrollIndicator={false}
         />
       </View>
     </View>
@@ -171,10 +170,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   categoryImage: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     borderRadius: 30,
     marginBottom: 8,
   },
-  categoryText: {},
+  categoryText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+    padding: 8,
+    textAlign: "center",
+  },
 });
