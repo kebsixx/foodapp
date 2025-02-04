@@ -10,18 +10,15 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import { formatCurrency } from "../utils/utils";
+import { formatCurrency, generateOrderSlug } from "../utils/utils";
 import { useCartStore } from "../store/cart-store";
 import React from "react";
-import {
-  createMidtransPayment,
-  createOrder,
-  createOrderItem,
-} from "../api/api";
-import { useToast } from "react-native-toast-notifications";
-import { WebView } from "react-native-webview";
 import { useEffect, useState } from "react";
+import { createOrder, createOrderItem } from "../api/api";
 import { supabase } from "../lib/supabase";
+import { useToast } from "react-native-toast-notifications";
+import { useAuth } from "../providers/auth-provider";
+import { router } from "expo-router";
 
 type CartItemType = {
   id: number;
@@ -77,12 +74,12 @@ const CartItem = ({
 export default function Cart() {
   const [isStoreOpen, setIsStoreOpen] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [showPayment, setShowPayment] = useState(false);
-  const [paymentUrl, setPaymentUrl] = useState("");
-  const { mutateAsync: initiateMidtransPayment } = createMidtransPayment();
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [selectedPickupMethod, setSelectedPickupMethod] = useState("");
+  const {
+    user: { id },
+  } = useAuth();
 
   const {
     items,
@@ -144,74 +141,50 @@ export default function Cart() {
     </View>
   );
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState<string>("");
+
   const handleCheckout = async () => {
     const totalPrice = parseFloat(getTotalPrice());
+    const slug = generateOrderSlug();
 
     try {
-      const order = await createSupabaseOrder({ totalPrice });
+      const { data: order, error } = await supabase
+        .from("order")
+        .insert({
+          totalPrice: totalPrice,
+          slug: slug,
+          status: "Pending",
+          user: id,
+          description: description,
+          pickup_method: selectedPickupMethod,
+        })
+        .select()
+        .single();
 
-      await createSupabaseOrderItem(
+      if (error) throw error;
+
+      await supabase.from("order_item").insert(
         items.map((item) => ({
-          orderId: order.id,
-          productId: item.id,
+          order: order.id,
+          product: item.id,
           quantity: item.quantity,
         }))
       );
 
-      const paymentResponse = await initiateMidtransPayment({
-        orderId: order.id.toString(),
-        totalAmount: totalPrice,
-      });
-
-      if (paymentResponse.redirect_url) {
-        setPaymentUrl(paymentResponse.redirect_url);
-        setShowPayment(true);
-      }
-    } catch (error) {
-      console.error("Error processing payment:", error);
-      Alert.alert("Error", "Failed to process payment");
-    }
-  };
-
-  const handleSubmitOrder = async () => {
-    if (!selectedPickupMethod) {
-      Alert.alert("Error", "Pilih metode pengambilan");
-      return;
-    }
-
-    if (selectedPickupMethod === "delivery" && !address) {
-      Alert.alert("Error", "Masukkan alamat pengiriman");
-      return;
-    }
-
-    try {
-      const { data: orderData, error: orderError } = await supabase
-        .from("order")
-        .select("id")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (orderError) throw orderError;
-
-      await supabase
-        .from("order")
-        .update({
-          pickup_method: selectedPickupMethod,
-          description: description,
-          status: "Confirmed",
-          ...(selectedPickupMethod === "delivery" && { address: address }),
-        })
-        .eq("id", orderData.id);
-
       resetCart();
-      Toast.show("Pesanan berhasil dikonfirmasi!", {
+      setCurrentOrderId(order.id.toString());
+      setShowPaymentModal(true);
+
+      Toast.show("Silakan cek status pesanan di halaman Orders.", {
         type: "custom_toast",
-        data: { title: "Sukses" },
+        data: {
+          title: "Pesanan berhasil dibuat! 📦",
+        },
       });
     } catch (error) {
-      console.error("Error submitting order:", error);
-      Alert.alert("Error", "Gagal mengonfirmasi pesanan");
+      console.error("Error creating order:", error);
+      Alert.alert("Error", "Gagal membuat pesanan");
     }
   };
 
@@ -238,14 +211,13 @@ export default function Cart() {
         <View style={styles.orderDetailsSection}>
           <Text style={styles.sectionTitle}>Detail Pesanan</Text>
 
-          <Text style={styles.labelText}>Cara Pengambilan:</Text>
           <TouchableOpacity
             style={[
               styles.pickupButton,
-              selectedPickupMethod === "takeaway" && styles.selectedButton,
+              selectedPickupMethod === "pickup" && styles.selectedButton,
             ]}
-            onPress={() => setSelectedPickupMethod("takeaway")}>
-            <Text style={styles.pickupButtonText}>Ambil di Cafe</Text>
+            onPress={() => setSelectedPickupMethod("pickup")}>
+            <Text style={styles.pickupButtonText}>Ambil Sendiri</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -276,40 +248,14 @@ export default function Cart() {
           onPress={handleCheckout}
           style={[
             styles.checkoutButton,
-            (!isStoreOpen ||
-              items.length === 0 ||
-              !selectedPickupMethod ||
-              (selectedPickupMethod === "delivery" && !address)) &&
+            (!isStoreOpen || items.length === 0 || !selectedPickupMethod) &&
               styles.disabledButton,
-          ]}
-          disabled={
-            !isStoreOpen ||
-            items.length === 0 ||
-            !selectedPickupMethod ||
-            (selectedPickupMethod === "delivery" && !address)
-          }>
+          ]}>
           <Text style={styles.checkoutButtonText}>
             {isStoreOpen ? "Checkout" : "Toko Tutup"}
           </Text>
         </TouchableOpacity>
       </View>
-
-      {showPayment && (
-        <Modal
-          visible={showPayment}
-          onRequestClose={() => setShowPayment(false)}
-          animationType="slide">
-          <WebView
-            source={{ uri: paymentUrl }}
-            onNavigationStateChange={(navState) => {
-              if (navState.url.includes("transaction_status=settlement")) {
-                setShowPayment(false);
-                handleSubmitOrder();
-              }
-            }}
-          />
-        </Modal>
-      )}
     </View>
   );
 }
@@ -461,4 +407,64 @@ const styles = StyleSheet.create({
   selectedButton: {
     backgroundColor: "#B17457",
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    width: "90%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  bankDetails: {
+    fontSize: 16,
+    marginBottom: 5,
+    textAlign: "center",
+  },
+  confirmButton: {
+    backgroundColor: "#70AF85",
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  confirmButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    backgroundColor: "#B17457",
+    padding: 12,
+    borderRadius: 6,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 });
+function setModalVisible(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}

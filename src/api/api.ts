@@ -120,7 +120,6 @@ export const createOrder = () => {
   } = useAuth();
 
   const slug = generateOrderSlug();
-
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -131,7 +130,7 @@ export const createOrder = () => {
           totalPrice,
           slug,
           user: id,
-          status: "Process",
+          status: "Pending",
         })
         .select("*")
         .single();
@@ -222,38 +221,5 @@ export const getMyOrder = (slug: string) => {
 
       return data;
     },
-  });
-};
-
-export const createMidtransPayment = () => {
-  return useMutation({
-    mutationFn: async ({ orderId, totalAmount }: { orderId: string; totalAmount: number }) => {
-      const url = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-          authorization: 'Basic U0ItTWlkLXNlcnZlci1qa1NOSzZwb0kzOXg5aEdRLV83ckJ3LUU6Y2VyaXRhc2VuamE='
-        },
-        body: JSON.stringify({
-          transaction_details: {
-            order_id: orderId,
-            gross_amount: totalAmount
-          },
-          credit_card: {
-            secure: true
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Payment initiation failed');
-      }
-
-      const data = await response.json();
-      return data;
-    }
   });
 };

@@ -6,17 +6,20 @@ import {
   View,
   Image,
   ActivityIndicator,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
-
+import { useToast } from "react-native-toast-notifications";
 import { getMyOrder } from "../../../api/api";
 import { format } from "date-fns";
 import { formatCurrency } from "../../../utils/utils";
 import CustomHeader from "../../../components/customHeader";
+import { supabase } from "../../../lib/supabase";
 
 const OrderDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-
   const { data: order, error, isLoading } = getMyOrder(slug);
+  const Toast = useToast();
 
   if (isLoading) return <ActivityIndicator />;
 
@@ -37,8 +40,10 @@ const OrderDetails = () => {
       <Stack.Screen options={{ headerShown: false }} />
       <CustomHeader title="Order" />
       <Text style={styles.item}>{order.slug}</Text>
-      <Text style={styles.details}>{order.description}</Text>
-      <Text style={styles.details}>{order.pickup_method}</Text>
+      <Text style={styles.details}>
+        {order.description || "No Description Provided"}
+      </Text>
+      <Text style={styles.details}>Pickup Method : {order.pickup_method}</Text>
       <View style={[styles.statusBadge, styles[`statusBadge_${order.status}`]]}>
         <Text style={styles.statusText}>{order.status}</Text>
       </View>
@@ -61,6 +66,11 @@ const OrderDetails = () => {
           </View>
         )}
       />
+      {order.status === "Pending" && (
+        <View style={styles.paymentContainer}>
+          <Text style={styles.paymentText}>Menunggu Pembayaran</Text>
+        </View>
+      )}
       <View style={styles.totalContainer}>
         <Text style={styles.totalLabel}>Total:</Text>
         <Text style={styles.totalAmount}>
@@ -107,7 +117,7 @@ const styles: { [key: string]: any } = StyleSheet.create({
   statusBadge_Confirmed: {
     backgroundColor: "#2196f3",
   },
-  statusBadge_InTransit: {
+  statusBadge_Pending: {
     backgroundColor: "#ff9800",
   },
   statusText: {
@@ -165,5 +175,26 @@ const styles: { [key: string]: any } = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#B17457",
+  },
+  paymentContainer: {
+    padding: 16,
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  paymentText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#000",
+    marginBottom: 8,
+  },
+  confirmButton: {
+    backgroundColor: "#B17457",
+    padding: 12,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
