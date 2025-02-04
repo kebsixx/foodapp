@@ -57,12 +57,28 @@ const TabsLayout = () => {
           screenOptions={{
             tabBarActiveTintColor: "#B17457",
             tabBarInactiveTintColor: "gray",
-            tabBarLabelStyle: { fontSize: 16 },
+            tabBarLabelStyle: {
+              fontSize: 14,
+              fontWeight: "500",
+              marginBottom: 8,
+            },
             tabBarStyle: {
-              height: 60,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              paddingTop: 10,
+              height: 64,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingTop: 8,
+              paddingBottom: 8,
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              elevation: 8,
+              backgroundColor: "#fff",
+              borderTopWidth: 0,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
             },
             headerShown: false,
           }}>
@@ -93,5 +109,6 @@ export default TabsLayout;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: "#fff",
   },
 });
