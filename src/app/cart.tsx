@@ -19,6 +19,8 @@ import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { router } from "expo-router";
+import CustomHeader from "../components/customHeader";
+import { Stack } from "expo-router";
 
 type CartItemType = {
   id: number;
@@ -190,72 +192,89 @@ export default function Cart() {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title="Shopping Cart" />
+
+      <ScrollView style={styles.content}>
         {!isStoreOpen && <StoreBanner />}
 
-        <FlatList
-          data={items}
-          scrollEnabled={false}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <CartItem
-              item={item}
-              onRemove={removeItem}
-              onIncrement={incrementItem}
-              onDecrement={decrementItem}
+        {items.length > 0 ? (
+          <>
+            <FlatList
+              data={items}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <CartItem
+                  item={item}
+                  onRemove={removeItem}
+                  onIncrement={incrementItem}
+                  onDecrement={decrementItem}
+                />
+              )}
+              style={styles.itemList}
             />
-          )}
-          style={styles.cartList}
-        />
 
-        <View style={styles.orderDetailsSection}>
-          <Text style={styles.sectionTitle}>Detail Pesanan</Text>
+            <View style={styles.pickupSection}>
+              <Text style={styles.sectionTitle}>Pickup Method</Text>
+              <View style={styles.pickupButtons}>
+                <TouchableOpacity
+                  style={[
+                    styles.pickupButton,
+                    selectedPickupMethod === "pickup" && styles.selectedButton,
+                  ]}
+                  onPress={() => setSelectedPickupMethod("pickup")}>
+                  <Text style={styles.pickupButtonText}>Ambil Sendiri</Text>
+                </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.pickupButton,
-              selectedPickupMethod === "pickup" && styles.selectedButton,
-            ]}
-            onPress={() => setSelectedPickupMethod("pickup")}>
-            <Text style={styles.pickupButtonText}>Ambil Sendiri</Text>
-          </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.pickupButton,
+                    selectedPickupMethod === "delivery" &&
+                      styles.selectedButton,
+                  ]}
+                  onPress={() => setSelectedPickupMethod("delivery")}>
+                  <Text style={styles.pickupButtonText}>Jasa Antar</Text>
+                </TouchableOpacity>
+              </View>
 
-          <TouchableOpacity
-            style={[
-              styles.pickupButton,
-              selectedPickupMethod === "delivery" && styles.selectedButton,
-            ]}
-            onPress={() => setSelectedPickupMethod("delivery")}>
-            <Text style={styles.pickupButtonText}>Jasa Antar</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.labelText}>Catatan Tambahan:</Text>
-          <TextInput
-            style={styles.input}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            placeholder="Tambahkan catatan untuk pesanan Anda"
-          />
-        </View>
+              <Text style={styles.notesLabel}>Catatan Tambahan:</Text>
+              <TextInput
+                style={styles.input}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                placeholder="Tambahkan catatan untuk pesanan Anda"
+              />
+            </View>
+          </>
+        ) : (
+          <View style={styles.emptyCart}>
+            <Text style={styles.emptyText}>Keranjang belanja kosong</Text>
+          </View>
+        )}
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Text style={styles.totalText}>
-          Total: {formatCurrency(parseFloat(getTotalPrice()))}
-        </Text>
-        <TouchableOpacity
-          onPress={handleCheckout}
-          style={[
-            styles.checkoutButton,
-            (!isStoreOpen || items.length === 0 || !selectedPickupMethod) &&
-              styles.disabledButton,
-          ]}>
-          <Text style={styles.checkoutButtonText}>
-            {isStoreOpen ? "Checkout" : "Toko Tutup"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {items.length > 0 && (
+        <View style={styles.footer}>
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalLabel}>Total:</Text>
+            <Text style={styles.totalAmount}>
+              {formatCurrency(parseFloat(getTotalPrice()))}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={handleCheckout}
+            style={[
+              styles.checkoutButton,
+              (!isStoreOpen || !selectedPickupMethod) && styles.disabledButton,
+            ]}>
+            <Text style={styles.checkoutButtonText}>
+              {isStoreOpen ? "Checkout" : "Toko Tutup"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -263,8 +282,106 @@ export default function Cart() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  content: {
+    flex: 1,
+  },
+  itemList: {
+    padding: 16,
+  },
+  pickupSection: {
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
+    padding: 16,
+    margin: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 16,
+  },
+  pickupButtons: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  pickupButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+  },
+  selectedButton: {
+    backgroundColor: "#B17457",
+  },
+  pickupButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  notesLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 80,
+    textAlignVertical: "top",
+  },
+  emptyCart: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+  },
+  footer: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  totalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  totalLabel: {
+    fontSize: 16,
+    color: "#666",
+  },
+  totalAmount: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#B17457",
+  },
+  checkoutButton: {
+    backgroundColor: "#B17457",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  checkoutButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   cartList: {
     paddingVertical: 16,
@@ -309,29 +426,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
   },
-  footer: {
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-  totalText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  checkoutButton: {
-    backgroundColor: "#70AF85",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-  },
-  checkoutButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -361,19 +455,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  disabledButton: {
-    backgroundColor: "#cccccc",
-    opacity: 0.7,
-  },
   orderDetailsSection: {
     padding: 16,
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
     marginBottom: 16,
   },
   labelText: {
@@ -381,31 +466,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 16,
     marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    minHeight: 100,
-    backgroundColor: "#fff",
-    textAlignVertical: "top",
-  },
-  pickupButton: {
-    backgroundColor: "#AA8976",
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  pickupButtonText: {
-    color: "white",
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  selectedButton: {
-    backgroundColor: "#B17457",
   },
   modalContainer: {
     flex: 1,
@@ -465,6 +525,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-function setModalVisible(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
