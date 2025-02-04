@@ -46,10 +46,10 @@ const ProductDetails = () => {
     if (quantity < product.maxQuantity) {
       setQuantity(quantity + 1);
     } else {
-      toast.show("Maksimal pembelian adalah " + product.maxQuantity + " item", {
+      toast.show("Maksimal pembelian adalah " + product.maxQuantity, {
         type: "custom_toast",
         data: {
-          title: `Maksimal pembelian adalah ${product.maxQuantity} item`,
+          title: `Maksimal pembelian adalah ${product.maxQuantity}`,
         },
       });
     }
@@ -74,7 +74,7 @@ const ProductDetails = () => {
     toast.show("Produk berhasil ditambahkan ke keranjang", {
       type: "custom_toast",
       data: {
-        title: `Produk berhasil ditambahkan ke keranjang`,
+        title: "Sukses 🛒",
       },
     });
   };
