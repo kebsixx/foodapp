@@ -10,6 +10,7 @@ import {
 import React, { useState } from "react";
 import { useAuth } from "../providers/auth-provider";
 import * as ImagePicker from "expo-image-picker";
+import { supabase } from "../lib/supabase";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -51,6 +52,7 @@ const Profile = () => {
             </View>
           )}
         </TouchableOpacity>
+        <Text style={styles.userName}>{formData.name}</Text>
       </View>
 
       <View style={styles.content}>
@@ -115,6 +117,13 @@ const Profile = () => {
             </TouchableOpacity>
           </View>
         )}
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => {
+            supabase.auth.signOut();
+          }}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -201,6 +210,23 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  userName: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 12,
+  },
+  signOutButton: {
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  signOutText: {
+    color: "#ff4444",
     fontSize: 16,
     fontWeight: "bold",
   },

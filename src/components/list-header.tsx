@@ -4,7 +4,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import React from "react";
@@ -12,7 +11,6 @@ import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 
 import { useCartStore } from "../store/cart-store";
-import { supabase } from "../lib/supabase";
 import { Tables } from "../types/database.types";
 import { useAuth } from "../providers/auth-provider";
 
@@ -25,69 +23,61 @@ export const ListHeader = ({
 }) => {
   const { getItemCount } = useCartStore();
 
-  const { setUser } = useAuth();
+  const { user } = useAuth();
 
-  const currentUser = users?.[0];
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
+  const currentUser = users.find((u) => u.id === user?.id);
 
   return (
     <View style={styles.headerContainer}>
       <View style={styles.headerTop}>
         <View style={styles.headerLeft}>
-          <View style={styles.avatarContainer}>
-            <Link href="/profile" asChild>
-              <Pressable>
-                <Image
-                  source={{
-                    uri:
-                      currentUser?.avatar_url ||
-                      "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
-                  }}
-                  style={styles.avatarImage}
-                />
-              </Pressable>
-            </Link>
-            <Text style={styles.avatarText}>Cerita Senja</Text>
-          </View>
-        </View>
-        <View style={styles.headerRight}>
-          <Link style={styles.cartContainer} href="/cart" asChild>
-            <Pressable>
-              {({ pressed }) => (
-                <View>
-                  <FontAwesome
-                    name="shopping-cart"
-                    size={25}
-                    color="gray"
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-
-                  <View style={styles.badgeContainer}>
-                    <Text style={styles.badgeText}>{getItemCount()}</Text>
-                  </View>
-                </View>
-              )}
+          <Link href="/profile" asChild>
+            <Pressable style={styles.avatarContainer}>
+              <Image
+                source={{
+                  uri:
+                    currentUser?.avatar_url ||
+                    "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
+                }}
+                style={styles.avatarImage}
+              />
+              <Text style={styles.welcomeText}>
+                Welcome, {currentUser?.name || "Guest"}
+              </Text>
             </Pressable>
           </Link>
-          <TouchableOpacity
-            onPress={handleSignOut}
-            style={styles.signOutButton}>
-            <FontAwesome name="sign-out" size={25} color="red" />
-          </TouchableOpacity>
         </View>
+
+        <Link href="/cart" asChild>
+          <Pressable style={styles.cartButton}>
+            {({ pressed }) => (
+              <>
+                <FontAwesome
+                  name="shopping-cart"
+                  size={25}
+                  color="#333"
+                  style={{ opacity: pressed ? 0.5 : 1 }}
+                />
+                {getItemCount() > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{getItemCount()}</Text>
+                  </View>
+                )}
+              </>
+            )}
+          </Pressable>
+        </Link>
       </View>
+
       <View style={styles.heroContainer}>
         <Image
           source={require("../../assets/images/hero.jpg")}
           style={styles.heroImage}
         />
       </View>
+
+      <Text style={styles.sectionTitle}>Categories</Text>
       <View style={styles.categoriesContainer}>
-        <Text style={styles.sectionTitle}>Categories</Text>
         <FlatList
           data={categories}
           renderItem={({ item }) => (
@@ -112,57 +102,69 @@ export const ListHeader = ({
 
 const styles = StyleSheet.create({
   headerContainer: {
-    gap: 20,
+    paddingTop: 16,
   },
   headerTop: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerRight: {
     flexDirection: "row",
     alignItems: "center",
   },
   avatarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
   },
   avatarImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
+    marginRight: 12,
   },
-  avatarText: {
+  welcomeText: {
     fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
   },
-  cartContainer: {
-    padding: 10,
+  cartButton: {
+    padding: 8,
+    position: "relative",
   },
-  signOutButton: {
-    padding: 10,
+  badge: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    backgroundColor: "#B17457",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   heroContainer: {
-    width: "100%",
-    height: 200,
+    marginBottom: 24,
   },
   heroImage: {
     width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-    borderRadius: 20,
+    height: 200,
+    borderRadius: 12,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
   categoriesContainer: {},
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
   category: {
     width: 100,
     alignItems: "center",
@@ -175,20 +177,4 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryText: {},
-  badgeContainer: {
-    position: "absolute",
-    top: -5,
-    right: 10,
-    backgroundColor: "#1BC464",
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  badgeText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
 });
