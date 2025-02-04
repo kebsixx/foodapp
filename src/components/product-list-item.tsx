@@ -9,10 +9,6 @@ export const ProductListItem = ({
 }: {
   product: Tables<"product">;
 }) => {
-  // const formatPrice = (price: number) => {
-  //   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  // };
-
   return (
     <Link href={`/product/${product.slug}`} asChild>
       <Pressable style={styles.item}>
@@ -20,7 +16,9 @@ export const ProductListItem = ({
           <Image source={{ uri: product.heroImage }} style={styles.itemImage} />
         </View>
         <View style={styles.itemTextContainer}>
-          <Text style={styles.itemTitle}>{product.title}</Text>
+          <Text style={styles.itemTitle} numberOfLines={2}>
+            {product.title}
+          </Text>
           <Text style={styles.itemPrice}>{formatCurrency(product.price)}</Text>
         </View>
       </Pressable>
@@ -33,13 +31,21 @@ const styles = StyleSheet.create({
     width: "48%",
     backgroundColor: "white",
     marginVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   itemImageContainer: {
-    borderRadius: 10,
     width: "100%",
-    height: 150,
+    height: 160,
+    backgroundColor: "#f5f5f5",
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    overflow: "hidden",
   },
   itemImage: {
     width: "100%",
@@ -47,16 +53,20 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   itemTextContainer: {
-    padding: 8,
-    alignItems: "flex-start",
-    gap: 4,
+    padding: 12,
+    backgroundColor: "white",
+    gap: 6,
   },
   itemTitle: {
-    fontSize: 16,
-    color: "#888",
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+    lineHeight: 20,
+    height: 40,
   },
   itemPrice: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#B17457",
   },
 });
