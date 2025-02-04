@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 
 import { formatCurrency } from "../../utils/utils";
@@ -14,6 +15,7 @@ import { useToast } from "react-native-toast-notifications";
 import { useCartStore } from "../../store/cart-store";
 import { useState } from "react";
 import { getProduct } from "../../api/api";
+import CustomHeader from "../../components/customHeader";
 
 const ProductDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -81,49 +83,62 @@ const ProductDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: product.title }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title={product.title} />
 
-      <Image source={{ uri: product.heroImage }} style={styles.heroImage} />
+      <ScrollView>
+        <Image source={{ uri: product.heroImage }} style={styles.heroImage} />
 
-      <View style={{ padding: 16, flex: 1 }}>
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>{formatCurrency(product.price)}</Text>
+        <View style={styles.contentContainer}>
+          <Text style={styles.title}>{product.title}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{formatCurrency(product.price)}</Text>
+            <View style={styles.quantityControls}>
+              <TouchableOpacity
+                style={[
+                  styles.quantityButton,
+                  quantity <= 1 && styles.disabledButton,
+                ]}
+                onPress={decreaseQuantity}
+                disabled={quantity <= 1}>
+                <Text style={styles.quantityButtonText}>-</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.quantity}>{quantity}</Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.quantityButton,
+                  quantity >= product.maxQuantity && styles.disabledButton,
+                ]}
+                onPress={increaseQuantity}
+                disabled={quantity >= product.maxQuantity}>
+                <Text style={styles.quantityButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <Text style={styles.sectionTitle}>Gambar Produk Lainnya</Text>
+          <FlatList
+            data={product.imagesUrl}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <Image source={{ uri: item }} style={styles.thumbnailImage} />
+            )}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.imagesContainer}
+          />
         </View>
-        <Text style={styles.slug}>{product.slug}</Text>
+      </ScrollView>
 
-        <Text style={styles.slug}>Produk lain</Text>
-
-        <FlatList
-          data={product.imagesUrl}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item }} style={styles.image} />
-          )}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.imagesContainer}
-        />
-      </View>
-      <Text style={styles.totalPrice}>Total Harga : Rp. {totalPrice}</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.quantityButton}
-          onPress={decreaseQuantity}
-          disabled={quantity <= 1}>
-          <Text style={styles.quantityButtonText}>-</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.quantity}>{quantity}</Text>
-
-        <TouchableOpacity
-          style={styles.quantityButton}
-          onPress={increaseQuantity}
-          disabled={quantity >= product.maxQuantity}>
-          <Text style={styles.quantityButtonText}>+</Text>
-        </TouchableOpacity>
-
+      <View style={styles.footer}>
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalPrice}>{totalPrice}</Text>
+        </View>
         <TouchableOpacity style={styles.addToCartButton} onPress={addToCart}>
-          <Text style={styles.addToCartText}>Masukkan Keranjang</Text>
+          <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -139,85 +154,100 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     width: "100%",
-    height: 250,
-    resizeMode: "cover",
+    height: 300,
+  },
+  contentContainer: {
+    padding: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginVertical: 8,
+    marginBottom: 8,
   },
-  slug: {
-    fontSize: 18,
-    color: "#555",
-    marginBottom: 16,
-  },
-  priceContainer: {
+  priceRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    alignItems: "center",
+    marginBottom: 24,
   },
   price: {
-    fontWeight: "bold",
-    fontSize: 30,
-    color: "#000",
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#B17457",
   },
-  imagesContainer: {
-    marginBottom: 16,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginRight: 8,
-    borderRadius: 8,
-  },
-  totalPrice: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  buttonContainer: {
-    backgroundColor: "#FFF",
+  quantityControls: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 4,
   },
   quantityButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#997C70",
-    alignItems: "center",
+    width: 36,
+    height: 36,
     justifyContent: "center",
-    marginHorizontal: 8,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   quantityButtonText: {
-    fontSize: 24,
-    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#B17457",
   },
   quantity: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
     marginHorizontal: 16,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    marginTop: 24,
+  },
+  thumbnailImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  imagesContainer: {
+    paddingVertical: 8,
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
+  },
+  totalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  totalLabel: {
+    fontSize: 16,
+    color: "#666",
+  },
+  totalPrice: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#B17457",
+  },
   addToCartButton: {
-    flex: 1,
-    backgroundColor: "#F0BB78",
-    paddingVertical: 12,
+    backgroundColor: "#B17457",
+    padding: 16,
     borderRadius: 8,
     alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 8,
   },
   addToCartText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-  },
-  errorMessage: {
-    fontSize: 18,
-    color: "#f00",
-    textAlign: "center",
-    marginTop: 20,
   },
 });
