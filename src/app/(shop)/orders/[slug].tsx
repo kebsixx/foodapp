@@ -50,7 +50,10 @@ const OrderDetails = () => {
             <View
               style={[
                 styles.statusBadge,
-                styles[`statusBadge_${order.status}`],
+                order.status === "Pending" && styles.statusBadge_Pending,
+                order.status === "On Review" && styles.statusBadge_OnReview,
+                order.status === "Process" && styles.statusBadge_Process,
+                order.status === "Completed" && styles.statusBadge_Completed,
               ]}>
               <Text style={styles.statusText}>{order.status}</Text>
             </View>
@@ -83,7 +86,7 @@ const OrderDetails = () => {
         </View>
 
         {/* Payment Status Card */}
-        {order.status === "Pending" && (
+        {order.status === "Pending" && (  
           <View style={[styles.card, styles.warningCard]}>
             <Text style={styles.paymentText}>Menunggu Pembayaran</Text>
           </View>
@@ -160,15 +163,22 @@ const styles: { [key: string]: any } = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
   },
-  statusBadge_Pending: {
-    backgroundColor: "#FFF3CD",
+  statusBadge_Process: {
+    backgroundColor: "#81C784",
   },
-  statusBadge_Confirmed: {
-    backgroundColor: "#D4EDDA",
+  statusBadge_Completed: {
+    backgroundColor: "#4CAF50",
+  },
+  statusBadge_OnReview: {
+    backgroundColor: "#FFA726",
+  },
+  statusBadge_Pending: {
+    backgroundColor: "#FF5722",
   },
   statusText: {
     fontSize: 14,
     fontWeight: "600",
+    color: "#fff",
   },
   sectionTitle: {
     fontSize: 18,

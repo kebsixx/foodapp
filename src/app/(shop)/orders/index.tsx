@@ -20,7 +20,7 @@ const ITEMS_PER_PAGE = 10;
 interface Order {
   id: string;
   slug: string;
-  status: "Pending" | "Confirmed" | "Process" | "Completed";
+  status: "Pending" | "On Review" | "Process" | "Completed";
   created_at: string;
   totalPrice: number;
 }
@@ -53,7 +53,7 @@ export default function Orders() {
         id: order.id.toString(),
         status: order.status as
           | "Pending"
-          | "Confirmed"
+          | "On Review"
           | "Process"
           | "Completed",
       }));
@@ -103,7 +103,7 @@ export default function Orders() {
                   style={[
                     styles.statusBadge,
                     item.status === "Pending" && styles.statusBadge_Pending,
-                    item.status === "Confirmed" && styles.statusBadge_Confirmed,
+                    item.status === "On Review" && styles.statusBadge_OnReview,
                     item.status === "Process" && styles.statusBadge_Process,
                     item.status === "Completed" && styles.statusBadge_Completed,
                   ]}>
@@ -177,11 +177,11 @@ const styles = StyleSheet.create({
   statusBadge_Completed: {
     backgroundColor: "#4CAF50",
   },
-  statusBadge_Confirmed: {
-    backgroundColor: "#64B5F6",
+  statusBadge_OnReview: {
+    backgroundColor: "#FFA726",
   },
   statusBadge_Pending: {
-    backgroundColor: "#FFB74D",
+    backgroundColor: "#FF5722",
   },
   totalRow: {
     flexDirection: "row",
