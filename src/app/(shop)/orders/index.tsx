@@ -17,7 +17,7 @@ const ITEMS_PER_PAGE = 10;
 interface Order {
   id: string;
   slug: string;
-  status: "Pending" | "On Review" | "Process" | "Completed";
+  status: "Pending" | "On Review" | "Process" | "Completed" | "Cancelled";
   created_at: string;
   totalPrice: number;
 }
@@ -48,6 +48,7 @@ export default function Orders() {
                     item.status === "On Review" && styles.statusBadge_OnReview,
                     item.status === "Process" && styles.statusBadge_Process,
                     item.status === "Completed" && styles.statusBadge_Completed,
+                    item.status === "Cancelled" && styles.statusBadge_Cancelled,
                   ]}>
                   <Text style={styles.statusText}>{item.status}</Text>
                 </View>
@@ -124,6 +125,9 @@ const styles = StyleSheet.create({
   },
   statusBadge_Pending: {
     backgroundColor: "#FF5722",
+  },
+  statusBadge_Cancelled: {
+    backgroundColor: "#FF0000",
   },
   totalRow: {
     flexDirection: "row",

@@ -12,6 +12,14 @@ import { getMyOrder } from "../../../api/api";
 import { format } from "date-fns";
 import { formatCurrency } from "../../../utils/utils";
 
+interface Order {
+  id: string;
+  slug: string;
+  status: "Pending" | "On Review" | "Process" | "Completed" | "Cancelled";
+  created_at: string;
+  totalPrice: number;
+}
+
 const OrderDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { data: order, error, isLoading } = getMyOrder(slug);
@@ -54,6 +62,7 @@ const OrderDetails = () => {
                 order.status === "On Review" && styles.statusBadge_OnReview,
                 order.status === "Process" && styles.statusBadge_Process,
                 order.status === "Completed" && styles.statusBadge_Completed,
+                order.status === "Cancelled" && styles.statusBadge_Cancelled,
               ]}>
               <Text style={styles.statusText}>{order.status}</Text>
             </View>
@@ -174,6 +183,9 @@ const styles: { [key: string]: any } = StyleSheet.create({
   },
   statusBadge_Pending: {
     backgroundColor: "#FF5722",
+  },
+  statusBadge_Cancelled: {
+    backgroundColor: "#FF0000",
   },
   statusText: {
     fontSize: 14,
