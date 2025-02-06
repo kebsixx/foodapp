@@ -23,7 +23,7 @@ const Home = () => {
   }
 
   if (error || !data)
-    return <Text>{error?.message || "An error accured"}</Text>;
+    return <Text>{error?.message || "An error occurred"}</Text>;
 
   return (
     <View>
@@ -35,7 +35,7 @@ const Home = () => {
         ListHeaderComponent={
           <ListHeader categories={data.categories} users={data.users!} />
         }
-        contentContainerStyle={styles.flatListContent}
+        contentContainerStyle={[styles.flatListContent, { paddingBottom: 80 }]} // Add paddingBottom here
         columnWrapperStyle={styles.flatListColumn}
         style={{ paddingHorizontal: 10, paddingVertical: 5 }}
       />
