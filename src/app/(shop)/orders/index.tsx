@@ -1,8 +1,6 @@
 import {
   ActivityIndicator,
   FlatList,
-  ListRenderItem,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -10,10 +8,9 @@ import {
 } from "react-native";
 import { Link, Stack } from "expo-router";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
-import { supabase } from "../../../lib/supabase";
 import CustomHeader from "../../../components/customHeader";
 import { formatCurrency } from "../../../utils/utils";
+import { getMyOrders } from "../../../api/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -26,60 +23,10 @@ interface Order {
 }
 
 export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const { data: orders, error, isLoading } = getMyOrders();
 
-  const fetchOrders = async (pageNumber: number) => {
-    try {
-      const { data, error } = await supabase
-        .from("order")
-        .select("*")
-        .range(
-          pageNumber * ITEMS_PER_PAGE,
-          (pageNumber + 1) * ITEMS_PER_PAGE - 1
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      if (data.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
-      }
-
-      const formattedData = data.map((order) => ({
-        ...order,
-        id: order.id.toString(),
-        status: order.status as
-          | "Pending"
-          | "On Review"
-          | "Process"
-          | "Completed",
-      }));
-
-      if (pageNumber === 0) {
-        setOrders(formattedData);
-      } else {
-        setOrders([...orders, ...formattedData]);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders(0);
-  }, []);
-
-  const loadMore = () => {
-    if (!loading && hasMore) {
-      setPage((prev) => prev + 1);
-      fetchOrders(page + 1);
-    }
-  };
+  if (isLoading) return <ActivityIndicator size="large" color="#B17457" />;
+  if (error) return <Text>Error: {error.message}</Text>;
 
   return (
     <View style={styles.container}>
@@ -89,11 +36,6 @@ export default function Orders() {
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id.toString()}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={() =>
-          loading ? <ActivityIndicator size="large" color="#B17457" /> : null
-        }
         renderItem={({ item }) => (
           <Link href={`/orders/${item.slug}`} asChild>
             <TouchableOpacity style={styles.orderCard}>
