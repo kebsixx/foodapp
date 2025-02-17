@@ -13,6 +13,7 @@ import { useAuth } from "../providers/auth-provider";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
 import { useQueryClient } from '@tanstack/react-query';
+import { uriToBlob, uploadImageToSupabase } from "../components/list-header";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -37,16 +38,23 @@ const Profile = () => {
   }
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
 
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setFormData({ ...formData, avatar_url: uri });
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        setFormData(prev => ({
+          ...prev,
+          avatar_url: uri
+        }));
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
     }
   };
 
@@ -54,34 +62,21 @@ const Profile = () => {
     try {
       setIsLoading(true);
 
+      let finalAvatarUrl = formData.avatar_url;
+
       if (formData.avatar_url && formData.avatar_url.startsWith('file://')) {
-        // Convert image to blob
-        const response = await fetch(formData.avatar_url);
-        const blob = await response.blob();
+        // Convert URI to Blob
+        const blob = await uriToBlob(formData.avatar_url);
 
-        // Upload to Supabase Storage
+        // Generate unique filename
         const fileExt = formData.avatar_url.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('app-images')
-          .upload(filePath, blob);
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('app-images')
-          .getPublicUrl(filePath);
-
-        // Update form data with new avatar URL
-        formData.avatar_url = publicUrl;
+        // Upload image and get public URL
+        finalAvatarUrl = await uploadImageToSupabase(blob, fileName);
       }
 
-      // Update user in database - Changed from 'profiles' to 'users'
+      // Update user profile in database
       const { error: updateError } = await supabase
         .from('users')
         .update({
@@ -89,27 +84,30 @@ const Profile = () => {
           email: formData.email,
           address: formData.address,
           phone: formData.phone,
-          avatar_url: formData.avatar_url,
+          avatar_url: finalAvatarUrl,
         })
         .eq('id', user.id);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       // Update local state
-      updateProfile(formData);
-      
-      // Invalidate the products and categories query to trigger a refetch
+      setFormData(prev => ({
+        ...prev,
+        avatar_url: finalAvatarUrl
+      }));
+
+      // Update auth context
+      updateProfile({
+        ...formData,
+        avatar_url: finalAvatarUrl
+      });
+
+      // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['products', 'categories', 'users'] });
-      
+
       setIsEditing(false);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error updating profile:', error.message);
-      } else {
-        console.error('Error updating profile:', error);
-      }
+      console.error('Error updating profile:', error);
     } finally {
       setIsLoading(false);
     }

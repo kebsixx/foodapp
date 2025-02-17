@@ -9,10 +9,39 @@ import {
 import React from "react";
 import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
+import { supabase } from "../lib/supabase";
 
 import { useCartStore } from "../store/cart-store";
 import { Tables } from "../types/database.types";
 import { useAuth } from "../providers/auth-provider";
+
+export const uriToBlob = async (uri: string): Promise<Blob> => {
+  const response = await fetch(uri);
+  const blob = await response.blob();
+  return blob;
+};
+
+export const uploadImageToSupabase = async (file: Blob, fileName: string) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('app-images')
+      .upload(`avatars/${fileName}`, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('app-images')
+      .getPublicUrl(`avatars/${fileName}`);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
 
 export const ListHeader = ({
   categories,
