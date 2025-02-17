@@ -70,8 +70,16 @@ export const ListHeader = ({
                 }}
                 style={styles.avatarImage}
               />
-              <Text style={styles.welcomeText}>
-                Welcome, {currentUser?.name || "Guest"}
+              <Text 
+                style={styles.welcomeText}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {currentUser?.name ? (
+                  <>Hi, {currentUser.name}</>
+                ) : (
+                  'Welcome, Guest'
+                )}
               </Text>
             </Pressable>
           </Link>
@@ -142,10 +150,13 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+    marginRight: 16,
   },
   avatarContainer: {
     flexDirection: "row",
     alignItems: "center",
+    maxWidth: '70%',
   },
   avatarImage: {
     width: 40,
@@ -157,6 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
+    maxWidth: '100%',
   },
   cartButton: {
     padding: 8,
