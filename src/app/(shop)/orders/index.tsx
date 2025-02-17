@@ -36,6 +36,7 @@ export default function Orders() {
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
           <Link href={`/orders/${item.slug}`} asChild>
             <TouchableOpacity style={styles.orderCard}>
