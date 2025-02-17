@@ -6,22 +6,35 @@ import {
   TextInput,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "../providers/auth-provider";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
+import { useQueryClient } from '@tanstack/react-query';
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
-    address: user.address,
-    phone: user.phone,
-    avatar_url: user.avatar_url,
+    name: user?.name || '',
+    email: user?.email || '',
+    address: user?.address || '',
+    phone: user?.phone || '',
+    avatar_url: user?.avatar_url || '',
   });
+  const queryClient = useQueryClient();
+
+  // Add a loading state for when user is not yet available
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#B17457" />
+      </View>
+    );
+  }
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -32,13 +45,74 @@ const Profile = () => {
     });
 
     if (!result.canceled) {
-      setFormData({ ...formData, avatar_url: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      setFormData({ ...formData, avatar_url: uri });
     }
   };
 
   const handleSave = async () => {
-    await updateProfile(formData);
-    setIsEditing(false);
+    try {
+      setIsLoading(true);
+
+      if (formData.avatar_url && formData.avatar_url.startsWith('file://')) {
+        // Convert image to blob
+        const response = await fetch(formData.avatar_url);
+        const blob = await response.blob();
+
+        // Upload to Supabase Storage
+        const fileExt = formData.avatar_url.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('app-images')
+          .upload(filePath, blob);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('app-images')
+          .getPublicUrl(filePath);
+
+        // Update form data with new avatar URL
+        formData.avatar_url = publicUrl;
+      }
+
+      // Update user in database - Changed from 'profiles' to 'users'
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          name: formData.name,
+          email: formData.email,
+          address: formData.address,
+          phone: formData.phone,
+          avatar_url: formData.avatar_url,
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Update local state
+      updateProfile(formData);
+      
+      // Invalidate the products and categories query to trigger a refetch
+      await queryClient.invalidateQueries({ queryKey: ['products', 'categories', 'users'] });
+      
+      setIsEditing(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error updating profile:', error.message);
+      } else {
+        console.error('Error updating profile:', error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,9 +162,26 @@ const Profile = () => {
               placeholder="Phone"
               placeholderTextColor="#888"
             />
-            <TouchableOpacity style={styles.button} onPress={handleSave}>
-              <Text style={styles.buttonText}>Save Changes</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[styles.button, styles.cancelButton]} 
+                onPress={() => setIsEditing(false)}
+                disabled={isLoading}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.button} 
+                onPress={handleSave}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Save Changes</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <View style={styles.info}>
@@ -239,11 +330,12 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
   },
   button: {
-    backgroundColor: "#B17457",
+    flex: 1,
+    backgroundColor: '#B17457',
     padding: 16,
     borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
+    alignItems: 'center',
+    marginHorizontal: 4,
   },
   buttonText: {
     color: "#fff",
@@ -302,6 +394,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontWeight: "500",
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  cancelButton: {
+    backgroundColor: '#ccc',
   },
 });
 
