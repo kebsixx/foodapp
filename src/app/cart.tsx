@@ -21,6 +21,7 @@ import { useAuth } from "../providers/auth-provider";
 import { router } from "expo-router";
 import CustomHeader from "../components/customHeader";
 import { Stack } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 
 type CartItemType = {
   id: number;
@@ -79,6 +80,8 @@ export default function Cart() {
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [selectedPickupMethod, setSelectedPickupMethod] = useState("");
+  const [paymentProof, setPaymentProof] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const {
     user: { id },
   } = useAuth();
@@ -143,29 +146,69 @@ export default function Cart() {
     </View>
   );
 
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [currentOrderId, setCurrentOrderId] = useState<string>("");
+  const pickPaymentProof = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        base64: true,
+      });
+
+      if (!result.canceled) {
+        setPaymentProof(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Gagal memilih gambar");
+    }
+  };
 
   const handleCheckout = async () => {
-    const totalPrice = parseFloat(getTotalPrice());
-    const slug = generateOrderSlug();
+    if (!paymentProof) {
+      Alert.alert("Error", "Mohon upload bukti pembayaran");
+      return;
+    }
 
     try {
+      setUploading(true);
+      const totalPrice = parseFloat(getTotalPrice());
+      const slug = generateOrderSlug();
+
+      // Upload payment proof to storage
+      const base64FileData = await fetch(paymentProof).then((response) =>
+        response.blob()
+      );
+
+      const filePath = `payment-proofs/${slug}-${Date.now()}.jpg`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("payment-proofs")
+        .upload(filePath, base64FileData);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("payment-proofs").getPublicUrl(filePath);
+
+      // Create order with payment proof
       const { data: order, error } = await supabase
         .from("order")
         .insert({
-          totalPrice: totalPrice,
-          slug: slug,
+          totalPrice,
+          slug,
           status: "Pending",
           user: id,
-          description: description,
+          description,
           pickup_method: selectedPickupMethod,
+          payment_proof: publicUrl,
         })
         .select()
         .single();
 
       if (error) throw error;
 
+      // Add order items
       await supabase.from("order_item").insert(
         items.map((item) => ({
           order: order.id,
@@ -175,10 +218,8 @@ export default function Cart() {
       );
 
       resetCart();
-      setCurrentOrderId(order.id.toString());
-      setShowPaymentModal(true);
 
-      Toast.show("Silakan cek status pesanan di halaman Orders.", {
+      Toast.show("Pesanan berhasil dibuat, menunggu konfirmasi admin", {
         type: "custom_toast",
         data: {
           title: "Pesanan berhasil dibuat! 📦",
@@ -187,6 +228,8 @@ export default function Cart() {
     } catch (error) {
       console.error("Error creating order:", error);
       Alert.alert("Error", "Gagal membuat pesanan");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -246,6 +289,46 @@ export default function Cart() {
                 multiline
                 placeholder="Tambahkan catatan untuk pesanan Anda"
               />
+            </View>
+
+            <View style={styles.paymentSection}>
+              <Text style={styles.sectionTitle}>Informasi Pembayaran</Text>
+
+              <View style={styles.bankInfoContainer}>
+                <Text style={styles.bankLabel}>Silahkan transfer ke:</Text>
+                <View style={styles.bankCard}>
+                  <View style={styles.bankRow}>
+                    <Text style={styles.bankFieldLabel}>Bank</Text>
+                    <Text style={styles.bankFieldValue}>BCA</Text>
+                  </View>
+                  <View style={styles.bankRow}>
+                    <Text style={styles.bankFieldLabel}>No. Rekening</Text>
+                    <Text style={styles.bankFieldValue}>1841432971</Text>
+                  </View>
+                  <View style={styles.bankRow}>
+                    <Text style={styles.bankFieldLabel}>Atas Nama</Text>
+                    <Text style={styles.bankFieldValue}>Bagus Kornelius</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.uploadSection}>
+                <Text style={styles.uploadLabel}>Upload Bukti Transfer</Text>
+                <TouchableOpacity
+                  style={styles.uploadButton}
+                  onPress={pickPaymentProof}>
+                  <Text style={styles.uploadButtonText}>
+                    {paymentProof ? "Ubah Bukti Transfer" : "Pilih Foto"}
+                  </Text>
+                </TouchableOpacity>
+
+                {paymentProof && (
+                  <Image
+                    source={{ uri: paymentProof }}
+                    style={styles.paymentProofImage}
+                  />
+                )}
+              </View>
             </View>
           </>
         ) : (
@@ -495,11 +578,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 10,
   },
-  bankDetails: {
-    fontSize: 16,
-    marginBottom: 5,
-    textAlign: "center",
-  },
   confirmButton: {
     backgroundColor: "#70AF85",
     padding: 15,
@@ -523,5 +601,88 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  paymentSection: {
+    backgroundColor: "#fff",
+    padding: 16,
+    margin: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  bankInfoContainer: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  bankLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#495057",
+    marginBottom: 12,
+  },
+  bankHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e9ecef",
+  },
+  bankCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+  bankRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f3f5",
+  },
+  bankFieldLabel: {
+    fontSize: 14,
+    color: "#868e96",
+  },
+  bankFieldValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#495057",
+  },
+  uploadSection: {
+    marginTop: 8,
+  },
+  uploadLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#495057",
+    marginBottom: 8,
+  },
+  uploadButton: {
+    backgroundColor: "#B17457",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  uploadButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  paymentProofImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginTop: 12,
+    resizeMode: "contain",
   },
 });

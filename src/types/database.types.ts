@@ -41,6 +41,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: number
+          payment_proof: string | null
           pickup_method: string | null
           slug: string
           status: string
@@ -51,6 +52,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          payment_proof?: string | null
           pickup_method?: string | null
           slug: string
           status: string
@@ -61,6 +63,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: number
+          payment_proof?: string | null
           pickup_method?: string | null
           slug?: string
           status?: string
@@ -157,7 +160,6 @@ export type Database = {
           created_at: string
           heroImage: string
           id: number
-          imagesUrl: string[]
           maxQuantity: number
           price: number
           slug: string
@@ -168,7 +170,6 @@ export type Database = {
           created_at?: string
           heroImage: string
           id?: number
-          imagesUrl: string[]
           maxQuantity: number
           price: number
           slug: string
@@ -179,7 +180,6 @@ export type Database = {
           created_at?: string
           heroImage?: string
           id?: number
-          imagesUrl?: string[]
           maxQuantity?: number
           price?: number
           slug?: string
