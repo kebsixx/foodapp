@@ -7,26 +7,29 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "../providers/auth-provider";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
-import { useQueryClient } from '@tanstack/react-query';
-import { uriToBlob, uploadImageToSupabase } from "../components/list-header";
+import { decode } from "base64-arraybuffer";
+
+const DEFAULT_AVATAR =
+  "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    address: user?.address || '',
-    phone: user?.phone || '',
-    avatar_url: user?.avatar_url || '',
+    name: user?.name || "",
+    email: user?.email || "",
+    address: user?.address || "",
+    phone: user?.phone || "",
+    avatar_url: user?.avatar_url || DEFAULT_AVATAR,
   });
-  const queryClient = useQueryClient();
+  const [newAvatarBase64, setNewAvatarBase64] = useState<string | null>(null);
 
   // Add a loading state for when user is not yet available
   if (!user) {
@@ -40,21 +43,63 @@ const Profile = () => {
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 1,
+        quality: 0.7,
+        base64: true,
       });
 
-      if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        setFormData(prev => ({
+      if (!result.canceled && result.assets[0].base64) {
+        setFormData((prev) => ({
           ...prev,
-          avatar_url: uri
+          avatar_url: result.assets[0].uri,
         }));
+        setNewAvatarBase64(result.assets[0].base64);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image");
+    }
+  };
+
+  const uploadAvatar = async (base64Image: string) => {
+    try {
+      const fileName = `${user.id}-${Date.now()}.jpg`;
+
+      // Delete old avatar if it exists and isn't the default
+      if (formData.avatar_url && !formData.avatar_url.includes("pixabay")) {
+        try {
+          // Extract just the filename from the full URL
+          const oldFileName = formData.avatar_url.split("/").pop();
+          if (oldFileName) {
+            await supabase.storage.from("avatars").remove([oldFileName]); // Remove folder structure from path
+          }
+        } catch (error) {
+          console.warn("Failed to delete old avatar:", error);
+        }
+      }
+
+      // Upload new avatar without folder structure
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, decode(base64Image), {
+          contentType: "image/jpeg",
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      // Get public URL - make sure to use the correct path
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(fileName); // Use just the filename
+
+      console.log("Uploaded avatar URL:", publicUrl); // Add this for debugging
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      throw error; // Let the caller handle the error
     }
   };
 
@@ -64,50 +109,44 @@ const Profile = () => {
 
       let finalAvatarUrl = formData.avatar_url;
 
-      if (formData.avatar_url && formData.avatar_url.startsWith('file://')) {
-        // Convert URI to Blob
-        const blob = await uriToBlob(formData.avatar_url);
-
-        // Generate unique filename
-        const fileExt = formData.avatar_url.split('.').pop();
-        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-
-        // Upload image and get public URL
-        finalAvatarUrl = await uploadImageToSupabase(blob, fileName);
+      if (newAvatarBase64) {
+        try {
+          const uploadedUrl = await uploadAvatar(newAvatarBase64);
+          finalAvatarUrl = uploadedUrl;
+        } catch (error) {
+          console.error("Avatar upload failed:", error);
+          Alert.alert("Error", "Failed to upload avatar");
+          // Keep existing avatar if upload fails
+          finalAvatarUrl = formData.avatar_url || DEFAULT_AVATAR;
+        }
       }
 
       // Update user profile in database
       const { error: updateError } = await supabase
-        .from('users')
+        .from("users")
         .update({
-          name: formData.name,
-          email: formData.email,
-          address: formData.address,
-          phone: formData.phone,
+          ...formData,
           avatar_url: finalAvatarUrl,
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (updateError) throw updateError;
 
-      // Update local state
-      setFormData(prev => ({
-        ...prev,
-        avatar_url: finalAvatarUrl
-      }));
-
-      // Update auth context
-      updateProfile({
+      // Update local state and auth context
+      const updatedData = {
         ...formData,
-        avatar_url: finalAvatarUrl
-      });
+        avatar_url: finalAvatarUrl,
+      };
 
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ queryKey: ['products', 'categories', 'users'] });
-
+      setFormData(updatedData);
+      updateProfile(updatedData);
+      setNewAvatarBase64(null);
       setIsEditing(false);
+
+      Alert.alert("Success", "Profile updated successfully");
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
+      Alert.alert("Error", "Failed to update profile");
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +156,16 @@ const Profile = () => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-          <Image source={{ uri: formData.avatar_url }} style={styles.avatar} />
+          <Image
+            source={{ uri: formData.avatar_url || DEFAULT_AVATAR }}
+            style={styles.avatar}
+            onError={() => {
+              setFormData((prev) => ({
+                ...prev,
+                avatar_url: DEFAULT_AVATAR,
+              }));
+            }}
+          />
           {isEditing && (
             <View style={styles.editOverlay}>
               <Text style={styles.editText}>Change Photo</Text>
@@ -161,18 +209,16 @@ const Profile = () => {
               placeholderTextColor="#888"
             />
             <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[styles.button, styles.cancelButton]} 
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
                 onPress={() => setIsEditing(false)}
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.button} 
+              <TouchableOpacity
+                style={styles.button}
                 onPress={handleSave}
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
@@ -329,10 +375,10 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    backgroundColor: '#B17457',
+    backgroundColor: "#B17457",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 4,
   },
   buttonText: {
@@ -394,12 +440,27 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 16,
   },
   cancelButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
+  },
+  errorText: {
+    color: "#ff4444",
+    fontSize: 14,
+    marginTop: 4,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255,255,255,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
