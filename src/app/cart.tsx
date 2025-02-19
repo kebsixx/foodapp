@@ -22,6 +22,7 @@ import { router } from "expo-router";
 import CustomHeader from "../components/customHeader";
 import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { decode } from "base64-arraybuffer";
 
 type CartItemType = {
   id: number;
@@ -38,6 +39,11 @@ type CartItemProps = {
   onIncrement: (id: number) => void;
   onDecrement: (id: number) => void;
 };
+
+type PaymentProof = {
+  uri: string;
+  base64?: string;
+} | null;
 
 const CartItem = ({
   item,
@@ -80,7 +86,7 @@ export default function Cart() {
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [selectedPickupMethod, setSelectedPickupMethod] = useState("");
-  const [paymentProof, setPaymentProof] = useState<string | null>(null);
+  const [paymentProof, setPaymentProof] = useState<PaymentProof>(null);
   const [uploading, setUploading] = useState(false);
   const {
     user: { id },
@@ -150,12 +156,16 @@ export default function Cart() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
+        allowsEditing: true,
+        quality: 0.7,
         base64: true,
       });
 
-      if (!result.canceled) {
-        setPaymentProof(result.assets[0].uri);
+      if (!result.canceled && result.assets[0].base64) {
+        setPaymentProof({
+          uri: result.assets[0].uri,
+          base64: result.assets[0].base64,
+        });
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -164,8 +174,13 @@ export default function Cart() {
   };
 
   const handleCheckout = async () => {
-    if (!paymentProof) {
+    if (!paymentProof?.base64) {
       Alert.alert("Error", "Mohon upload bukti pembayaran");
+      return;
+    }
+
+    if (!selectedPickupMethod) {
+      Alert.alert("Error", "Mohon pilih metode pengambilan");
       return;
     }
 
@@ -174,25 +189,28 @@ export default function Cart() {
       const totalPrice = parseFloat(getTotalPrice());
       const slug = generateOrderSlug();
 
-      // Upload payment proof to storage
-      const base64FileData = await fetch(paymentProof).then((response) =>
-        response.blob()
-      );
-
-      const filePath = `payment-proofs/${slug}-${Date.now()}.jpg`;
+      // Upload image using base64 data
+      const filePath = `${slug}-${Date.now()}.jpg`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("payment-proofs")
-        .upload(filePath, base64FileData);
+        .upload(filePath, decode(paymentProof.base64), {
+          contentType: "image/jpeg",
+          cacheControl: "3600",
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        Alert.alert("Error", "Gagal mengupload bukti pembayaran");
+        return;
+      }
 
       // Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from("payment-proofs").getPublicUrl(filePath);
 
-      // Create order with payment proof
-      const { data: order, error } = await supabase
+      // Create order
+      const { data: order, error: orderError } = await supabase
         .from("order")
         .insert({
           totalPrice,
@@ -206,10 +224,10 @@ export default function Cart() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (orderError) throw orderError;
 
-      // Add order items
-      await supabase.from("order_item").insert(
+      // Create order items
+      const { error: itemsError } = await supabase.from("order_item").insert(
         items.map((item) => ({
           order: order.id,
           product: item.id,
@@ -217,21 +235,34 @@ export default function Cart() {
         }))
       );
 
-      resetCart();
+      if (itemsError) throw itemsError;
 
-      Toast.show("Pesanan berhasil dibuat, menunggu konfirmasi admin", {
+      // Success
+      resetCart();
+      router.push("/orders");
+      Toast.show("Pesanan berhasil dibuat!", {
         type: "custom_toast",
         data: {
-          title: "Pesanan berhasil dibuat! 📦",
+          title: "Sukses",
         },
       });
     } catch (error) {
       console.error("Error creating order:", error);
-      Alert.alert("Error", "Gagal membuat pesanan");
+      Alert.alert("Error", "Gagal membuat pesanan. Silahkan coba lagi.");
     } finally {
       setUploading(false);
     }
   };
+
+  const BankAccountInfo = () => (
+    <View style={styles.bankInfoContainer}>
+      <Text style={styles.bankInfoTitle}>Payment Information</Text>
+      <Text style={styles.bankDetails}>
+        Bank: Bank Central Asia (BCA) Account Number: 1234567890 Account Name:
+        Your Company Name
+      </Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -324,7 +355,7 @@ export default function Cart() {
 
                 {paymentProof && (
                   <Image
-                    source={{ uri: paymentProof }}
+                    source={{ uri: paymentProof.uri }}
                     style={styles.paymentProofImage}
                   />
                 )}
@@ -614,10 +645,19 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   bankInfoContainer: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    marginVertical: 10,
+  },
+  bankInfoTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  bankDetails: {
+    fontSize: 16,
+    lineHeight: 24,
   },
   bankLabel: {
     fontSize: 16,
@@ -636,10 +676,14 @@ const styles = StyleSheet.create({
   },
   bankCard: {
     backgroundColor: "#fff",
-    borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bankRow: {
     flexDirection: "row",

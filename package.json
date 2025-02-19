@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.60.5",
     "aes-js": "^3.1.2",
+    "base64-arraybuffer": "^1.0.2",
     "date-fns": "^4.1.0",
     "expo": "^52.0.28",
     "expo-constants": "~17.0.5",
