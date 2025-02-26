@@ -7,10 +7,16 @@ import {
   Image,
   ActivityIndicator,
   ScrollView,
+  TouchableOpacity,
+  Alert,
+  Modal,
 } from "react-native";
 import { getMyOrder } from "../../../api/api";
 import { format } from "date-fns";
 import { formatCurrency } from "../../../utils/utils";
+import { supabase } from "../../../lib/supabase";
+import { router } from "expo-router";
+import { useState } from "react";
 
 interface Order {
   id: string;
@@ -23,6 +29,7 @@ interface Order {
 const OrderDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { data: order, error, isLoading } = getMyOrder(slug);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Better loading state
   if (isLoading) {
@@ -64,7 +71,11 @@ const OrderDetails = () => {
           <View style={styles.row}>
             <View style={styles.infoItem}>
               <Text style={styles.label}>Pickup Method</Text>
-              <Text style={styles.value}>{order.pickup_method}</Text>
+              <Text style={styles.value}>
+                {order.pickup_method === "pickup"
+                  ? "Ambil Sendiri"
+                  : "Jasa Antar"}
+              </Text>
             </View>
             <View
               style={[
@@ -110,6 +121,63 @@ const OrderDetails = () => {
           <View style={[styles.card, styles.warningCard]}>
             <Text style={styles.paymentText}>Menunggu Pembayaran</Text>
           </View>
+        )}
+
+        {/* Add Cancel Button for Pending Orders */}
+        {order.status === "Pending" && (
+          <>
+            <View style={styles.card}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowCancelModal(true)}>
+                <Text style={styles.cancelButtonText}>Cancel Order</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={showCancelModal}
+              onRequestClose={() => setShowCancelModal(false)}>
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Cancel Order</Text>
+                  <Text style={styles.modalMessage}>
+                    Are you sure you want to cancel this order?
+                  </Text>
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonNo]}
+                      onPress={() => setShowCancelModal(false)}>
+                      <Text style={styles.modalButtonTextNo}>
+                        No, Keep Order
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonYes]}
+                      onPress={async () => {
+                        try {
+                          await supabase
+                            .from("order")
+                            .update({ status: "Cancelled" })
+                            .eq("slug", slug);
+
+                          setShowCancelModal(false);
+                          router.replace("/orders");
+                        } catch (error) {
+                          console.error("Error cancelling order:", error);
+                          Alert.alert("Error", "Failed to cancel order");
+                        }
+                      }}>
+                      <Text style={styles.modalButtonTextYes}>
+                        Yes, Cancel Order
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          </>
         )}
 
         {/* Total Card */}
@@ -270,10 +338,86 @@ const styles: { [key: string]: any } = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: 12,
     fontSize: 16,
-    color: "#B17457",
+    color: "#666",
+  },
+  cancelButton: {
+    backgroundColor: "#ff4444",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    width: "100%",
+    maxWidth: 340,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 12,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  modalButtons: {
+    width: "100%",
+    gap: 12,
+  },
+  modalButton: {
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
+  },
+  modalButtonNo: {
+    backgroundColor: "#ff4444",
+  },
+  modalButtonYes: {
+    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  modalButtonTextNo: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalButtonTextYes: {
+    color: "#666",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
