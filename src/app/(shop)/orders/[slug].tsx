@@ -24,7 +24,18 @@ const OrderDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { data: order, error, isLoading } = getMyOrder(slug);
 
-  if (isLoading) return <ActivityIndicator />;
+  // Better loading state
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: true, title: "Order Details" }} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#B17457" />
+          <Text style={styles.loadingText}>Loading order details...</Text>
+        </View>
+      </View>
+    );
+  }
 
   if (error || !order) return <Text>Error: {error?.message}</Text>;
 
@@ -95,7 +106,7 @@ const OrderDetails = () => {
         </View>
 
         {/* Payment Status Card */}
-        {order.status === "Pending" && (  
+        {order.status === "Pending" && (
           <View style={[styles.card, styles.warningCard]}>
             <Text style={styles.paymentText}>Menunggu Pembayaran</Text>
           </View>
@@ -253,6 +264,16 @@ const styles: { [key: string]: any } = StyleSheet.create({
   totalAmount: {
     fontSize: 18,
     fontWeight: "600",
+    color: "#B17457",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
     color: "#B17457",
   },
 });
