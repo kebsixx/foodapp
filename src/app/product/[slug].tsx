@@ -14,8 +14,9 @@ import { formatCurrency } from "../../utils/utils";
 import { useToast } from "react-native-toast-notifications";
 import { useCartStore } from "../../store/cart-store";
 import { useState } from "react";
-import { getProduct } from "../../api/api";
+import { getProduct, getProductsAndCategories } from "../../api/api";
 import CustomHeader from "../../components/customHeader";
+import { router } from "expo-router";
 
 const ProductDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -30,6 +31,16 @@ const ProductDetails = () => {
   const initialQuantity = cartItem ? cartItem.quantity : 1;
 
   const [quantity, setQuantity] = useState(initialQuantity);
+
+  const { data: productsData } = getProductsAndCategories();
+
+  // Create a filtered list of related products
+  const relatedProducts =
+    product && productsData?.products
+      ? productsData.products
+          .filter((p) => p.category === product.category && p.id !== product.id)
+          .slice(0, 5)
+      : [];
 
   // Update the loading state
   if (isLoading) {
@@ -126,16 +137,34 @@ const ProductDetails = () => {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Gambar Produk Lainnya</Text>
+          <Text style={styles.sectionTitle}>Related Products</Text>
           <FlatList
-            data={product.heroImage}
-            keyExtractor={(item, index) => index.toString()}
+            data={relatedProducts}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={styles.thumbnailImage} />
+              <TouchableOpacity
+                style={styles.relatedProductItem}
+                onPress={() => router.push(`/product/${item.slug}`)}>
+                <Image
+                  source={{ uri: item.heroImage }}
+                  style={styles.relatedProductImage}
+                />
+                <View style={styles.relatedProductInfo}>
+                  <Text style={styles.relatedProductTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.relatedProductPrice}>
+                    {formatCurrency(item.price)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             )}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.imagesContainer}
+            contentContainerStyle={styles.relatedProductsContainer}
+            ListEmptyComponent={() => (
+              <Text style={styles.emptyText}>No related products found</Text>
+            )}
           />
         </View>
       </ScrollView>
@@ -262,9 +291,53 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
   loadingText: {
-    marginTop: 10,
+    marginTop: 12,
+    fontSize: 16,
+    color: "#666",
+  },
+  relatedProductItem: {
+    width: 160,
+    marginRight: 12,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  relatedProductImage: {
+    width: "100%",
+    height: 120,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  relatedProductInfo: {
+    padding: 8,
+  },
+  relatedProductTitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 4,
+    color: "#333",
+  },
+  relatedProductPrice: {
+    fontSize: 14,
+    fontWeight: "600",
     color: "#B17457",
+  },
+  relatedProductsContainer: {
+    paddingVertical: 8,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 20,
+    fontStyle: "italic",
+    padding: 16,
   },
 });
