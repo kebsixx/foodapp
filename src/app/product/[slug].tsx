@@ -31,11 +31,19 @@ const ProductDetails = () => {
 
   const [quantity, setQuantity] = useState(initialQuantity);
 
+  // Update the loading state
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Loading...</Text>
+      <View style={styles.container}>
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#B17457" />
+          <Text style={styles.loadingText}>Loading product details...</Text>
+        </View>
       </View>
     );
   }
@@ -120,7 +128,7 @@ const ProductDetails = () => {
 
           <Text style={styles.sectionTitle}>Gambar Produk Lainnya</Text>
           <FlatList
-            data={product.imagesUrl}
+            data={product.heroImage}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
               <Image source={{ uri: item }} style={styles.thumbnailImage} />
@@ -249,5 +257,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    color: "#B17457",
   },
 });
