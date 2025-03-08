@@ -38,12 +38,6 @@
         "projectId": "80909591-2fa2-47dd-954e-0b4b523d3fb0"
       }
     },
-    "newArchEnabled": true,
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/80909591-2fa2-47dd-954e-0b4b523d3fb0"
-    }
+    "newArchEnabled": true
   }
 }
