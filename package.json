@@ -47,8 +47,7 @@
     "stripe": "^17.4.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.0-rc.2",
-    "expo-updates": "~0.27.1",
-    "expo-dev-client": "~5.0.12"
+    "expo-updates": "~0.27.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

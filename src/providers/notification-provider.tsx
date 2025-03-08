@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, PropsWithChildren } from "react";
 import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import { Platform } from "react-native";
+import registerForPushNotificationsAsync from "../lib/notifications";
 import { supabase } from "../lib/supabase";
+import React from "react";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -13,97 +13,60 @@ Notifications.setNotificationHandler({
 });
 
 const NotificationsProvider = ({ children }: PropsWithChildren) => {
-  const [expoPushToken, setExpoPushToken] = useState<string>("");
-  const [notification, setNotification] =
-    useState<Notifications.Notification>();
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const [notification, setNotification] = useState<
+    Notifications.Notification | undefined
+  >(undefined);
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
 
-  async function registerForPushNotificationsAsync() {
-    let token;
-
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-
-    if (Device.isDevice) {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== "granted") {
-        console.log("Failed to get push token for push notification!");
-        return;
-      }
-
-      token = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId: "your-project-id", // Get this from app.json
-        })
-      ).data;
-    } else {
-      console.log("Must use physical device for Push Notifications");
-    }
-
-    return token;
-  }
-
   const saveUserPushNotificationToken = async (token: string) => {
-    if (!token) return;
+    if (!token.length) return;
 
     const {
       data: { session },
     } = await supabase.auth.getSession();
+
     if (!session) return;
 
     await supabase
       .from("users")
-      .update({ expo_notification_token: token })
+      .update({
+        expo_notification_token: token,
+      })
       .eq("id", session.user.id);
   };
 
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then((token) => {
-        if (token) {
-          setExpoPushToken(token);
-          saveUserPushNotificationToken(token);
-        }
+        setExpoPushToken(token ?? "");
+        saveUserPushNotificationToken(token ?? "");
       })
-      .catch((err) => console.error("Failed to get push token:", err));
+      .catch((error: any) => setExpoPushToken(`${error}`));
 
     notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) =>
-        setNotification(notification)
-      );
+      Notifications.addNotificationReceivedListener((notification) => {
+        setNotification(notification);
+      });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification response:", response);
-        // Handle notification response here
+        console.log(response);
       });
 
     return () => {
-      if (notificationListener.current) {
+      notificationListener.current &&
         Notifications.removeNotificationSubscription(
           notificationListener.current
         );
-      }
-      if (responseListener.current) {
+      responseListener.current &&
         Notifications.removeNotificationSubscription(responseListener.current);
-      }
     };
   }, []);
+
+  console.log("expoPushToken", expoPushToken);
+  console.log("notification", notification);
 
   return <>{children}</>;
 };
