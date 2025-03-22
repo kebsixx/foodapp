@@ -13,10 +13,18 @@ import {
 import { formatCurrency } from "../../utils/utils";
 import { useToast } from "react-native-toast-notifications";
 import { useCartStore } from "../../store/cart-store";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getProduct, getProductsAndCategories } from "../../api/api";
 import CustomHeader from "../../components/customHeader";
 import { router } from "expo-router";
+
+// Define the variant type
+type Variant = {
+  id: string;
+  name: string;
+  price: number;
+  available: boolean;
+};
 
 const ProductDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -31,8 +39,50 @@ const ProductDetails = () => {
   const initialQuantity = cartItem ? cartItem.quantity : 1;
 
   const [quantity, setQuantity] = useState(initialQuantity);
+  const [variants, setVariants] = useState<Variant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
 
   const { data: productsData } = getProductsAndCategories();
+
+  // Inside the useEffect where we parse variants
+  useEffect(() => {
+    if (product && product.variants) {
+      try {
+        // Make sure we're properly parsing the variants
+        const parsedVariants = Array.isArray(product.variants)
+          ? product.variants
+          : typeof product.variants === "object"
+          ? Object.values(product.variants)
+          : [];
+
+        console.log("Parsed variants:", parsedVariants); // Debug log
+
+        // Set default available to true if not specified
+        const processedVariants = parsedVariants.map((v: any) => ({
+          ...v,
+          available: v.available !== undefined ? v.available : true,
+        }));
+        setVariants(processedVariants);
+
+        // Select the first variant by default (whether available or not)
+        if (processedVariants.length > 0) {
+          const defaultVariant =
+            processedVariants.find((v) => v.available !== false) ||
+            processedVariants[0];
+          setSelectedVariant(defaultVariant);
+          setCurrentPrice(defaultVariant.price || product.price);
+        } else {
+          setCurrentPrice(product.price);
+        }
+      } catch (e) {
+        console.error("Error parsing variants:", e);
+        setCurrentPrice(product.price);
+      }
+    } else if (product) {
+      setCurrentPrice(product.price);
+    }
+  }, [product]);
 
   // Create a filtered list of related products
   const relatedProducts =
@@ -81,16 +131,37 @@ const ProductDetails = () => {
     }
   };
 
+  const selectVariant = (variant: Variant) => {
+    // Remove the availability check or make it more lenient
+    // Only show a toast if explicitly marked as unavailable
+    if (variant.available === false) {
+      toast.show("Varian ini tidak tersedia", {
+        type: "custom_toast",
+        data: {
+          title: "Varian tidak tersedia",
+        },
+      });
+      return;
+    }
+
+    setSelectedVariant(variant);
+    setCurrentPrice(variant.price);
+  };
+
   const addToCart = async () => {
-    if (product.price !== null) {
-      addItem({
+    if (currentPrice !== null) {
+      const itemToAdd = {
         id: product.id,
-        title: product.title,
-        price: product.price,
+        title:
+          product.title + (selectedVariant ? ` (${selectedVariant.name})` : ""),
+        price: currentPrice,
         quantity,
         heroImage: product.heroImage,
         maxQuantity: product.maxQuantity,
-      });
+        variant: selectedVariant ? selectedVariant.id : null,
+      };
+
+      addItem(itemToAdd);
       toast.show("Produk berhasil ditambahkan ke keranjang", {
         type: "custom_toast",
         data: {
@@ -99,9 +170,10 @@ const ProductDetails = () => {
       });
     }
   };
+
   const totalPrice =
-    product.price !== null
-      ? formatCurrency(product.price * quantity)
+    currentPrice !== null
+      ? formatCurrency(currentPrice * quantity)
       : formatCurrency(0);
 
   return (
@@ -114,10 +186,55 @@ const ProductDetails = () => {
 
         <View style={styles.contentContainer}>
           <Text style={styles.title}>{product.title}</Text>
+
+          {/* Variant Selector */}
+          {variants.length > 0 && (
+            <View style={styles.variantsContainer}>
+              <Text style={styles.variantTitle}>Pilih Varian:</Text>
+              <View style={styles.variantOptions}>
+                {variants.map((variant) => (
+                  <TouchableOpacity
+                    key={variant.id}
+                    style={[
+                      styles.variantButton,
+                      selectedVariant?.id === variant.id &&
+                        styles.selectedVariantButton,
+                      variant.available === false &&
+                        styles.unavailableVariantButton,
+                    ]}
+                    onPress={() => selectVariant(variant)}
+                    disabled={variant.available === false} // Only disable if explicitly false
+                  >
+                    <Text
+                      style={[
+                        styles.variantButtonText,
+                        selectedVariant?.id === variant.id &&
+                          styles.selectedVariantText,
+                        variant.available === false &&
+                          styles.unavailableVariantText,
+                      ]}>
+                      {variant.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.variantPrice,
+                        selectedVariant?.id === variant.id &&
+                          styles.selectedVariantText,
+                        variant.available === false &&
+                          styles.unavailableVariantText,
+                      ]}>
+                      {formatCurrency(variant.price)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
           <View style={styles.priceRow}>
             <Text style={styles.price}>
-              {product.price !== null
-                ? formatCurrency(product.price)
+              {currentPrice !== null
+                ? formatCurrency(currentPrice)
                 : formatCurrency(0)}
             </Text>
             <View style={styles.quantityControls}>
@@ -346,5 +463,59 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontStyle: "italic",
     padding: 16,
+  },
+  // New styles for variants
+  variantsContainer: {
+    marginVertical: 16,
+    backgroundColor: "#f9f9f9",
+    padding: 12,
+    borderRadius: 8,
+  },
+  variantTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#333",
+  },
+  variantOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  variantButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    backgroundColor: "#fff",
+    minWidth: 100,
+    alignItems: "center",
+  },
+  selectedVariantButton: {
+    borderColor: "#B17457",
+    backgroundColor: "#f8f1ee",
+  },
+  unavailableVariantButton: {
+    borderColor: "#ddd",
+    backgroundColor: "#f5f5f5",
+    opacity: 0.6,
+  },
+  variantButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  selectedVariantText: {
+    color: "#B17457",
+    fontWeight: "600",
+  },
+  unavailableVariantText: {
+    color: "#999",
+  },
+  variantPrice: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 4,
   },
 });
