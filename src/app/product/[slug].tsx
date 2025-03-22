@@ -82,23 +82,27 @@ const ProductDetails = () => {
   };
 
   const addToCart = async () => {
-    addItem({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      quantity,
-      heroImage: product.heroImage,
-      maxQuantity: product.maxQuantity,
-    });
-    toast.show("Produk berhasil ditambahkan ke keranjang", {
-      type: "custom_toast",
-      data: {
-        title: "Sukses 🛒",
-      },
-    });
+    if (product.price !== null) {
+      addItem({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        quantity,
+        heroImage: product.heroImage,
+        maxQuantity: product.maxQuantity,
+      });
+      toast.show("Produk berhasil ditambahkan ke keranjang", {
+        type: "custom_toast",
+        data: {
+          title: "Sukses 🛒",
+        },
+      });
+    }
   };
-
-  const totalPrice = formatCurrency(product.price * quantity);
+  const totalPrice =
+    product.price !== null
+      ? formatCurrency(product.price * quantity)
+      : formatCurrency(0);
 
   return (
     <View style={styles.container}>
@@ -111,7 +115,11 @@ const ProductDetails = () => {
         <View style={styles.contentContainer}>
           <Text style={styles.title}>{product.title}</Text>
           <View style={styles.priceRow}>
-            <Text style={styles.price}>{formatCurrency(product.price)}</Text>
+            <Text style={styles.price}>
+              {product.price !== null
+                ? formatCurrency(product.price)
+                : formatCurrency(0)}
+            </Text>
             <View style={styles.quantityControls}>
               <TouchableOpacity
                 style={[
@@ -154,7 +162,7 @@ const ProductDetails = () => {
                     {item.title}
                   </Text>
                   <Text style={styles.relatedProductPrice}>
-                    {formatCurrency(item.price)}
+                    {formatCurrency(item.price || 0)}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -181,7 +189,6 @@ const ProductDetails = () => {
     </View>
   );
 };
-
 export default ProductDetails;
 
 const styles = StyleSheet.create({
