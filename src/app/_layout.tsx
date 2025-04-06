@@ -67,8 +67,8 @@ export default function RootLayout() {
   return (
     <ToastProvider
       placement="top"
-      duration={2000}
-      offset={40}
+      duration={5000}
+      offset={70}
       renderType={{
         custom_toast: (toast) => (
           <View

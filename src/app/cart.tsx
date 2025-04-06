@@ -178,18 +178,33 @@ export default function Cart() {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert("Error", "Gagal memilih gambar");
+      Toast.show("Gagal memilih gambar", {
+        type: "custom_toast",
+        data: {
+          title: "Gagal",
+        },
+      });
     }
   };
 
   const handleCheckout = async () => {
     if (!paymentProof?.base64) {
-      Alert.alert("Error", "Mohon upload bukti pembayaran");
+      Toast.show("Mohon Upload Bukti Pembayaran", {
+        type: "custom_toast",
+        data: {
+          title: "Gagal",
+        },
+      });
       return;
     }
 
     if (!selectedPickupMethod) {
-      Alert.alert("Error", "Mohon pilih metode pengambilan");
+      Toast.show("Mohon Pilih Pickup Method", {
+        type: "custom_toast",
+        data: {
+          title: "Gagal",
+        },
+      });
       return;
     }
 
@@ -209,7 +224,12 @@ export default function Cart() {
 
       if (uploadError) {
         console.error("Upload error:", uploadError);
-        Alert.alert("Error", "Gagal mengupload bukti pembayaran");
+        Toast.show("Mohon Masukkan Foto Bukti Pembayaran", {
+          type: "custom_toast",
+          data: {
+            title: "Gagal",
+          },
+        });
         return;
       }
 
