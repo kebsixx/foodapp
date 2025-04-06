@@ -23,42 +23,34 @@ function StackNavigator() {
 
   return (
     <Stack>
-      <Stack.Screen
-        name="(shop)"
-        options={{ headerShown: false, title: "Shop" }}
-      />
-      <Stack.Screen
-        name="categories"
-        options={{ headerShown: false, title: "Categories" }}
-      />
-      <Stack.Screen
-        name="product"
-        options={{ headerShown: false, title: "Product" }}
-      />
+      {/* Group untuk halaman yang tidak perlu header */}
+      <Stack.Screen name="(shop)" options={{ headerShown: false }} />
+      <Stack.Screen name="categories" options={{ headerShown: false }} />
+      <Stack.Screen name="product/[slug]" options={{ headerShown: false }} />
+
+      {/* Halaman dengan header khusus */}
       <Stack.Screen
         name="cart"
-        options={{ presentation: "modal", title: "Shopping Cart" }}
-      />
-      <Stack.Screen
-        name="auth"
-        options={{ headerShown: false, title: "Auth" }}
-      />
-      <Stack.Screen
-        name="signup"
-        options={{ headerShown: false, title: "Register" }}
+        options={{
+          presentation: "modal",
+          title: "Shopping Cart",
+          headerShown: true,
+          headerBackTitle: "Back",
+        }}
       />
       <Stack.Screen
         name="profile"
-        options={{ title: "Account", presentation: "modal" }}
-      />
-      <Stack.Screen
-        name="register"
         options={{
-          headerShown: false,
-          title: "Register",
-          gestureEnabled: false,
+          presentation: "modal",
+          title: "My Profile",
+          headerShown: true,
         }}
       />
+
+      {/* Halaman auth */}
+      <Stack.Screen name="auth" options={{ headerShown: false }} />
+      <Stack.Screen name="signup" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false }} />
     </Stack>
   );
 }

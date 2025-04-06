@@ -150,9 +150,8 @@ export const getMyOrders = () => {
             ...order,
             order_item: orderItems.map(item => ({
               ...item,
-              variant: item.variant ? JSON.parse(item.variant) : null
-            }))
-          };
+              variant: (item as any).variant ? JSON.parse((item as any).variant) : null
+            }))          };
         })
       );
 

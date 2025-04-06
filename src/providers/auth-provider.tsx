@@ -39,12 +39,45 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        setMounting(true); // Ensure mounting is true at start
+        setMounting(true);
 
         const {
           data: { session },
+          error: sessionError,
         } = await supabase.auth.getSession();
 
+        if (sessionError) throw sessionError;
+
+        setSession(session);
+
+        if (session?.user?.id) {
+          const { data: user, error: userError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+
+          if (userError) throw userError;
+          setUser(user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+        setSession(null);
+        setUser(null);
+      } finally {
+        setMounting(false);
+      }
+    };
+
+    fetchSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      try {
+        setMounting(true);
         setSession(session);
 
         if (session?.user?.id) {
@@ -60,41 +93,15 @@ export default function AuthProvider({ children }: PropsWithChildren) {
           setUser(null);
         }
       } catch (error) {
-        console.log("Error fetching session:", error);
+        console.error("Auth state change error:", error);
         setUser(null);
       } finally {
         setMounting(false);
       }
-    };
-
-    fetchSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setMounting(true);
-
-        if (session?.user?.id) {
-          const { data: user, error } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          if (error) {
-            setUser(null);
-          } else {
-            setUser(user);
-          }
-        } else {
-          setUser(null);
-        }
-        setMounting(false);
-      }
-    );
+    });
 
     return () => {
-      authListener?.subscription?.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
@@ -102,7 +109,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     try {
       if (!user?.id) return;
 
-      // First upload the avatar if it's a new file
       let avatar_url = updates.avatar_url;
       if (updates.avatar_url && updates.avatar_url.startsWith("file://")) {
         const fileName = `avatar-${user.id}-${Date.now()}`;

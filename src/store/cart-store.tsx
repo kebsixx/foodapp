@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { formatCurrency } from "../utils/utils";
 
 type Variant = {
   id: string;
