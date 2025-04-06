@@ -22,6 +22,7 @@ import { getProduct, getProductsAndCategories } from "../../api/api";
 import CustomHeader from "../../components/customHeader";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { RefreshControl } from "react-native";
 
 // Define the variant type
 type Variant = {
@@ -37,7 +38,7 @@ const ProductDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const toast = useToast();
 
-  const { data: product, error, isLoading } = getProduct(slug);
+  const { data: product, error, isLoading, refetch } = getProduct(slug);
 
   const { items, addItem } = useCartStore();
 
@@ -50,10 +51,20 @@ const ProductDetails = () => {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(height)).current;
 
   const { data: productsData } = getProductsAndCategories();
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (product && product.variants) {
@@ -98,7 +109,7 @@ const ProductDetails = () => {
       : [];
 
   // Update the loading state
-  if (isLoading) {
+  if (isLoading && !refreshing) {
     return (
       <View style={styles.container}>
         <Stack.Screen
@@ -209,7 +220,16 @@ const ProductDetails = () => {
       <Stack.Screen options={{ headerShown: false }} />
       <CustomHeader title={product.title} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#B17457"]}
+            tintColor="#B17457"
+          />
+        }>
         <View style={styles.imageContainer}>
           <Image source={{ uri: product.heroImage }} style={styles.heroImage} />
         </View>

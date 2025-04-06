@@ -5,9 +5,12 @@ import {
   Image,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
+  ScrollView,
 } from "react-native";
 import React from "react";
 import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 
 import { ProductListItem } from "../../components/product-list-item";
 import { getCategoryAndProducts } from "../../api/api";
@@ -15,9 +18,19 @@ import { getCategoryAndProducts } from "../../api/api";
 const Category = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
-  const { data, error, isLoading } = getCategoryAndProducts(slug);
+  const { data, error, isLoading, refetch } = getCategoryAndProducts(slug);
+  const [refreshing, setRefreshing] = useState(false);
 
-  if (isLoading) {
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  if (isLoading && !refreshing) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
@@ -31,19 +44,36 @@ const Category = () => {
   const { category, products } = data;
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          progressViewOffset={60}
+          colors={["#B17457"]}
+          tintColor="#B17457"
+        />
+      }>
       <Stack.Screen options={{ title: category.name }} />
       <Image source={{ uri: category.imageUrl }} style={styles.categoryImage} />
       <Text style={styles.categoryName}>{category.name}</Text>
       <FlatList
         data={products}
+        scrollEnabled={false}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <ProductListItem product={item} />}
         numColumns={2}
         columnWrapperStyle={styles.productRow}
         contentContainerStyle={styles.productsList}
+        ListEmptyComponent={
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ fontSize: 16 }}>No products found</Text>
+          </View>
+        }
       />
-    </View>
+    </ScrollView>
   );
 };
 

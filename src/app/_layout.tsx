@@ -26,7 +26,7 @@ function StackNavigator() {
       {/* Group untuk halaman yang tidak perlu header */}
       <Stack.Screen name="(shop)" options={{ headerShown: false }} />
       <Stack.Screen name="categories" options={{ headerShown: false }} />
-      <Stack.Screen name="product/[slug]" options={{ headerShown: false }} />
+      <Stack.Screen name="product" options={{ headerShown: false }} />
 
       {/* Halaman dengan header khusus */}
       <Stack.Screen

@@ -17,6 +17,7 @@ import { formatCurrency } from "../../../utils/utils";
 import { supabase } from "../../../lib/supabase";
 import { router } from "expo-router";
 import { useState } from "react";
+import { RefreshControl } from "react-native";
 
 interface Order {
   id: string;
@@ -28,8 +29,18 @@ interface Order {
 
 const OrderDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const { data: order, error, isLoading } = getMyOrder(slug);
+  const { data: order, error, isLoading, refetch } = getMyOrder(slug);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Better loading state
   if (isLoading) {
@@ -63,7 +74,16 @@ const OrderDetails = () => {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: true, title: "Order Details" }} />
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#B17457"]}
+            tintColor="#B17457"
+          />
+        }>
         {/* Order Info Card */}
         <View style={styles.card}>
           <Text style={styles.orderNumber}>Order #{order.slug}</Text>

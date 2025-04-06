@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import CustomHeader from "../../../components/customHeader";
 import { formatCurrency } from "../../../utils/utils";
 import { getMyOrders } from "../../../api/api";
+import { RefreshControl } from "react-native";
+import { useState } from "react";
 
 interface Order {
   id: string;
@@ -23,9 +25,20 @@ interface Order {
 }
 
 export default function Orders() {
-  const { data: orders, error, isLoading } = getMyOrders();
+  const { data: orders, error, isLoading, refetch } = getMyOrders();
+  const [refreshing, setRefreshing] = useState(false);
 
-  if (isLoading) return <ActivityIndicator size="large" color="#B17457" />;
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  if (isLoading && !refreshing)
+    return <ActivityIndicator size="large" color="#B17457" />;
   if (error) return <Text>Error: {error.message}</Text>;
 
   return (
@@ -37,6 +50,14 @@ export default function Orders() {
         data={orders}
         keyExtractor={(item) => `${item.id}-${item.variant || "no-variant"}`} // Gunakan kombinasi ID dan variant sebagai key
         contentContainerStyle={{ paddingBottom: 80 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#B17457"]}
+            tintColor="#B17457"
+          />
+        }
         renderItem={({ item }) => (
           <Link href={`/orders/${item.slug}`} asChild>
             <TouchableOpacity style={styles.orderCard}>

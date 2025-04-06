@@ -4,16 +4,27 @@ import {
   StyleSheet,
   ActivityIndicator,
   Text,
+  RefreshControl,
 } from "react-native";
-
 import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
 import { getProductsAndCategories } from "../../api/api";
+import { useState } from "react";
 
 const Home = () => {
-  const { data, error, isLoading } = getProductsAndCategories();
+  const { data, error, isLoading, refetch } = getProductsAndCategories();
+  const [refreshing, setRefreshing] = useState(false);
 
-  if (isLoading) {
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  if (isLoading && !refreshing) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
@@ -26,7 +37,7 @@ const Home = () => {
     return <Text>{error?.message || "An error occurred"}</Text>;
 
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         data={data.products}
         renderItem={({ item }) => <ProductListItem product={item} />}
@@ -35,7 +46,15 @@ const Home = () => {
         ListHeaderComponent={
           <ListHeader categories={data.categories} users={data.users!} />
         }
-        contentContainerStyle={[styles.flatListContent, { paddingBottom: 80 }]} // Add paddingBottom here
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#B17457"]}
+            tintColor="#B17457"
+          />
+        }
+        contentContainerStyle={[styles.flatListContent, { paddingBottom: 80 }]}
         columnWrapperStyle={styles.flatListColumn}
         style={{ paddingHorizontal: 10, paddingVertical: 5 }}
       />
@@ -46,6 +65,9 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   flatListContent: {
     paddingBottom: 20,
   },
