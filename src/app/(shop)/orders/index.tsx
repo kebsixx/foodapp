@@ -12,8 +12,6 @@ import CustomHeader from "../../../components/customHeader";
 import { formatCurrency } from "../../../utils/utils";
 import { getMyOrders } from "../../../api/api";
 
-const ITEMS_PER_PAGE = 10;
-
 interface Order {
   id: string;
   slug: string;

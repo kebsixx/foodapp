@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "../providers/auth-provider";
+import { useToast } from "react-native-toast-notifications";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
 import { decode } from "base64-arraybuffer";
@@ -30,6 +31,8 @@ const Profile = () => {
     avatar_url: user?.avatar_url || DEFAULT_AVATAR,
   });
   const [newAvatarBase64, setNewAvatarBase64] = useState<string | null>(null);
+
+  const Toast = useToast();
 
   // Add a loading state for when user is not yet available
   if (!user) {
@@ -59,7 +62,12 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick image");
+      Toast.show("Failed to pick image", {
+        type: "custom_toast",
+        data: {
+          title: "Fail",
+        },
+      });
     }
   };
 
@@ -115,7 +123,12 @@ const Profile = () => {
           finalAvatarUrl = uploadedUrl;
         } catch (error) {
           console.error("Avatar upload failed:", error);
-          Alert.alert("Error", "Failed to upload avatar");
+          Toast.show("Failed to upload avatar", {
+            type: "custom_toast",
+            data: {
+              title: "Fail",
+            },
+          });
           // Keep existing avatar if upload fails
           finalAvatarUrl = formData.avatar_url || DEFAULT_AVATAR;
         }
@@ -143,10 +156,20 @@ const Profile = () => {
       setNewAvatarBase64(null);
       setIsEditing(false);
 
-      Alert.alert("Success", "Profile updated successfully");
+      Toast.show("Profile updated successfully", {
+        type: "custom_toast",
+        data: {
+          title: "Success",
+        },
+      });
     } catch (error) {
       console.error("Error updating profile:", error);
-      Alert.alert("Error", "Failed to update profile");
+      Toast.show("Failed to update profile", {
+        type: "custom_toast",
+        data: {
+          title: "Fail",
+        },
+      });
     } finally {
       setIsLoading(false);
     }

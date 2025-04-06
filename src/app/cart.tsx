@@ -284,7 +284,12 @@ export default function Cart() {
       });
     } catch (error) {
       console.error("Error creating order:", error);
-      Alert.alert("Error", "Gagal membuat pesanan. Silahkan coba lagi.");
+      Toast.show("Gagal membuat pesanan", {
+        type: "custom_toast",
+        data: {
+          title: "Gagal",
+        },
+      });
     } finally {
       setUploading(false);
     }
