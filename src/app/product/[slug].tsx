@@ -176,21 +176,24 @@ const ProductDetails = () => {
     if (currentPrice !== null) {
       const itemToAdd = {
         id: product.id,
-        title:
-          product.title + (selectedVariant ? ` (${selectedVariant.name})` : ""),
+        title: product.title,
+        heroImage: product.heroImage,
         price: currentPrice,
         quantity,
-        heroImage: product.heroImage,
         maxQuantity: product.maxQuantity,
-        variant: selectedVariant ? selectedVariant.id : null,
+        variant: selectedVariant
+          ? {
+              id: selectedVariant.id,
+              name: selectedVariant.name,
+              price: selectedVariant.price,
+            }
+          : null,
       };
 
       addItem(itemToAdd);
-      toast.show("Produk berhasil ditambahkan ke keranjang", {
+      toast.show("Produk ditambahkan ke keranjang", {
         type: "custom_toast",
-        data: {
-          title: "Sukses 🛒",
-        },
+        data: { title: "Berhasil" },
       });
       closeModal();
     }

@@ -20,6 +20,8 @@ interface Order {
   status: "Pending" | "On Review" | "Process" | "Completed" | "Cancelled";
   created_at: string;
   totalPrice: number;
+  variant?: string;
+  product_title: string;
 }
 
 export default function Orders() {
@@ -35,13 +37,14 @@ export default function Orders() {
 
       <FlatList
         data={orders}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => `${item.id}-${item.variant || "no-variant"}`} // Gunakan kombinasi ID dan variant sebagai key
         contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
           <Link href={`/orders/${item.slug}`} asChild>
             <TouchableOpacity style={styles.orderCard}>
               <View style={styles.orderHeader}>
-                <Text style={styles.orderNumber}>Order #{item.slug}</Text>
+                <Text style={styles.orderNumber}>{item.product_title}</Text>
+                <Text style={styles.orderId}>Order #{item.slug}</Text>
                 <View
                   style={[
                     styles.statusBadge,
@@ -77,6 +80,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  orderId: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 4,
   },
   orderCard: {
     backgroundColor: "white",

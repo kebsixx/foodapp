@@ -3,6 +3,30 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/auth-provider";
 import { generateOrderSlug } from "../utils/utils";
 
+interface OrderItem {
+  id?: number;
+  order: number;
+  product: number;
+  quantity: number;
+  variant?: string | null;
+  products?: {
+    id: number;
+    title: string;
+    price: number | null;
+    heroImage: string;
+  };
+}
+
+interface Order {
+  id: number;
+  slug: string;
+  status: string;
+  created_at: string;
+  totalPrice: number;
+  user: string;
+  order_item: OrderItem[];
+}
+
 export const getUsers = () => {
   return useQuery({
     queryKey: ["users"],
@@ -98,18 +122,56 @@ export const getMyOrders = () => {
     enabled: !!id,
     queryKey: ["orders", id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Pertama ambil data order
+      const { data: orders, error: ordersError } = await supabase
         .from("order")
         .select("*")
         .order("created_at", { ascending: false })
         .eq("user", id);
 
-      if (error) {
-        console.error("Order Fetch Error:", error);
-        throw new Error("Gagal mengambil orders: " + error?.message);
+      if (ordersError) {
+        throw new Error("Gagal mengambil orders: " + ordersError?.message);
       }
 
-      return data || [];
+      // Kemudian ambil order items untuk setiap order
+      const ordersWithItems = await Promise.all(
+        orders.map(async (order) => {
+          const { data: orderItems, error: itemsError } = await supabase
+            .from("order_item")
+            .select("*, products:product(*)")
+            .eq("order", order.id);
+
+          if (itemsError) {
+            console.error("Error fetching order items:", itemsError);
+            return { ...order, order_item: [] };
+          }
+
+          return {
+            ...order,
+            order_item: orderItems.map(item => ({
+              ...item,
+              variant: item.variant ? JSON.parse(item.variant) : null
+            }))
+          };
+        })
+      );
+
+      // Transform data untuk tampilan
+      const transformedOrders = ordersWithItems.flatMap(order => {
+        return order.order_item.map(item => {
+          const variantPrice = item.variant?.price || item.products?.price || 0;
+          return {
+            ...order,
+            id: `${order.id}-${item.id}`,
+            order_item: [item],
+            product_title: `${item.products?.title}${item.variant?.name ? ` (${item.variant.name})` : ''}`,
+            variant: item.variant?.name || null,
+            totalPrice: parseFloat(variantPrice.toString()) * item.quantity
+          };
+        });
+      });
+
+      return transformedOrders;
     },
   });
 };
@@ -156,46 +218,26 @@ export const createOrderItem = () => {
         productId: number;
         quantity: number;
         orderId: number;
+        variant?: {
+          id: string;
+          name: string;
+          price: number;
+        } | null;
       }[]
     ) => {
       const { data, error } = await supabase
         .from("order_item")
         .insert(
-          insertData.map(({ orderId, quantity, productId }) => {
-            return {
-              order: orderId,
-              product: productId,
-              quantity,
-            };
-          })
+          insertData.map(({ orderId, quantity, productId, variant }) => ({
+            order: orderId,
+            product: productId,
+            quantity,
+            variant: variant ? variant.name : null,
+          }))
         )
         .select("*");
 
-      const productQuantities = insertData.reduce(
-        (acc, { productId, quantity }) => {
-          if (!acc[productId]) {
-            acc[productId] = 0;
-          }
-          acc[productId] += quantity;
-          return acc;
-        },
-        {} as Record<number, number>
-      );
-
-      await Promise.all(
-        Object.entries(productQuantities).map(([productId, totalQuantity]) =>
-          supabase.rpc("decrement_product_quantity", {
-            product_id: Number(productId),
-            quantity: totalQuantity,
-          })
-        )
-      );
-
-      if (error) {
-        throw new Error("Failed to create order item : " + error?.message);
-      }
-
-      return data;
+      // ... rest of the function
     },
   });
 };

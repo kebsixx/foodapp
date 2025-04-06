@@ -49,10 +49,13 @@ const OrderDetails = () => {
   const orderItems = order.order_item.map((orderItem: any) => {
     return {
       id: orderItem.id,
-      title: orderItem.products.title,
+      title: `${orderItem.products.title}${
+        orderItem.variant ? ` (${orderItem.variant})` : ""
+      }`,
       heroImage: orderItem.products.heroImage,
       price: orderItem.products.price,
       quantity: orderItem.quantity,
+      variant: orderItem.variant,
     };
   });
 
@@ -96,7 +99,9 @@ const OrderDetails = () => {
           <Text style={styles.sectionTitle}>Items Ordered</Text>
           <FlatList
             data={orderItems}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) =>
+              `${item.id}-${item.variant || "no-variant"}`
+            }
             scrollEnabled={false}
             renderItem={({ item }) => (
               <View style={styles.orderItem}>
@@ -106,6 +111,11 @@ const OrderDetails = () => {
                 />
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemName}>{item.title}</Text>
+                  {item.variant && (
+                    <Text style={styles.variantText}>
+                      Variant: {item.variant}
+                    </Text>
+                  )}
                   <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
                   <Text style={styles.itemPrice}>
                     {formatCurrency(item.price * item.quantity)}
@@ -419,5 +429,10 @@ const styles: { [key: string]: any } = StyleSheet.create({
     color: "#666",
     fontSize: 16,
     fontWeight: "600",
+  },
+  variantText: {
+    color: "#666",
+    fontSize: 14,
+    marginBottom: 4,
   },
 });

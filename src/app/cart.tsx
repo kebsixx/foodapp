@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  Modal,
   TextInput,
   ScrollView,
 } from "react-native";
@@ -24,6 +23,12 @@ import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
 
+type VariantType = {
+  id: string;
+  name: string;
+  price: number;
+} | null;
+
 type CartItemType = {
   id: number;
   title: string;
@@ -31,13 +36,14 @@ type CartItemType = {
   price: number;
   quantity: number;
   maxQuantity: number;
+  variant: VariantType;
 };
 
 type CartItemProps = {
   item: CartItemType;
-  onRemove: (id: number) => void;
-  onIncrement: (id: number) => void;
-  onDecrement: (id: number) => void;
+  onRemove: (id: number, variantId?: string) => void;
+  onIncrement: (id: number, variantId?: string) => void;
+  onDecrement: (id: number, variantId?: string) => void;
 };
 
 type PaymentProof = {
@@ -56,23 +62,26 @@ const CartItem = ({
       <Image source={{ uri: item.heroImage }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle}>{item.title}</Text>
+        {item.variant && (
+          <Text style={styles.variantText}>{item.variant.name}</Text>
+        )}
         <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
         <View style={styles.quantityContainer}>
           <TouchableOpacity
-            onPress={() => onDecrement(item.id)}
+            onPress={() => onDecrement(item.id, item.variant?.id)}
             style={styles.quantityButton}>
             <Text style={styles.quantityButtonText}>-</Text>
           </TouchableOpacity>
           <Text style={styles.itemQuantity}>{item.quantity}</Text>
           <TouchableOpacity
-            onPress={() => onIncrement(item.id)}
+            onPress={() => onIncrement(item.id, item.variant?.id)}
             style={styles.quantityButton}>
             <Text style={styles.quantityButtonText}>+</Text>
           </TouchableOpacity>
         </View>
       </View>
       <TouchableOpacity
-        onPress={() => onRemove(item.id)}
+        onPress={() => onRemove(item.id, item.variant?.id)}
         style={styles.removeButton}>
         <Text style={styles.removeButtonText}>Hapus</Text>
       </TouchableOpacity>
@@ -186,7 +195,7 @@ export default function Cart() {
 
     try {
       setUploading(true);
-      const totalPrice = parseFloat(getTotalPrice());
+      const totalPrice = getTotalPrice();
       const slug = generateOrderSlug();
 
       // Upload image using base64 data
@@ -226,12 +235,19 @@ export default function Cart() {
 
       if (orderError) throw orderError;
 
-      // Create order items
+      // Create order items with variant
       const { error: itemsError } = await supabase.from("order_item").insert(
         items.map((item) => ({
           order: order.id,
           product: item.id,
           quantity: item.quantity,
+          variant: item.variant
+            ? JSON.stringify({
+                id: item.variant.id,
+                name: item.variant.name,
+                price: item.variant.price,
+              })
+            : null,
         }))
       );
 
@@ -254,16 +270,6 @@ export default function Cart() {
     }
   };
 
-  const BankAccountInfo = () => (
-    <View style={styles.bankInfoContainer}>
-      <Text style={styles.bankInfoTitle}>Payment Information</Text>
-      <Text style={styles.bankDetails}>
-        Bank: Bank Central Asia (BCA) Account Number: 1234567890 Account Name:
-        Your Company Name
-      </Text>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -277,10 +283,20 @@ export default function Cart() {
             <FlatList
               data={items}
               scrollEnabled={false}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) =>
+                `${item.id}-${item.variant?.id || "no-variant"}`
+              }
               renderItem={({ item }) => (
                 <CartItem
-                  item={item}
+                  item={{
+                    id: item.id,
+                    title: item.title,
+                    heroImage: item.heroImage,
+                    price: item.price,
+                    maxQuantity: item.maxQuantity,
+                    quantity: item.quantity,
+                    variant: item.variant as VariantType,
+                  }}
                   onRemove={removeItem}
                   onIncrement={incrementItem}
                   onDecrement={decrementItem}
@@ -374,7 +390,7 @@ export default function Cart() {
           <View style={styles.totalContainer}>
             <Text style={styles.totalLabel}>Total:</Text>
             <Text style={styles.totalAmount}>
-              {formatCurrency(parseFloat(getTotalPrice()))}
+              {formatCurrency(getTotalPrice())}
             </Text>
           </View>
           <TouchableOpacity
@@ -728,5 +744,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 12,
     resizeMode: "contain",
+  },
+  variantText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 4,
   },
 });
