@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Cerita Senja</string>
+  <string name="app_name">Cerita Senja</string>
+  <string name="expo_runtime_version">1.0.0</string>
 </resources>
