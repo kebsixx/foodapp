@@ -10,6 +10,7 @@ import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
 import { getProductsAndCategories } from "../../api/api";
 import { useState } from "react";
+import { ProductSkeleton } from "../../components/product-skeleton";
 
 const Home = () => {
   const { data, error, isLoading, refetch } = getProductsAndCategories();
@@ -26,9 +27,19 @@ const Home = () => {
 
   if (isLoading && !refreshing) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Loading products...</Text>
+      <View style={styles.container}>
+        <FlatList
+          data={[1, 2, 3, 4, 5, 6]} // Number of skeleton items to show
+          renderItem={() => <ProductSkeleton />}
+          keyExtractor={(item) => item.toString()}
+          numColumns={2}
+          contentContainerStyle={[
+            styles.flatListContent,
+            { paddingBottom: 80 },
+          ]}
+          columnWrapperStyle={styles.flatListColumn}
+          style={{ paddingHorizontal: 10, paddingVertical: 5 }}
+        />
       </View>
     );
   }

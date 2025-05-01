@@ -1,5 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { formatCurrency } from "../utils/utils";
+import { useState } from "react";
 
 import { Link } from "expo-router";
 import { Tables } from "../types/database.types";
@@ -9,17 +10,28 @@ export const ProductListItem = ({
 }: {
   product: Tables<"product">;
 }) => {
+  const [imageLoading, setImageLoading] = useState(true);
+
   return (
     <Link href={`/product/${product.slug}`} asChild>
       <Pressable style={styles.item}>
         <View style={styles.itemImageContainer}>
-          <Image source={{ uri: product.heroImage }} style={styles.itemImage} />
+          {imageLoading && (
+            <View style={[styles.itemImage, styles.imagePlaceholder]} />
+          )}
+          <Image
+            source={{ uri: product.heroImage }}
+            style={[styles.itemImage, imageLoading ? styles.hiddenImage : null]}
+            onLoadEnd={() => setImageLoading(false)}
+          />
         </View>
         <View style={styles.itemTextContainer}>
           <Text style={styles.itemTitle} numberOfLines={2}>
             {product.title}
           </Text>
-          <Text style={styles.itemPrice}>{formatCurrency(product.price)}</Text>
+          <Text style={styles.itemPrice}>
+            {formatCurrency(product.price ?? 0)}
+          </Text>
         </View>
       </Pressable>
     </Link>
@@ -68,5 +80,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#B17457",
+  },
+  imagePlaceholder: {
+    backgroundColor: "#E1E1E1",
+    position: "absolute",
+  },
+  hiddenImage: {
+    opacity: 0,
   },
 });
