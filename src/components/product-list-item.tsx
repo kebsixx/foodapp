@@ -40,7 +40,7 @@ export const ProductListItem = ({
 
 const styles = StyleSheet.create({
   item: {
-    width: "48%",
+    flex: 1,
     backgroundColor: "white",
     marginVertical: 8,
     borderRadius: 12,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   itemImageContainer: {
     width: "100%",
-    height: 160,
+    aspectRatio: 1, // Added to maintain square ratio
     backgroundColor: "#f5f5f5",
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
