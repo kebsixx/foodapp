@@ -92,6 +92,7 @@ const Home = () => {
             key={category.id}
             title={category.name}
             products={categoryProducts}
+            categorySlug={category.slug} // Add this line
           />
         );
       })}

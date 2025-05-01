@@ -6,14 +6,15 @@ import { Link } from "expo-router";
 type Props = {
   title: string;
   products: Tables<"product">[];
+  categorySlug: string; // Add categorySlug prop
 };
 
-export const CategoryProducts = ({ title, products }: Props) => {
+export const CategoryProducts = ({ title, products, categorySlug }: Props) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
-        <Link href={`/categories/${products[0].category}`} asChild>
+        <Link href={`/categories/${categorySlug}`} asChild>
           <Pressable>
             {({ pressed }) => (
               <Text style={[styles.seeAll, { opacity: pressed ? 0.7 : 1 }]}>

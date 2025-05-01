@@ -31,9 +31,22 @@ const Category = () => {
     }
   };
 
-  // Replace the loading state
-  if (isLoading && !refreshing) {
-    return <CategorySkeleton />;
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            headerTitle: () => (
+              <View style={styles.headerSkeleton}>
+                <View style={styles.headerTitleSkeleton} />
+              </View>
+            ),
+          }}
+        />
+        <CategorySkeleton />
+      </View>
+    );
   }
   if (error || !data) return <Text>Error: {error?.message}</Text>;
   if (!data.category || !data.products) return <Redirect href="/404" />;
@@ -119,5 +132,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888",
     marginTop: 4,
+  },
+  headerSkeleton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitleSkeleton: {
+    width: 120,
+    height: 20,
+    backgroundColor: "#E1E1E1",
+    borderRadius: 4,
   },
 });
