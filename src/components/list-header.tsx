@@ -135,6 +135,8 @@ export const ListHeader = ({
             </Link>
           )}
           keyExtractor={(item) => item.name}
+          initialNumToRender={4}
+          showsHorizontalScrollIndicator={false}
           horizontal
         />
       </View>
