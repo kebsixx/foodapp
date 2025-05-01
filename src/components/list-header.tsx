@@ -197,10 +197,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   heroContainer: {
+    alignItems: "center",
     marginBottom: 24,
   },
   heroImage: {
-    width: "100%",
+    width: "90%",
     height: 200,
     borderRadius: 12,
   },

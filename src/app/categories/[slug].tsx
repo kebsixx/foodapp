@@ -18,28 +18,33 @@ import { CategorySkeleton } from "../../components/category-skeleton";
 
 const Category = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-
   const { data, error, isLoading, refetch } = getCategoryAndProducts(slug);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      await refetch();
-    } finally {
-      setRefreshing(false);
-    }
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
   };
 
-  if (isLoading) {
+  const formatTitle = (slug: string) => {
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  if (isLoading && !refreshing) {
     return (
       <View style={styles.container}>
         <Stack.Screen
           options={{
             headerShown: true,
             headerTitle: () => (
-              <View style={styles.headerSkeleton}>
-                <View style={styles.headerTitleSkeleton} />
+              <View style={{ marginLeft: 16 }}>
+                <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                  {formatTitle(slug)}
+                </Text>
               </View>
             ),
           }}
@@ -65,7 +70,17 @@ const Category = () => {
           tintColor="#B17457"
         />
       }>
-      <Stack.Screen options={{ title: category.name }} />
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <View style={{ marginLeft: 16 }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                {category.name}
+              </Text>
+            </View>
+          ),
+        }}
+      />
       <Image source={{ uri: category.imageUrl }} style={styles.categoryImage} />
       <Text style={styles.categoryName}>{category.name}</Text>
       <FlatList
@@ -109,29 +124,12 @@ const styles = StyleSheet.create({
   },
   productsList: {
     flexGrow: 1,
+    gap: 16,
+    paddingBottom: 20,
   },
   productRow: {
     justifyContent: "space-between",
-  },
-  productContainer: {
-    flex: 1,
-    margin: 8,
-  },
-  productImage: {
-    width: "100%",
-    height: 150,
-    resizeMode: "cover",
-    borderRadius: 8,
-  },
-  productTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 8,
-  },
-  productPrice: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
+    gap: 16,
   },
   headerSkeleton: {
     flex: 1,

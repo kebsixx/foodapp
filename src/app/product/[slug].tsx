@@ -109,9 +109,23 @@ const ProductDetails = () => {
           .slice(0, 5)
       : [];
 
+  const formatTitle = (slug: string) => {
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   // Update the loading state
+  // Ganti bagian loading state dengan ini:
   if (isLoading && !refreshing) {
-    return <ProductDetailsSkeleton />;
+    return (
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <CustomHeader title={formatTitle(slug as string)} />
+        <ProductDetailsSkeleton />
+      </SafeAreaView>
+    );
   }
   if (error) return <Text>Error: {error.message}</Text>;
   if (!product) return <Redirect href="/404" />;
