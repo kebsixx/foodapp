@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { ProductListItem } from "../../components/product-list-item";
 import { getCategoryAndProducts } from "../../api/api";
+import { CategorySkeleton } from "../../components/category-skeleton";
 
 const Category = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -30,13 +31,9 @@ const Category = () => {
     }
   };
 
+  // Replace the loading state
   if (isLoading && !refreshing) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Loading...</Text>
-      </View>
-    );
+    return <CategorySkeleton />;
   }
   if (error || !data) return <Text>Error: {error?.message}</Text>;
   if (!data.category || !data.products) return <Redirect href="/404" />;

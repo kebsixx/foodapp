@@ -23,6 +23,7 @@ import CustomHeader from "../../components/customHeader";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { RefreshControl } from "react-native";
+import { ProductDetailsSkeleton } from "../../components/skeletons/product-details-skeleton";
 
 // Define the variant type
 type Variant = {
@@ -110,19 +111,7 @@ const ProductDetails = () => {
 
   // Update the loading state
   if (isLoading && !refreshing) {
-    return (
-      <View style={styles.container}>
-        <Stack.Screen
-          options={{
-            headerShown: false,
-          }}
-        />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#B17457" />
-          <Text style={styles.loadingText}>Loading product details...</Text>
-        </View>
-      </View>
-    );
+    return <ProductDetailsSkeleton />;
   }
   if (error) return <Text>Error: {error.message}</Text>;
   if (!product) return <Redirect href="/404" />;

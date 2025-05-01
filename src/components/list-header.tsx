@@ -10,6 +10,7 @@ import React from "react";
 import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
+import { ListHeaderSkeleton } from "./skeletons/list-header-skeleton";
 
 import { useCartStore } from "../store/cart-store";
 import { Tables } from "../types/database.types";
@@ -24,21 +25,21 @@ export const uriToBlob = async (uri: string): Promise<Blob> => {
 export const uploadImageToSupabase = async (file: Blob, fileName: string) => {
   try {
     const { data, error } = await supabase.storage
-      .from('app-images')
+      .from("app-images")
       .upload(`avatars/${fileName}`, file, {
-        cacheControl: '3600',
+        cacheControl: "3600",
         upsert: true,
       });
 
     if (error) throw error;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('app-images')
-      .getPublicUrl(`avatars/${fileName}`);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("app-images").getPublicUrl(`avatars/${fileName}`);
 
     return publicUrl;
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error("Error uploading image:", error);
     throw error;
   }
 };
@@ -46,10 +47,16 @@ export const uploadImageToSupabase = async (file: Blob, fileName: string) => {
 export const ListHeader = ({
   categories,
   users,
+  isLoading,
 }: {
   categories: Tables<"category">[];
   users: Tables<"users">[];
+  isLoading?: boolean;
 }) => {
+  if (isLoading) {
+    return <ListHeaderSkeleton />;
+  }
+
   const { getItemCount } = useCartStore();
 
   const { user } = useAuth();
@@ -70,15 +77,14 @@ export const ListHeader = ({
                 }}
                 style={styles.avatarImage}
               />
-              <Text 
+              <Text
                 style={styles.welcomeText}
                 numberOfLines={1}
-                ellipsizeMode="tail"
-              >
+                ellipsizeMode="tail">
                 {currentUser?.name ? (
                   <>Hi, {currentUser.name}</>
                 ) : (
-                  'Welcome, Guest'
+                  "Welcome, Guest"
                 )}
               </Text>
             </Pressable>
@@ -156,7 +162,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    maxWidth: '70%',
+    maxWidth: "70%",
   },
   avatarImage: {
     width: 40,
@@ -168,7 +174,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
-    maxWidth: '100%',
+    maxWidth: "100%",
   },
   cartButton: {
     padding: 8,
