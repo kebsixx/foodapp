@@ -6,6 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import { useForm, Controller } from "react-hook-form";
 import * as zod from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +27,13 @@ const authSchema = zod.object({
     .min(6, { message: "Password must be at least 6 characters" }),
 });
 
+GoogleSignin.configure({
+  webClientId:
+    "152969713147-ntbvkd6jqf5qa3lm03q38ta6i3ot1q6a.apps.googleusercontent.com",
+  offlineAccess: false,
+  scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+});
+
 export default function Auth() {
   const { session } = useAuth();
   const Toast = useToast();
@@ -35,6 +47,32 @@ export default function Auth() {
       password: "",
     },
   });
+
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      if (userInfo.data?.idToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: userInfo.data.idToken,
+        });
+        console.log(error, data);
+      } else {
+        throw new Error("no ID token present!");
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+      } else {
+        // some other error happened
+      }
+    }
+  };
 
   const signIn = async (data: zod.infer<typeof authSchema>) => {
     const { error } = await supabase.auth.signInWithPassword(data);
@@ -119,6 +157,16 @@ export default function Auth() {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.socialButtonsContainer}>
+        <GoogleSigninButton
+          style={styles.googleButton}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={signInWithGoogle}
+          disabled={formState.isSubmitting}
+        />
+      </View>
+
       <View
         style={{
           flexDirection: "row",
@@ -201,5 +249,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "left",
     width: "90%",
+  },
+  socialButtonsContainer: {
+    width: "90%",
+    marginBottom: 20,
+  },
+  googleButton: {
+    width: "100%",
+    height: 48,
   },
 });
