@@ -49,7 +49,7 @@ export default function Orders() {
       <FlatList
         data={orders}
         keyExtractor={(item) => `${item.id}-${item.variant || "no-variant"}`} // Gunakan kombinasi ID dan variant sebagai key
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 80, padding: 16 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -62,8 +62,12 @@ export default function Orders() {
           <Link href={`/orders/${item.slug}`} asChild>
             <TouchableOpacity style={styles.orderCard}>
               <View style={styles.orderHeader}>
-                <Text style={styles.orderNumber}>{item.product_title}</Text>
-                <Text style={styles.orderId}>Order #{item.slug}</Text>
+                <View style={styles.orderInfo}>
+                  <Text style={styles.orderNumber} numberOfLines={1}>
+                    {item.product_title}
+                  </Text>
+                  <Text style={styles.orderId}>Order #{item.slug}</Text>
+                </View>
                 <View
                   style={[
                     styles.statusBadge,
@@ -75,17 +79,6 @@ export default function Orders() {
                   ]}>
                   <Text style={styles.statusText}>{item.status}</Text>
                 </View>
-              </View>
-
-              <Text style={styles.orderDate}>
-                {format(new Date(item.created_at), "MMM dd, yyyy • HH:mm")}
-              </Text>
-
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total:</Text>
-                <Text style={styles.totalAmount}>
-                  {formatCurrency(item.totalPrice)}
-                </Text>
               </View>
             </TouchableOpacity>
           </Link>
@@ -100,17 +93,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
-  orderId: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-  },
   orderCard: {
     backgroundColor: "white",
-    margin: 16,
-    marginBottom: 8,
-    padding: 16,
     borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -120,59 +107,46 @@ const styles = StyleSheet.create({
   orderHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+    alignItems: "flex-start",
+  },
+  orderInfo: {
+    flex: 1,
+    marginRight: 12,
   },
   orderNumber: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
   },
-  orderDate: {
+  orderId: {
     fontSize: 14,
     color: "#666",
-    marginBottom: 12,
   },
   statusBadge: {
-    paddingVertical: 6,
     paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  statusBadge_Process: {
-    backgroundColor: "#81C784",
-  },
-  statusBadge_Completed: {
-    backgroundColor: "#4CAF50",
-  },
-  statusBadge_OnReview: {
-    backgroundColor: "#FFA726",
+    backgroundColor: "#eee",
   },
   statusBadge_Pending: {
-    backgroundColor: "#FF5722",
+    backgroundColor: "#FFF3E0",
+  },
+  statusBadge_OnReview: {
+    backgroundColor: "#E3F2FD",
+  },
+  statusBadge_Process: {
+    backgroundColor: "#E8F5E9",
+  },
+  statusBadge_Completed: {
+    backgroundColor: "#E8F5E9",
   },
   statusBadge_Cancelled: {
-    backgroundColor: "#FF0000",
+    backgroundColor: "#FFEBEE",
   },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  totalLabel: {
-    fontSize: 16,
-    color: "#666",
-  },
-  totalAmount: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#B17457",
+  statusText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#333",
   },
 });

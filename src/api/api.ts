@@ -114,64 +114,42 @@ export const getCategoryAndProducts = (categorySlug: string) => {
 };
 
 export const getMyOrders = () => {
-  const {
-    user: { id },
-  } = useAuth();
+  const { user } = useAuth();
 
   return useQuery({
-    enabled: !!id,
-    queryKey: ["orders", id],
+    queryKey: ['orders', user?.id],
     queryFn: async () => {
-      // Pertama ambil data order
-      const { data: orders, error: ordersError } = await supabase
-        .from("order")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .eq("user", id);
+      const { data, error } = await supabase
+        .from('order')
+        .select(`
+          id,
+          slug,
+          status,
+          created_at,
+          totalPrice,
+          order_item (
+            product (
+              title
+            ),
+            variant_id
+          )
+        `)
+        .eq('user', user?.id)
+        .order('created_at', { ascending: false });
 
-      if (ordersError) {
-        throw new Error("Gagal mengambil orders: " + ordersError?.message);
-      }
+      if (error) throw error;
 
-      // Kemudian ambil order items untuk setiap order
-      const ordersWithItems = await Promise.all(
-        orders.map(async (order) => {
-          const { data: orderItems, error: itemsError } = await supabase
-            .from("order_item")
-            .select("*, products:product(*)")
-            .eq("order", order.id);
-
-          if (itemsError) {
-            console.error("Error fetching order items:", itemsError);
-            return { ...order, order_item: [] };
-          }
-
-          return {
-            ...order,
-            order_item: orderItems.map(item => ({
-              ...item,
-              variant: (item as any).variant ? JSON.parse((item as any).variant) : null
-            }))          };
-        })
-      );
-
-      // Transform data untuk tampilan
-      const transformedOrders = ordersWithItems.flatMap(order => {
-        return order.order_item.map(item => {
-          const variantPrice = item.variant?.price || item.products?.price || 0;
-          return {
-            ...order,
-            id: `${order.id}-${item.id}`,
-            order_item: [item],
-            product_title: `${item.products?.title}${item.variant?.name ? ` (${item.variant.name})` : ''}`,
-            variant: item.variant?.name || null,
-            totalPrice: parseFloat(variantPrice.toString()) * item.quantity
-          };
-        });
-      });
-
-      return transformedOrders;
+      return data?.map(order => ({
+        id: order.id,
+        slug: order.slug,
+        status: order.status,
+        created_at: order.created_at,
+        totalPrice: order.totalPrice,
+        product_title: order.order_item?.[0]?.product?.title || 'Unknown Product',
+        variant: order.order_item?.[0]?.variant_id || null
+      })) || [];
     },
+    enabled: !!user
   });
 };
 

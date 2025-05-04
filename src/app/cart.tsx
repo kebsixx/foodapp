@@ -255,40 +255,30 @@ export default function Cart() {
 
       if (orderError) throw orderError;
 
-      // Create order items with variant
+      // Create order items with variant_id
       const { error: itemsError } = await supabase.from("order_item").insert(
         items.map((item) => ({
           order: order.id,
           product: item.id,
           quantity: item.quantity,
-          variant: item.variant
-            ? JSON.stringify({
-                id: item.variant.id,
-                name: item.variant.name,
-                price: item.variant.price,
-              })
-            : null,
+          variant_id: item.variant?.id || null, // Use variant_id instead of variant object
         }))
       );
 
       if (itemsError) throw itemsError;
 
-      // Success
+      // Success handling
       resetCart();
       router.push("/orders");
       Toast.show("Pesanan berhasil dibuat!", {
         type: "custom_toast",
-        data: {
-          title: "Sukses",
-        },
+        data: { title: "Sukses" },
       });
     } catch (error) {
       console.error("Error creating order:", error);
       Toast.show("Gagal membuat pesanan", {
         type: "custom_toast",
-        data: {
-          title: "Gagal",
-        },
+        data: { title: "Gagal" },
       });
     } finally {
       setUploading(false);

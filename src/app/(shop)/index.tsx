@@ -64,9 +64,9 @@ const Home = () => {
       }>
       <ListHeader categories={data.categories} users={data.users!} />
 
-      {/* Featured Products Section */}
+      {/* Best Seller Menu Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Featured Products</Text>
+        <Text style={styles.sectionTitle}>Best Seller Menu</Text>
         <FlatList
           data={featuredProducts}
           renderItem={({ item }) => <ProductListItem product={item} />}
@@ -74,8 +74,8 @@ const Home = () => {
           numColumns={2}
           scrollEnabled={false}
           columnWrapperStyle={styles.flatListColumn}
-          contentContainerStyle={styles.featuredProducts} // Add this line
-          style={{ flex: 1 }} // Change from paddingHorizontal to flex
+          contentContainerStyle={styles.featuredProducts}
+          style={{ flex: 1 }}
         />
       </View>
 
@@ -92,7 +92,7 @@ const Home = () => {
             key={category.id}
             title={category.name}
             products={categoryProducts}
-            categorySlug={category.slug} // Add this line
+            categorySlug={category.slug}
           />
         );
       })}

@@ -76,6 +76,7 @@ const OrderDetails = () => {
 
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -117,52 +118,45 @@ const OrderDetails = () => {
         {/* Items Card */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Items Ordered</Text>
-          <FlatList
-            data={orderItems}
-            keyExtractor={(item) =>
-              `${item.id}-${item.variant || "no-variant"}`
-            }
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <View style={styles.orderItem}>
-                <Image
-                  source={{ uri: item.heroImage }}
-                  style={styles.heroImage}
-                />
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.title}</Text>
-                  {item.variant && (
-                    <Text style={styles.variantText}>
-                      Variant: {item.variant}
-                    </Text>
-                  )}
-                  <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
-                  <Text style={styles.itemPrice}>
-                    {formatCurrency(item.price * item.quantity)}
+          {orderItems.map((item) => (
+            <View
+              key={`${item.id}-${item.variant || "no-variant"}`}
+              style={styles.orderItem}>
+              <Image
+                source={{ uri: item.heroImage }}
+                style={styles.heroImage}
+              />
+              <View style={styles.itemInfo}>
+                <Text style={styles.itemName}>{item.title}</Text>
+                {item.variant && (
+                  <Text style={styles.variantText}>
+                    Variant: {item.variant}
                   </Text>
-                </View>
+                )}
+                <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                <Text style={styles.itemPrice}>
+                  {formatCurrency(item.price * item.quantity)}
+                </Text>
               </View>
-            )}
-          />
+            </View>
+          ))}
         </View>
 
         {/* Payment Status Card */}
         {order.status === "Pending" && (
           <View style={[styles.card, styles.warningCard]}>
-            <Text style={styles.paymentText}>Menunggu Pembayaran</Text>
+            <Text style={styles.paymentText}>Pesanan anda sedang di cek</Text>
           </View>
         )}
 
         {/* Add Cancel Button for Pending Orders */}
         {order.status === "Pending" && (
           <>
-            <View style={styles.card}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowCancelModal(true)}>
-                <Text style={styles.cancelButtonText}>Cancel Order</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowCancelModal(true)}>
+              <Text style={styles.cancelButtonText}>Cancel Order</Text>
+            </TouchableOpacity>
 
             <Modal
               animationType="fade"
@@ -235,9 +229,14 @@ const styles: { [key: string]: any } = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+    paddingBottom: 60,
   },
   scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
     padding: 16,
+    paddingBottom: 32,
   },
   card: {
     backgroundColor: "white",
@@ -378,6 +377,7 @@ const styles: { [key: string]: any } = StyleSheet.create({
   cancelButton: {
     backgroundColor: "#ff4444",
     padding: 16,
+    marginBottom: 16,
     borderRadius: 8,
     alignItems: "center",
   },
