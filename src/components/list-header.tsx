@@ -9,40 +9,11 @@ import {
 import React from "react";
 import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
-import { supabase } from "../lib/supabase";
 import { ListHeaderSkeleton } from "./skeletons/list-header-skeleton";
 
 import { useCartStore } from "../store/cart-store";
 import { Tables } from "../types/database.types";
 import { useAuth } from "../providers/auth-provider";
-
-export const uriToBlob = async (uri: string): Promise<Blob> => {
-  const response = await fetch(uri);
-  const blob = await response.blob();
-  return blob;
-};
-
-export const uploadImageToSupabase = async (file: Blob, fileName: string) => {
-  try {
-    const { data, error } = await supabase.storage
-      .from("app-images")
-      .upload(`avatars/${fileName}`, file, {
-        cacheControl: "3600",
-        upsert: true,
-      });
-
-    if (error) throw error;
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("app-images").getPublicUrl(`avatars/${fileName}`);
-
-    return publicUrl;
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    throw error;
-  }
-};
 
 export const ListHeader = ({
   categories,
@@ -69,14 +40,9 @@ export const ListHeader = ({
         <View style={styles.headerLeft}>
           <Link href="/profile" asChild>
             <Pressable style={styles.avatarContainer}>
-              <Image
-                source={{
-                  uri:
-                    currentUser?.avatar_url ||
-                    "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
-                }}
-                style={styles.avatarImage}
-              />
+              <View style={styles.iconContainer}>
+                <FontAwesome name="user-o" size={28} color="#B17457" />
+              </View>
               <Text
                 style={styles.welcomeText}
                 numberOfLines={1}
@@ -164,10 +130,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     maxWidth: "70%",
   },
-  avatarImage: {
+  iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   welcomeText: {

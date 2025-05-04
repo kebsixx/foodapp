@@ -1,23 +1,17 @@
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   TextInput,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import React, { useState } from "react";
+import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../providers/auth-provider";
 import { useToast } from "react-native-toast-notifications";
-import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
-import { decode } from "base64-arraybuffer";
-
-const DEFAULT_AVATAR =
-  "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -28,9 +22,7 @@ const Profile = () => {
     email: user?.email || "",
     address: user?.address || "",
     phone: user?.phone || "",
-    avatar_url: user?.avatar_url || DEFAULT_AVATAR,
   });
-  const [newAvatarBase64, setNewAvatarBase64] = useState<string | null>(null);
 
   const Toast = useToast();
 
@@ -43,117 +35,20 @@ const Profile = () => {
     );
   }
 
-  const pickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-        base64: true,
-      });
-
-      if (!result.canceled && result.assets[0].base64) {
-        setFormData((prev) => ({
-          ...prev,
-          avatar_url: result.assets[0].uri,
-        }));
-        setNewAvatarBase64(result.assets[0].base64);
-      }
-    } catch (error) {
-      console.error("Error picking image:", error);
-      Toast.show("Failed to pick image", {
-        type: "custom_toast",
-        data: {
-          title: "Fail",
-        },
-      });
-    }
-  };
-
-  const uploadAvatar = async (base64Image: string) => {
-    try {
-      const fileName = `${user.id}-${Date.now()}.jpg`;
-
-      // Delete old avatar if it exists and isn't the default
-      if (formData.avatar_url && !formData.avatar_url.includes("pixabay")) {
-        try {
-          // Extract just the filename from the full URL
-          const oldFileName = formData.avatar_url.split("/").pop();
-          if (oldFileName) {
-            await supabase.storage.from("avatars").remove([oldFileName]); // Remove folder structure from path
-          }
-        } catch (error) {
-          console.warn("Failed to delete old avatar:", error);
-        }
-      }
-
-      // Upload new avatar without folder structure
-      const { data, error } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, decode(base64Image), {
-          contentType: "image/jpeg",
-          upsert: true,
-        });
-
-      if (error) throw error;
-
-      // Get public URL - make sure to use the correct path
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(fileName); // Use just the filename
-
-      console.log("Uploaded avatar URL:", publicUrl); // Add this for debugging
-      return publicUrl;
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
-      throw error; // Let the caller handle the error
-    }
-  };
-
   const handleSave = async () => {
     try {
       setIsLoading(true);
 
-      let finalAvatarUrl = formData.avatar_url;
-
-      if (newAvatarBase64) {
-        try {
-          const uploadedUrl = await uploadAvatar(newAvatarBase64);
-          finalAvatarUrl = uploadedUrl;
-        } catch (error) {
-          console.error("Avatar upload failed:", error);
-          Toast.show("Failed to upload avatar", {
-            type: "custom_toast",
-            data: {
-              title: "Fail",
-            },
-          });
-          // Keep existing avatar if upload fails
-          finalAvatarUrl = formData.avatar_url || DEFAULT_AVATAR;
-        }
-      }
-
-      // Update user profile in database
+      // Update user profile in database without avatar
       const { error: updateError } = await supabase
         .from("users")
-        .update({
-          ...formData,
-          avatar_url: finalAvatarUrl,
-        })
+        .update(formData)
         .eq("id", user.id);
 
       if (updateError) throw updateError;
 
       // Update local state and auth context
-      const updatedData = {
-        ...formData,
-        avatar_url: finalAvatarUrl,
-      };
-
-      setFormData(updatedData);
-      updateProfile(updatedData);
-      setNewAvatarBase64(null);
+      updateProfile(formData);
       setIsEditing(false);
 
       Toast.show("Profile updated successfully", {
@@ -178,23 +73,9 @@ const Profile = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-          <Image
-            source={{ uri: formData.avatar_url || DEFAULT_AVATAR }}
-            style={styles.avatar}
-            onError={() => {
-              setFormData((prev) => ({
-                ...prev,
-                avatar_url: DEFAULT_AVATAR,
-              }));
-            }}
-          />
-          {isEditing && (
-            <View style={styles.editOverlay}>
-              <Text style={styles.editText}>Change Photo</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.iconContainer}>
+          <FontAwesome name="user-o" size={72} color="#fff" />
+        </View>
         <Text style={styles.userName}>{formData.name}</Text>
       </View>
 
@@ -236,7 +117,7 @@ const Profile = () => {
                 style={[styles.button, styles.cancelButton]}
                 onPress={() => setIsEditing(false)}
                 disabled={isLoading}>
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.button}
@@ -269,9 +150,10 @@ const Profile = () => {
               <Text style={styles.text}>{formData.phone}</Text>
             </View>
             <TouchableOpacity
-              style={styles.button}
+              style={styles.editButton}
               onPress={() => setIsEditing(true)}>
-              <Text style={styles.buttonText}>Edit Profile</Text>
+              <FontAwesome name="edit" size={24} color="#B17457" />
+              <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -281,6 +163,7 @@ const Profile = () => {
             supabase.auth.signOut();
           }}>
           <Text style={styles.signOutText}>Sign Out</Text>
+          <FontAwesome name="sign-out" size={24} style={styles.signOutIcon} />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -305,35 +188,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#fff",
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-  },
-  editOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  editText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
   },
   userName: {
     color: "#fff",
@@ -409,19 +269,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  signOutButton: {
+  editButton: {
     backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "#B17457",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8, // Add space between icon and text
+  },
+  editButtonText: {
+    color: "#B17457",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  editIcon: {
+    color: "#B17457",
+  },
+  signOutButton: {
+    backgroundColor: "#ffe1e1",
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#ff4444",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   signOutText: {
     color: "#ff4444",
     fontSize: 16,
     fontWeight: "600",
+  },
+  signOutIcon: {
+    color: "#ff4444",
   },
   infoRow: {
     flexDirection: "row",
@@ -468,7 +351,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   cancelButton: {
-    backgroundColor: "#ccc",
+    backgroundColor: "#fff",
+    borderColor: "#B17457",
+    borderWidth: 1,
+  },
+  cancelButtonText: {
+    color: "#B17457",
+    fontSize: 16,
+    fontWeight: "600",
   },
   errorText: {
     color: "#ff4444",
