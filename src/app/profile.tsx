@@ -15,55 +15,126 @@ import { supabase } from "../lib/supabase";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || "",
-    email: user?.email || "",
     address: user?.address || "",
     phone: user?.phone || "",
   });
 
+  // Separate edit states for each field
+  const [isEmailEditing, setIsEmailEditing] = useState(false);
+  const [isNameEditing, setIsNameEditing] = useState(false);
+  const [isAddressEditing, setIsAddressEditing] = useState(false);
+  const [isPhoneEditing, setIsPhoneEditing] = useState(false);
+
+  // Temporary values for editing
+  const [newEmail, setNewEmail] = useState(user?.email || "");
+  const [newName, setNewName] = useState(formData.name);
+  const [newAddress, setNewAddress] = useState(formData.address);
+  const [newPhone, setNewPhone] = useState(formData.phone);
+
   const Toast = useToast();
 
-  // Add a loading state for when user is not yet available
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#B17457" />
-      </View>
-    );
-  }
-
-  const handleSave = async () => {
+  // Update handlers for each field
+  const handleNameUpdate = async () => {
     try {
       setIsLoading(true);
-
-      // Update user profile in database without avatar
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from("users")
-        .update(formData)
-        .eq("id", user.id);
+        .update({ name: newName })
+        .eq("id", user?.id);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      // Update local state and auth context
-      updateProfile(formData);
-      setIsEditing(false);
-
-      Toast.show("Profile updated successfully", {
+      setFormData((prev) => ({ ...prev, name: newName }));
+      updateProfile({ name: newName });
+      setIsNameEditing(false);
+      Toast.show("Name updated successfully", {
         type: "custom_toast",
-        data: {
-          title: "Success",
-        },
+        data: { title: "Success" },
       });
     } catch (error) {
-      console.error("Error updating profile:", error);
-      Toast.show("Failed to update profile", {
+      Toast.show("Failed to update name", {
         type: "custom_toast",
-        data: {
-          title: "Fail",
-        },
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddressUpdate = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase
+        .from("users")
+        .update({ address: newAddress })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+
+      setFormData((prev) => ({ ...prev, address: newAddress }));
+      updateProfile({ address: newAddress });
+      setIsAddressEditing(false);
+      Toast.show("Address updated successfully", {
+        type: "custom_toast",
+        data: { title: "Success" },
+      });
+    } catch (error) {
+      Toast.show("Failed to update address", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhoneUpdate = async () => {
+    try {
+      setIsLoading(true);
+      // TODO: Add phone verification logic here
+      const { error } = await supabase
+        .from("users")
+        .update({ phone: newPhone })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+
+      setFormData((prev) => ({ ...prev, phone: newPhone }));
+      updateProfile({ phone: newPhone });
+      setIsPhoneEditing(false);
+      Toast.show("Phone updated successfully", {
+        type: "custom_toast",
+        data: { title: "Success" },
+      });
+    } catch (error) {
+      Toast.show("Failed to update phone", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailUpdate = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+
+      if (error) throw error;
+
+      setIsEmailEditing(false);
+      Toast.show("Email update instructions sent to your inbox", {
+        type: "custom_toast",
+        data: { title: "Success" },
+      });
+    } catch (error) {
+      Toast.show("Failed to update email", {
+        type: "custom_toast",
+        data: { title: "Error" },
       });
     } finally {
       setIsLoading(false);
@@ -80,98 +151,143 @@ const Profile = () => {
       </View>
 
       <View style={styles.content}>
-        {isEditing ? (
-          <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              value={formData.name}
-              onChangeText={(text) => setFormData({ ...formData, name: text })}
-              placeholder="Name"
-              placeholderTextColor="#888"
-            />
-            <TextInput
-              style={styles.input}
-              value={formData.email}
-              onChangeText={(text) => setFormData({ ...formData, email: text })}
-              placeholder="Email"
-              placeholderTextColor="#888"
-            />
-            <TextInput
-              style={styles.input}
-              value={formData.address}
-              onChangeText={(text) =>
-                setFormData({ ...formData, address: text })
-              }
-              placeholder="Address"
-              placeholderTextColor="#888"
-            />
-            <TextInput
-              style={styles.input}
-              value={formData.phone}
-              onChangeText={(text) => setFormData({ ...formData, phone: text })}
-              placeholder="Phone"
-              placeholderTextColor="#888"
-            />
-            <View style={styles.buttonContainer}>
+        <View style={styles.info}>
+          {/* Name Section */}
+          <View style={styles.infoItem}>
+            <View style={styles.infoHeader}>
+              <View>
+                <Text style={styles.label}>Name</Text>
+                <Text style={styles.text}>{formData.name}</Text>
+              </View>
               <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setIsEditing(false)}
-                disabled={isLoading}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleSave}
-                disabled={isLoading}>
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Save Changes</Text>
-                )}
+                style={styles.editButton}
+                onPress={() => {
+                  setNewName(formData.name);
+                  setIsNameEditing(true);
+                }}>
+                <FontAwesome name="edit" size={16} color="#B17457" />
+                <Text style={styles.editButtonText}>Edit</Text>
               </TouchableOpacity>
             </View>
           </View>
-        ) : (
-          <View style={styles.info}>
-            <View style={styles.infoItem}>
-              <Text style={styles.label}>Name</Text>
-              <Text style={styles.text}>{formData.name}</Text>
+
+          {/* Email Section */}
+          <View style={styles.infoItem}>
+            <View style={styles.infoHeader}>
+              <View>
+                <Text style={styles.label}>Email</Text>
+                <Text style={styles.text}>{user?.email}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => {
+                  setNewEmail(user?.email || "");
+                  setIsEmailEditing(true);
+                }}>
+                <FontAwesome name="envelope" size={16} color="#B17457" />
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.label}>Email</Text>
-              <Text style={styles.text}>{formData.email}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.label}>Address</Text>
-              <Text style={styles.text}>{formData.address}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.label}>Phone</Text>
-              <Text style={styles.text}>{formData.phone}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => setIsEditing(true)}>
-              <FontAwesome name="edit" size={24} color="#B17457" />
-              <Text style={styles.editButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
           </View>
+
+          {/* Address Section */}
+          <View style={styles.infoItem}>
+            <View style={styles.infoHeader}>
+              <View>
+                <Text style={styles.label}>Address</Text>
+                <Text style={styles.text}>{formData.address}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => {
+                  setNewAddress(formData.address);
+                  setIsAddressEditing(true);
+                }}>
+                <FontAwesome name="edit" size={16} color="#B17457" />
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Phone Section */}
+          <View style={styles.infoItem}>
+            <View style={styles.infoHeader}>
+              <View>
+                <Text style={styles.label}>Phone</Text>
+                <Text style={styles.text}>{formData.phone}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => {
+                  setNewPhone(formData.phone);
+                  setIsPhoneEditing(true);
+                }}>
+                <FontAwesome name="phone" size={16} color="#B17457" />
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Edit Modals */}
+        {isNameEditing && (
+          <EditModal
+            title="Edit Name"
+            value={newName}
+            onChangeText={setNewName}
+            onSave={handleNameUpdate}
+            onCancel={() => setIsNameEditing(false)}
+            isLoading={isLoading}
+          />
         )}
+
+        {isEmailEditing && (
+          <EditModal
+            title="Update Email"
+            value={newEmail}
+            onChangeText={setNewEmail}
+            onSave={handleEmailUpdate}
+            onCancel={() => setIsEmailEditing(false)}
+            isLoading={isLoading}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        )}
+
+        {isAddressEditing && (
+          <EditModal
+            title="Edit Address"
+            value={newAddress}
+            onChangeText={setNewAddress}
+            onSave={handleAddressUpdate}
+            onCancel={() => setIsAddressEditing(false)}
+            isLoading={isLoading}
+            multiline
+          />
+        )}
+
+        {isPhoneEditing && (
+          <EditModal
+            title="Edit Phone"
+            value={newPhone}
+            onChangeText={setNewPhone}
+            onSave={handlePhoneUpdate}
+            onCancel={() => setIsPhoneEditing(false)}
+            isLoading={isLoading}
+            keyboardType="phone-pad"
+          />
+        )}
+
         <TouchableOpacity
           style={styles.signOutButton}
           onPress={async () => {
             try {
               setIsLoading(true);
               await supabase.auth.signOut();
-              // The auth provider should automatically handle the navigation
-              // after sign out through its listener
             } catch (error) {
-              console.error("Error signing out:", error);
               Toast.show("Failed to sign out", {
                 type: "custom_toast",
-                data: {
-                  title: "Error",
-                },
+                data: { title: "Error" },
               });
             } finally {
               setIsLoading(false);
@@ -195,6 +311,55 @@ const Profile = () => {
   );
 };
 
+// Add EditModal component
+const EditModal = ({
+  title,
+  value,
+  onChangeText,
+  onSave,
+  onCancel,
+  isLoading,
+  ...inputProps
+}: {
+  title: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  isLoading: boolean;
+  [key: string]: any;
+}) => (
+  <View style={styles.editModal}>
+    <Text style={styles.modalTitle}>{title}</Text>
+    <TextInput
+      style={styles.input}
+      value={value}
+      onChangeText={onChangeText}
+      placeholderTextColor="#888"
+      {...inputProps}
+    />
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity
+        style={[styles.button, styles.cancelButton]}
+        onPress={onCancel}
+        disabled={isLoading}>
+        <Text style={styles.cancelButtonText}>Cancel</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onSave}
+        disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Save</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+// Update styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -295,21 +460,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   editButton: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#B17457",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8, // Add space between icon and text
+    backgroundColor: "#fff",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#B17457",
+    gap: 4,
   },
   editButtonText: {
     color: "#B17457",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "500",
   },
   editIcon: {
     color: "#B17457",
@@ -399,6 +563,28 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.7)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  infoHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  editModal: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 16,
+    color: "#333",
   },
 });
 
