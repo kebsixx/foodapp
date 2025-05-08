@@ -159,11 +159,36 @@ const Profile = () => {
         )}
         <TouchableOpacity
           style={styles.signOutButton}
-          onPress={() => {
-            supabase.auth.signOut();
+          onPress={async () => {
+            try {
+              setIsLoading(true);
+              await supabase.auth.signOut();
+              // The auth provider should automatically handle the navigation
+              // after sign out through its listener
+            } catch (error) {
+              console.error("Error signing out:", error);
+              Toast.show("Failed to sign out", {
+                type: "custom_toast",
+                data: {
+                  title: "Error",
+                },
+              });
+            } finally {
+              setIsLoading(false);
+            }
           }}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-          <FontAwesome name="sign-out" size={24} style={styles.signOutIcon} />
+          {isLoading ? (
+            <ActivityIndicator color="#ff4444" />
+          ) : (
+            <>
+              <Text style={styles.signOutText}>Sign Out</Text>
+              <FontAwesome
+                name="sign-out"
+                size={24}
+                style={styles.signOutIcon}
+              />
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>

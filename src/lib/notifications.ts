@@ -1,4 +1,4 @@
-import { Text, View, Button, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -9,6 +9,11 @@ function handleRegistrationError(errorMessage: string) {
 }
 
 async function registerForPushNotificationsAsync() {
+  if (__DEV__) {
+    console.log("Push notification disabled in development");
+    return "simulated-device-token";
+  }
+
   if (Platform.OS === 'android') {
     Notifications.setNotificationChannelAsync('default', {
       name: 'default',

@@ -38,31 +38,35 @@ const NotificationsProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then((token) => {
-        setExpoPushToken(token ?? "");
-        saveUserPushNotificationToken(token ?? "");
-      })
-      .catch((error: any) => setExpoPushToken(`${error}`));
+    if (!__DEV__) {
+      registerForPushNotificationsAsync()
+        .then((token) => {
+          setExpoPushToken(token ?? "");
+          saveUserPushNotificationToken(token ?? "");
+        })
+        .catch((error: any) => setExpoPushToken(`${error}`));
 
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        setNotification(notification);
-      });
+      notificationListener.current =
+        Notifications.addNotificationReceivedListener((notification) => {
+          setNotification(notification);
+        });
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
-      });
+      responseListener.current =
+        Notifications.addNotificationResponseReceivedListener((response) => {
+          console.log(response);
+        });
 
-    return () => {
-      notificationListener.current &&
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
-      responseListener.current &&
-        Notifications.removeNotificationSubscription(responseListener.current);
-    };
+      return () => {
+        notificationListener.current &&
+          Notifications.removeNotificationSubscription(
+            notificationListener.current
+          );
+        responseListener.current &&
+          Notifications.removeNotificationSubscription(
+            responseListener.current
+          );
+      };
+    }
   }, []);
 
   console.log("expoPushToken", expoPushToken);
