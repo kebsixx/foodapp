@@ -11,7 +11,20 @@ import React, { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../providers/auth-provider";
 import { useToast } from "react-native-toast-notifications";
+import { sendVerificationCode, verifyCode } from "../utils/phone-verification";
 import { supabase } from "../lib/supabase";
+
+interface EditModalProps {
+  title: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  onSave: () => Promise<void>;
+  onCancel: () => void;
+  isLoading: boolean;
+  isVerification?: boolean;
+  onVerify?: (code: string) => Promise<void>;
+  [key: string]: any;
+}
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -94,7 +107,29 @@ const Profile = () => {
   const handlePhoneUpdate = async () => {
     try {
       setIsLoading(true);
-      // TODO: Add phone verification logic here
+      // Format nomor telepon ke format internasional
+      const formattedPhone = formatPhoneNumber(newPhone);
+      await sendVerificationCode(formattedPhone);
+      Toast.show("Verification code sent to your phone", {
+        type: "custom_toast",
+        data: { title: "Code Sent" },
+      });
+    } catch (error) {
+      console.error("Phone verification error:", error);
+      Toast.show("Failed to send verification code", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhoneVerification = async (code: string) => {
+    try {
+      setIsLoading(true);
+      await verifyCode(newPhone, code);
+
       const { error } = await supabase
         .from("users")
         .update({ phone: newPhone })
@@ -105,12 +140,13 @@ const Profile = () => {
       setFormData((prev) => ({ ...prev, phone: newPhone }));
       updateProfile({ phone: newPhone });
       setIsPhoneEditing(false);
-      Toast.show("Phone updated successfully", {
+
+      Toast.show("Phone number updated successfully", {
         type: "custom_toast",
         data: { title: "Success" },
       });
     } catch (error) {
-      Toast.show("Failed to update phone", {
+      Toast.show("Failed to verify code", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -275,6 +311,8 @@ const Profile = () => {
             onCancel={() => setIsPhoneEditing(false)}
             isLoading={isLoading}
             keyboardType="phone-pad"
+            isVerification={true}
+            onVerify={handlePhoneVerification}
           />
         )}
 
@@ -311,7 +349,6 @@ const Profile = () => {
   );
 };
 
-// Add EditModal component
 const EditModal = ({
   title,
   value,
@@ -319,45 +356,102 @@ const EditModal = ({
   onSave,
   onCancel,
   isLoading,
+  isVerification,
+  onVerify,
   ...inputProps
-}: {
-  title: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  isLoading: boolean;
-  [key: string]: any;
-}) => (
-  <View style={styles.editModal}>
-    <Text style={styles.modalTitle}>{title}</Text>
-    <TextInput
-      style={styles.input}
-      value={value}
-      onChangeText={onChangeText}
-      placeholderTextColor="#888"
-      {...inputProps}
-    />
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity
-        style={[styles.button, styles.cancelButton]}
-        onPress={onCancel}
-        disabled={isLoading}>
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={onSave}
-        disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Save</Text>
-        )}
-      </TouchableOpacity>
+}: EditModalProps) => {
+  const [verificationCode, setVerificationCode] = useState("");
+  const [showVerification, setShowVerification] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
+  const handleVerification = async () => {
+    if (!onVerify) return;
+
+    try {
+      setVerifying(true);
+      await onVerify(verificationCode);
+      await onSave();
+      setShowVerification(false);
+    } catch (error) {
+      console.error("Verification error:", error);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  return (
+    <View style={styles.editModal}>
+      <Text style={styles.modalTitle}>{title}</Text>
+
+      {!showVerification ? (
+        <>
+          <TextInput
+            style={styles.input}
+            value={value}
+            onChangeText={onChangeText}
+            placeholderTextColor="#888"
+            {...inputProps}
+          />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={onCancel}
+              disabled={isLoading}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={
+                isVerification ? () => setShowVerification(true) : onSave
+              }
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {isVerification ? "Send Code" : "Save"}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={styles.verificationText}>
+            Enter the verification code sent to your phone
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={verificationCode}
+            onChangeText={setVerificationCode}
+            placeholder="Enter verification code"
+            placeholderTextColor="#888"
+            keyboardType="number-pad"
+            maxLength={6}
+          />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={() => setShowVerification(false)}
+              disabled={verifying}>
+              <Text style={styles.cancelButtonText}>Back</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleVerification}
+              disabled={verifying || verificationCode.length < 6}>
+              {verifying ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Verify</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
-  </View>
-);
+  );
+};
 
 // Update styles
 const styles = StyleSheet.create({
@@ -586,6 +680,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: "#333",
   },
+  verificationText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 16,
+    textAlign: "center",
+  },
 });
+
+// Tambahkan fungsi format nomor
+const formatPhoneNumber = (phone: string) => {
+  // Hapus semua karakter non-digit
+  let cleaned = phone.replace(/\D/g, "");
+  // Jika nomor dimulai dengan 0, ganti dengan +62
+  if (cleaned.startsWith("0")) {
+    cleaned = "62" + cleaned.substring(1);
+  }
+  // Jika belum ada kode negara, tambahkan +62
+  if (!cleaned.startsWith("62")) {
+    cleaned = "62" + cleaned;
+  }
+  return "+" + cleaned;
+};
 
 export default Profile;

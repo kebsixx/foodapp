@@ -27,7 +27,6 @@ const AuthContext = createContext<AuthData>({
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<{
-    avatar_url: string;
     create_at: string | null;
     email: string;
     expo_notification_token: string | null;
