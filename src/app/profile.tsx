@@ -11,7 +11,6 @@ import React, { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../providers/auth-provider";
 import { useToast } from "react-native-toast-notifications";
-import { sendVerificationCode, verifyCode } from "../utils/phone-verification";
 import { supabase } from "../lib/supabase";
 
 interface EditModalProps {
@@ -21,8 +20,6 @@ interface EditModalProps {
   onSave: () => Promise<void>;
   onCancel: () => void;
   isLoading: boolean;
-  isVerification?: boolean;
-  onVerify?: (code: string) => Promise<void>;
   [key: string]: any;
 }
 
@@ -107,29 +104,6 @@ const Profile = () => {
   const handlePhoneUpdate = async () => {
     try {
       setIsLoading(true);
-      // Format nomor telepon ke format internasional
-      const formattedPhone = formatPhoneNumber(newPhone);
-      await sendVerificationCode(formattedPhone);
-      Toast.show("Verification code sent to your phone", {
-        type: "custom_toast",
-        data: { title: "Code Sent" },
-      });
-    } catch (error) {
-      console.error("Phone verification error:", error);
-      Toast.show("Failed to send verification code", {
-        type: "custom_toast",
-        data: { title: "Error" },
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePhoneVerification = async (code: string) => {
-    try {
-      setIsLoading(true);
-      await verifyCode(newPhone, code);
-
       const { error } = await supabase
         .from("users")
         .update({ phone: newPhone })
@@ -140,13 +114,12 @@ const Profile = () => {
       setFormData((prev) => ({ ...prev, phone: newPhone }));
       updateProfile({ phone: newPhone });
       setIsPhoneEditing(false);
-
       Toast.show("Phone number updated successfully", {
         type: "custom_toast",
         data: { title: "Success" },
       });
     } catch (error) {
-      Toast.show("Failed to verify code", {
+      Toast.show("Failed to update phone number", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -311,8 +284,6 @@ const Profile = () => {
             onCancel={() => setIsPhoneEditing(false)}
             isLoading={isLoading}
             keyboardType="phone-pad"
-            isVerification={true}
-            onVerify={handlePhoneVerification}
           />
         )}
 
@@ -356,99 +327,36 @@ const EditModal = ({
   onSave,
   onCancel,
   isLoading,
-  isVerification,
-  onVerify,
   ...inputProps
 }: EditModalProps) => {
-  const [verificationCode, setVerificationCode] = useState("");
-  const [showVerification, setShowVerification] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-
-  const handleVerification = async () => {
-    if (!onVerify) return;
-
-    try {
-      setVerifying(true);
-      await onVerify(verificationCode);
-      await onSave();
-      setShowVerification(false);
-    } catch (error) {
-      console.error("Verification error:", error);
-    } finally {
-      setVerifying(false);
-    }
-  };
-
   return (
     <View style={styles.editModal}>
       <Text style={styles.modalTitle}>{title}</Text>
-
-      {!showVerification ? (
-        <>
-          <TextInput
-            style={styles.input}
-            value={value}
-            onChangeText={onChangeText}
-            placeholderTextColor="#888"
-            {...inputProps}
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onCancel}
-              disabled={isLoading}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={
-                isVerification ? () => setShowVerification(true) : onSave
-              }
-              disabled={isLoading}>
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {isVerification ? "Send Code" : "Save"}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </>
-      ) : (
-        <>
-          <Text style={styles.verificationText}>
-            Enter the verification code sent to your phone
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={verificationCode}
-            onChangeText={setVerificationCode}
-            placeholder="Enter verification code"
-            placeholderTextColor="#888"
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={() => setShowVerification(false)}
-              disabled={verifying}>
-              <Text style={styles.cancelButtonText}>Back</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleVerification}
-              disabled={verifying || verificationCode.length < 6}>
-              {verifying ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Verify</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+      <TextInput
+        style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
+        placeholderTextColor="#888"
+        {...inputProps}
+      />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.cancelButton]}
+          onPress={onCancel}
+          disabled={isLoading}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={onSave}
+          disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Save</Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
