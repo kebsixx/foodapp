@@ -26,6 +26,7 @@ interface EditModalProps {
 const Profile = () => {
   const { user, updateProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignOutLoading, setIsSignOutLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || "",
     address: user?.address || "",
@@ -291,7 +292,7 @@ const Profile = () => {
           style={styles.signOutButton}
           onPress={async () => {
             try {
-              setIsLoading(true);
+              setIsSignOutLoading(true);
               await supabase.auth.signOut();
             } catch (error) {
               Toast.show("Failed to sign out", {
@@ -299,10 +300,10 @@ const Profile = () => {
                 data: { title: "Error" },
               });
             } finally {
-              setIsLoading(false);
+              setIsSignOutLoading(false);
             }
           }}>
-          {isLoading ? (
+          {isSignOutLoading ? (
             <ActivityIndicator color="#ff4444" />
           ) : (
             <>
