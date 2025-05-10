@@ -596,19 +596,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// Tambahkan fungsi format nomor
-const formatPhoneNumber = (phone: string) => {
-  // Hapus semua karakter non-digit
-  let cleaned = phone.replace(/\D/g, "");
-  // Jika nomor dimulai dengan 0, ganti dengan +62
-  if (cleaned.startsWith("0")) {
-    cleaned = "62" + cleaned.substring(1);
-  }
-  // Jika belum ada kode negara, tambahkan +62
-  if (!cleaned.startsWith("62")) {
-    cleaned = "62" + cleaned;
-  }
-  return "+" + cleaned;
-};
-
 export default Profile;
