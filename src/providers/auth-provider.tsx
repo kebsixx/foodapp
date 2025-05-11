@@ -108,31 +108,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     try {
       if (!user?.id) return;
 
-      let avatar_url = updates.avatar_url;
-      if (updates.avatar_url && updates.avatar_url.startsWith("file://")) {
-        const fileName = `avatar-${user.id}-${Date.now()}`;
-        const response = await fetch(updates.avatar_url);
-        const blob = await response.blob();
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(fileName, blob);
-
-        if (uploadError) throw uploadError;
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("avatars").getPublicUrl(fileName);
-
-        avatar_url = publicUrl;
-      }
-
       // Update the user profile
       const { error } = await supabase
         .from("users")
         .update({
           ...updates,
-          avatar_url,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
