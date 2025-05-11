@@ -308,6 +308,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auth_with_username_or_email: {
+        Args: { p_login: string; p_password: string }
+        Returns: Json
+      }
       decrement_product_quantity: {
         Args: { product_id: number; quantity: number }
         Returns: undefined

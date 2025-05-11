@@ -73,3 +73,30 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 });
+
+export const signInWithUsernameOrEmail = async (login: string, password: string) => {
+  const isEmail = login.includes('@');
+  
+  if (isEmail) {
+    return await supabase.auth.signInWithPassword({
+      email: login,
+      password
+    });
+  } else {
+    // Get email by username
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('email')
+      .eq('username', login)
+      .single();
+
+    if (error || !user) {
+      return { error: { message: 'Invalid username' } };
+    }
+
+    return await supabase.auth.signInWithPassword({
+      email: user.email,
+      password
+    });
+  }
+};
