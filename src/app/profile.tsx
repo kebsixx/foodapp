@@ -29,6 +29,7 @@ const Profile = () => {
   const [isSignOutLoading, setIsSignOutLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || "",
+    username: user?.username || "",
     address: user?.address || "",
     phone: user?.phone || "",
   });
@@ -36,12 +37,14 @@ const Profile = () => {
   // Separate edit states for each field
   const [isEmailEditing, setIsEmailEditing] = useState(false);
   const [isNameEditing, setIsNameEditing] = useState(false);
+  const [isUsernameEditing, setIsUsernameEditing] = useState(false);
   const [isAddressEditing, setIsAddressEditing] = useState(false);
   const [isPhoneEditing, setIsPhoneEditing] = useState(false);
 
   // Temporary values for editing
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [newName, setNewName] = useState(formData.name);
+  const [newUsername, setNewUsername] = useState(formData.username);
   const [newAddress, setNewAddress] = useState(formData.address);
   const [newPhone, setNewPhone] = useState(formData.phone);
 
@@ -49,12 +52,13 @@ const Profile = () => {
 
   // Update handlers for each field
   const handleNameUpdate = async () => {
+    if (!user?.id) return;
     try {
       setIsLoading(true);
       const { error } = await supabase
         .from("users")
         .update({ name: newName })
-        .eq("id", user?.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
@@ -75,13 +79,64 @@ const Profile = () => {
     }
   };
 
+  const handleUsernameUpdate = async () => {
+    if (!user?.id) return;
+
+    try {
+      setIsLoading(true);
+
+      // Validate username format
+      if (!newUsername.match(/^[a-zA-Z0-9_]+$/)) {
+        throw new Error(
+          "Username hanya boleh mengandung huruf, angka, dan underscore"
+        );
+      }
+
+      // Check if username exists (excluding current user)
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("username")
+        .eq("username", newUsername)
+        .neq("id", user.id)
+        .single();
+
+      if (existingUser) {
+        throw new Error("Username sudah digunakan");
+      }
+
+      const { error } = await supabase
+        .from("users")
+        .update({ username: newUsername })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setFormData((prev) => ({ ...prev, username: newUsername }));
+      updateProfile({ username: newUsername });
+      setIsUsernameEditing(false);
+
+      Toast.show("Username updated successfully", {
+        type: "custom_toast",
+        data: { title: "Success" },
+      });
+    } catch (error) {
+      Toast.show(error instanceof Error ? error.message : "An error occurred", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAddressUpdate = async () => {
     try {
       setIsLoading(true);
+      if (!user?.id) return;
       const { error } = await supabase
         .from("users")
         .update({ address: newAddress })
-        .eq("id", user?.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
@@ -105,10 +160,11 @@ const Profile = () => {
   const handlePhoneUpdate = async () => {
     try {
       setIsLoading(true);
+      if (!user?.id) return;
       const { error } = await supabase
         .from("users")
         .update({ phone: newPhone })
-        .eq("id", user?.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
@@ -216,7 +272,24 @@ const Profile = () => {
               </TouchableOpacity>
             </View>
           </View>
-
+          {/* Username Section */}
+          <View style={styles.infoItem}>
+            <View style={styles.infoHeader}>
+              <View>
+                <Text style={styles.label}>Username</Text>
+                <Text style={styles.text}>{formData.username}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => {
+                  setNewUsername(formData.username);
+                  setIsUsernameEditing(true);
+                }}>
+                <FontAwesome name="edit" size={16} color="#B17457" />
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           {/* Email Section */}
           <View style={styles.infoItem}>
             <View style={styles.infoHeader}>
@@ -235,7 +308,6 @@ const Profile = () => {
               </TouchableOpacity>
             </View>
           </View>
-
           {/* Address Section */}
           <View style={styles.infoItem}>
             <View style={styles.infoHeader}>
@@ -254,7 +326,6 @@ const Profile = () => {
               </TouchableOpacity>
             </View>
           </View>
-
           {/* Phone Section */}
           <View style={styles.infoItem}>
             <View style={styles.infoHeader}>
@@ -274,7 +345,6 @@ const Profile = () => {
             </View>
           </View>
         </View>
-
         {/* Edit Modals */}
         {isNameEditing && (
           <EditModal
@@ -286,7 +356,18 @@ const Profile = () => {
             isLoading={isLoading}
           />
         )}
-
+        {isUsernameEditing && (
+          <EditModal
+            title="Edit Username"
+            value={newUsername}
+            onChangeText={(text) => setNewUsername(text.toLowerCase())}
+            onSave={handleUsernameUpdate}
+            onCancel={() => setIsUsernameEditing(false)}
+            isLoading={isLoading}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        )}
         {isEmailEditing && (
           <EditModal
             title="Update Email"
@@ -302,7 +383,6 @@ const Profile = () => {
             placeholder="Enter new email"
           />
         )}
-
         {isAddressEditing && (
           <EditModal
             title="Edit Address"
@@ -314,7 +394,6 @@ const Profile = () => {
             multiline
           />
         )}
-
         {isPhoneEditing && (
           <EditModal
             title="Edit Phone"
@@ -326,7 +405,6 @@ const Profile = () => {
             keyboardType="phone-pad"
           />
         )}
-
         <TouchableOpacity
           style={styles.signOutButton}
           onPress={async () => {

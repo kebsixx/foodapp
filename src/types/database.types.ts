@@ -47,6 +47,7 @@ export type Database = {
           status: string
           totalPrice: number
           user: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -58,6 +59,7 @@ export type Database = {
           status: string
           totalPrice: number
           user: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -69,11 +71,12 @@ export type Database = {
           status?: string
           totalPrice?: number
           user?: string
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "order_user_fkey"
-            columns: ["user"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -243,6 +246,7 @@ export type Database = {
           phone: string | null
           type: string | null
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           address?: string | null
@@ -255,6 +259,7 @@ export type Database = {
           phone?: string | null
           type?: string | null
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           address?: string | null
@@ -267,6 +272,34 @@ export type Database = {
           phone?: string | null
           type?: string | null
           updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      verification_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: number
+          phone: string
+          verified: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: number
+          phone: string
+          verified?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: number
+          phone?: string
+          verified?: boolean | null
         }
         Relationships: []
       }

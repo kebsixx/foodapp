@@ -16,6 +16,12 @@ import React from "react";
 import { ScrollView } from "react-native";
 
 const userSchema = zod.object({
+  username: zod
+    .string()
+    .min(5, "Username minimal 5 karakter")
+    .max(30, "Username maksimal 30 karakter")
+    .regex(/^[a-zA-Z\s]+$/, "Nama hanya boleh mengandung huruf dan spasi")
+    .toLowerCase(),
   name: zod.string().min(1, "Nama harus diisi"),
   phone: zod.string().min(10, "Nomor telepon tidak valid"),
   address: zod.string().optional(),
@@ -30,6 +36,7 @@ export default function Register() {
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: {
+      username: "",
       name: "",
       phone: "",
       address: "",
@@ -40,27 +47,42 @@ export default function Register() {
   const onSubmit = async (data: zod.infer<typeof userSchema>) => {
     if (!session?.user) return;
 
-    const { error } = await supabase
-      .from("users")
-      .update({
-        name: data.name,
-        phone: data.phone,
-        address: data.address,
-        gender: data.gender,
-      })
-      .eq("id", session.user.id);
+    try {
+      // Check if username already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("username")
+        .eq("username", data.username)
+        .single();
 
-    if (error) {
-      Toast.show("Gagal menyimpan data", {
-        type: "custom_toast",
-        data: { title: "Error" },
-      });
-    } else {
-      const { data: userData } = await supabase
+      if (existingUser) {
+        Toast.show("Username sudah digunakan", {
+          type: "custom_toast",
+          data: { title: "Error" },
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("users")
+        .update({
+          username: data.username,
+          name: data.name,
+          phone: data.phone,
+          address: data.address,
+          gender: data.gender,
+        })
+        .eq("id", session.user.id);
+
+      if (error) throw error;
+
+      const { data: userData, error: fetchError } = await supabase
         .from("users")
         .select("*")
         .eq("id", session.user.id)
         .single();
+
+      if (fetchError) throw fetchError;
 
       setUser(userData);
       Toast.show("Data berhasil disimpan", {
@@ -68,6 +90,11 @@ export default function Register() {
         data: { title: "Sukses" },
       });
       router.push("/");
+    } catch (error) {
+      Toast.show("Gagal menyimpan data", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
     }
   };
 
@@ -95,6 +122,24 @@ export default function Register() {
                   style={styles.input}
                   value={value}
                   onChangeText={onChange}
+                />
+                {error && <Text style={styles.error}>{error.message}</Text>}
+              </>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="username"
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <>
+                <TextInput
+                  placeholder="Username"
+                  style={styles.input}
+                  value={value}
+                  onChangeText={(text) => onChange(text.toLowerCase())}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
                 {error && <Text style={styles.error}>{error.message}</Text>}
               </>
