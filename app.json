@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Cerita Senja",
-    "scheme": "com.supabase",
+    "scheme": "ceritasenja",
     "slug": "foodApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -39,6 +39,14 @@
           "icon": "./assets/notification-icon.png",
           "color": "#ffffff",
           "androidMode": "default"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],

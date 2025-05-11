@@ -132,19 +132,55 @@ const Profile = () => {
   const handleEmailUpdate = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.updateUser({ email: newEmail });
+
+      // Validate email format first
+      if (!newEmail.includes("@") || !newEmail.includes(".")) {
+        throw new Error("Please enter a valid email address");
+      }
+
+      // Check if email is actually changing
+      if (newEmail === user?.email) {
+        setIsEmailEditing(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser(
+        { email: newEmail },
+        {
+          // This will redirect after email confirmation
+          emailRedirectTo: "ceritasenja://email-confirmation",
+        }
+      );
 
       if (error) throw error;
 
-      setIsEmailEditing(false);
-      Toast.show("Email update instructions sent to your inbox", {
+      Toast.show("Verification email sent. Please check your inbox.", {
         type: "custom_toast",
-        data: { title: "Success" },
+        data: { title: "Email Verification" },
+        duration: 4000,
       });
+
+      setIsEmailEditing(false);
     } catch (error) {
-      Toast.show("Failed to update email", {
+      console.error("Email update error:", error);
+      console.log(
+        "Attempting to update email from",
+        user?.email,
+        "to",
+        newEmail
+      );
+
+      let errorMessage = "Failed to update email";
+      if (error instanceof Error) {
+        errorMessage = error.message.includes("already in use")
+          ? "This email is already registered"
+          : error.message;
+      }
+
+      Toast.show(errorMessage, {
         type: "custom_toast",
         data: { title: "Error" },
+        duration: 3000,
       });
     } finally {
       setIsLoading(false);
@@ -261,6 +297,9 @@ const Profile = () => {
             isLoading={isLoading}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            placeholder="Enter new email"
           />
         )}
 
@@ -328,6 +367,7 @@ const EditModal = ({
   onSave,
   onCancel,
   isLoading,
+  error,
   ...inputProps
 }: EditModalProps) => {
   return (
@@ -340,6 +380,7 @@ const EditModal = ({
         placeholderTextColor="#888"
         {...inputProps}
       />
+      {error && <Text style={styles.errorText}>{error}</Text>}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.cancelButton]}
@@ -481,6 +522,16 @@ const styles = StyleSheet.create({
   editIcon: {
     color: "#B17457",
   },
+  errorInput: {
+    borderColor: "#ff4444",
+    borderWidth: 1,
+  },
+  errorText: {
+    color: "#ff4444",
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 8,
+  },
   signOutButton: {
     backgroundColor: "#ffe1e1",
     padding: 16,
@@ -551,11 +602,6 @@ const styles = StyleSheet.create({
     color: "#B17457",
     fontSize: 16,
     fontWeight: "600",
-  },
-  errorText: {
-    color: "#ff4444",
-    fontSize: 14,
-    marginTop: 4,
   },
   loadingOverlay: {
     position: "absolute",

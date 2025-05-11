@@ -3,6 +3,7 @@ import * as Notifications from "expo-notifications";
 import registerForPushNotificationsAsync from "../lib/notifications";
 import { supabase } from "../lib/supabase";
 import React from "react";
+import Toast from "react-native-toast-message";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,30 +22,45 @@ const NotificationsProvider = ({ children }: PropsWithChildren) => {
   const responseListener = useRef<Notifications.Subscription>();
 
   const saveUserPushNotificationToken = async (token: string) => {
-    if (!token.length) return;
+    if (!token?.length) return;
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!session) return;
+      if (!session) return;
 
-    await supabase
-      .from("users")
-      .update({
-        expo_notification_token: token,
-      })
-      .eq("id", session.user.id);
+      await supabase
+        .from("users")
+        .update({
+          expo_notification_token: token,
+        })
+        .eq("id", session.user.id);
+    } catch (error) {
+      Toast.show({
+        type: "custom_toast",
+        position: "bottom",
+        props: {
+          title: "Error",
+          message: "Failed to save notification token",
+        },
+      });
+    }
   };
 
   useEffect(() => {
     if (!__DEV__) {
       registerForPushNotificationsAsync()
         .then((token) => {
-          setExpoPushToken(token ?? "");
-          saveUserPushNotificationToken(token ?? "");
+          if (token) {
+            setExpoPushToken(token);
+            saveUserPushNotificationToken(token);
+          }
         })
-        .catch((error: any) => setExpoPushToken(`${error}`));
+        .catch(() => {
+          // Error already handled by registerForPushNotificationsAsync
+        });
 
       notificationListener.current =
         Notifications.addNotificationReceivedListener((notification) => {
