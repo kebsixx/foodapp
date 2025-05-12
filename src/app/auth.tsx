@@ -2,12 +2,12 @@ import {
   View,
   Text,
   StyleSheet,
-  ImageBackground,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import * as zod from "zod";
@@ -17,7 +17,6 @@ import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { Link, Redirect } from "expo-router";
 import React, { useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 
 const authSchema = zod.object({
@@ -90,26 +89,14 @@ export default function Auth() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}>
-      <ImageBackground
-        source={{
-          uri: "https://images.unsplash.com/photo-1511081692775-05d0f180a065?q=80&w=1972&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        }}
-        style={styles.backgroundImage}
-        blurRadius={5}>
-        <LinearGradient
-          colors={["rgba(0,0,0,0.7)", "rgba(0,0,0,0.5)"]}
-          style={styles.overlay}
-        />
-
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome to Cerita Senja</Text>
-            <Text style={styles.subtitle}>
-              Sign in to continue your journey
-            </Text>
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to continue</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -129,7 +116,7 @@ export default function Auth() {
                   />
                   <TextInput
                     placeholder="Email or Username"
-                    placeholderTextColor="#aaa"
+                    placeholderTextColor="#666"
                     style={[styles.input, error && styles.inputError]}
                     value={value}
                     onChangeText={onChange}
@@ -157,7 +144,7 @@ export default function Auth() {
                   />
                   <TextInput
                     placeholder="Password"
-                    placeholderTextColor="#aaa"
+                    placeholderTextColor="#666"
                     style={[styles.input, error && styles.inputError]}
                     value={value}
                     onChangeText={onChange}
@@ -172,7 +159,7 @@ export default function Auth() {
                     <Feather
                       name={secureEntry ? "eye-off" : "eye"}
                       size={20}
-                      color="#aaa"
+                      color="#666"
                     />
                   </TouchableOpacity>
                 </View>
@@ -198,70 +185,54 @@ export default function Auth() {
             </Link>
           </View>
         </View>
-      </ImageBackground>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
-  backgroundImage: {
+  keyboardView: {
     flex: 1,
-    resizeMode: "cover",
-    justifyContent: "center",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
   },
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 30,
-    paddingBottom: 50,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   header: {
-    marginBottom: 40,
-    alignItems: "center",
+    marginBottom: 32,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
+    color: "#333",
     marginBottom: 8,
     textAlign: "center",
-    fontFamily: "sans-serif-medium",
   },
   subtitle: {
     fontSize: 16,
-    color: "rgba(255,255,255,0.8)",
+    color: "#666",
     textAlign: "center",
   },
   formContainer: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 20,
-    padding: 25,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    marginBottom: 24,
   },
   inputGroup: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: "#f5f5f5",
     borderRadius: 12,
-    paddingHorizontal: 15,
-    marginBottom: 20,
-    height: 50,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    height: 56,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   input: {
     flex: 1,
@@ -274,7 +245,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   eyeIcon: {
-    padding: 10,
+    padding: 8,
   },
   button: {
     backgroundColor: "#B17457",
@@ -282,12 +253,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    height: 50,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    height: 56,
+    marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
@@ -295,23 +262,23 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    alignItems: "center",
+    marginTop: 24,
   },
   footerText: {
-    color: "rgba(255,255,255,0.8)",
-    marginRight: 5,
+    color: "#666",
+    marginRight: 4,
   },
   signUpLink: {
-    paddingHorizontal: 5,
+    paddingHorizontal: 4,
   },
   signUpLinkText: {
     color: "#B17457",
-    fontWeight: "bold",
-    textDecorationLine: "underline",
+    fontWeight: "600",
   },
 });
