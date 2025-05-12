@@ -4,6 +4,10 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import * as zod from "zod";
@@ -13,7 +17,7 @@ import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { Link, Redirect, useRouter } from "expo-router";
 import React from "react";
-import { ScrollView } from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 export const authSchema = zod.object({
   email: zod.string().email(),
@@ -56,15 +60,17 @@ export default function Register() {
   if (session && !user?.name) return <Redirect href="/register" />;
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <View style={styles.backgroundImage}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Sign Up</Text>
-          <Text style={styles.subtitle}>
-            Silahkan buat akun untuk berbelanja
-          </Text>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Sign up to get started</Text>
+          </View>
 
-          <View style={styles.form}>
+          <View style={styles.formContainer}>
             <Controller
               control={control}
               name="email"
@@ -72,19 +78,24 @@ export default function Register() {
                 field: { value, onChange, onBlur },
                 fieldState: { error },
               }) => (
-                <>
+                <View style={styles.inputGroup}>
+                  <Feather
+                    name="mail"
+                    size={20}
+                    color="#B17457"
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     placeholder="Email"
-                    style={styles.input}
+                    placeholderTextColor="#666"
+                    style={[styles.input, error && styles.inputError]}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    placeholderTextColor="#536162"
                     autoCapitalize="none"
                     editable={!formState.isSubmitting}
                   />
-                  {error && <Text style={styles.error}>{error.message}</Text>}
-                </>
+                </View>
               )}
             />
 
@@ -95,49 +106,52 @@ export default function Register() {
                 field: { value, onChange, onBlur },
                 fieldState: { error },
               }) => (
-                <>
+                <View style={styles.inputGroup}>
+                  <Feather
+                    name="lock"
+                    size={20}
+                    color="#B17457"
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     placeholder="Password"
-                    style={styles.input}
+                    placeholderTextColor="#666"
+                    style={[styles.input, error && styles.inputError]}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     secureTextEntry
-                    placeholderTextColor="#536162"
                     autoCapitalize="none"
                     editable={!formState.isSubmitting}
                   />
-                  {error && <Text style={styles.error}>{error.message}</Text>}
-                </>
+                </View>
               )}
             />
+
+            <TouchableOpacity
+              style={[
+                styles.button,
+                formState.isSubmitting && styles.buttonDisabled,
+              ]}
+              onPress={handleSubmit(signUp)}
+              disabled={formState.isSubmitting}>
+              {formState.isSubmitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Sign Up</Text>
+              )}
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleSubmit(signUp)}
-            disabled={formState.isSubmitting}>
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account?</Text>
+            <Link href="/auth" style={styles.signInLink}>
+              <Text style={styles.signInLinkText}>Sign In</Text>
+            </Link>
+          </View>
         </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            marginBottom: 16,
-          }}>
-          <Text style={{ color: "#536162", fontSize: 16 }}>
-            Sudah punya Akun?
-          </Text>
-          <Link href="/auth">
-            <Text style={styles.signInButton}>Sign In</Text>
-          </Link>
-        </View>
-      </View>
-    </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -178,9 +192,7 @@ const styles = StyleSheet.create({
   input: {
     width: "80%",
     padding: 12,
-    marginBottom: 16,
     backgroundColor: "transparent",
-    borderBottomWidth: 1,
     fontSize: 16,
     color: "#536162",
   },
@@ -247,5 +259,57 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     textAlign: "left",
     width: "90%",
+  },
+  keyboardView: {
+    flex: 1,
+    width: "100%",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  header: {
+    marginBottom: 32,
+    alignItems: "center",
+  },
+  formContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
+  inputGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    width: "80%",
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  inputError: {
+    borderColor: "red",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  footerText: {
+    color: "#536162",
+    fontSize: 16,
+  },
+  signInLink: {
+    paddingHorizontal: 4,
+  },
+  signInLinkText: {
+    color: "#B17457",
+    fontWeight: "600",
   },
 });

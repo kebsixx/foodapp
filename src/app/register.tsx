@@ -4,6 +4,10 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import * as zod from "zod";
@@ -13,7 +17,7 @@ import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { Redirect, useRouter } from "expo-router";
 import React from "react";
-import { ScrollView } from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 const userSchema = zod.object({
   username: zod
@@ -107,104 +111,164 @@ export default function Register() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Lengkapi Data</Text>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Complete Profile</Text>
+            <Text style={styles.subtitle}>Tell us about yourself</Text>
+          </View>
 
-        <View style={styles.form}>
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <>
-                <TextInput
-                  placeholder="Nama Lengkap"
-                  style={styles.input}
-                  value={value}
-                  onChangeText={onChange}
-                />
-                {error && <Text style={styles.error}>{error.message}</Text>}
-              </>
-            )}
-          />
+          <View style={styles.formContainer}>
+            <Controller
+              control={control}
+              name="name"
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) => (
+                <View style={styles.inputGroup}>
+                  <Feather
+                    name="user"
+                    size={20}
+                    color="#B17457"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    placeholder="Full Name"
+                    placeholderTextColor="#666"
+                    style={[styles.input, error && styles.inputError]}
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                </View>
+              )}
+            />
 
-          <Controller
-            control={control}
-            name="username"
-            render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <>
-                <TextInput
-                  placeholder="Username"
-                  style={styles.input}
-                  value={value}
-                  onChangeText={(text) => onChange(text.toLowerCase())}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                {error && <Text style={styles.error}>{error.message}</Text>}
-              </>
-            )}
-          />
+            <Controller
+              control={control}
+              name="username"
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) => (
+                <View style={styles.inputGroup}>
+                  <Feather
+                    name="at-sign"
+                    size={20}
+                    color="#B17457"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    placeholder="Username"
+                    placeholderTextColor="#666"
+                    style={[styles.input, error && styles.inputError]}
+                    value={value}
+                    onChangeText={(text) => onChange(text.toLowerCase())}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+              )}
+            />
 
-          <Controller
-            control={control}
-            name="phone"
-            render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <>
-                <TextInput
-                  placeholder="Nomor Telepon"
-                  style={styles.input}
-                  value={value}
-                  onChangeText={onChange}
-                  keyboardType="phone-pad"
-                />
-                {error && <Text style={styles.error}>{error.message}</Text>}
-              </>
-            )}
-          />
+            <Controller
+              control={control}
+              name="phone"
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) => (
+                <View style={styles.inputGroup}>
+                  <Feather
+                    name="phone"
+                    size={20}
+                    color="#B17457"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    placeholder="Phone Number"
+                    placeholderTextColor="#666"
+                    style={[styles.input, error && styles.inputError]}
+                    value={value}
+                    onChangeText={onChange}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              )}
+            />
 
-          <Controller
-            control={control}
-            name="address"
-            render={({ field: { value, onChange } }) => (
-              <TextInput
-                placeholder="Alamat (Opsional)"
-                style={styles.input}
-                value={value}
-                onChangeText={onChange}
-                multiline
-              />
-            )}
-          />
+            <Controller
+              control={control}
+              name="address"
+              render={({ field: { value, onChange } }) => (
+                <View style={styles.inputGroup}>
+                  <Feather
+                    name="map-pin"
+                    size={20}
+                    color="#B17457"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    placeholder="Address (Optional)"
+                    placeholderTextColor="#666"
+                    style={styles.input}
+                    value={value}
+                    onChangeText={onChange}
+                    multiline
+                  />
+                </View>
+              )}
+            />
 
-          <Controller
-            control={control}
-            name="gender"
-            render={({ field: { value, onChange } }) => (
-              <View style={styles.genderContainer}>
-                <TouchableOpacity
-                  style={[styles.genderButton, value && styles.genderActive]}
-                  onPress={() => onChange(true)}>
-                  <Text>Laki-laki</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.genderButton, !value && styles.genderActive]}
-                  onPress={() => onChange(false)}>
-                  <Text>Perempuan</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          />
+            <Controller
+              control={control}
+              name="gender"
+              render={({ field: { value, onChange } }) => (
+                <View style={styles.genderContainer}>
+                  <TouchableOpacity
+                    style={[styles.genderButton, value && styles.genderActive]}
+                    onPress={() => onChange(true)}>
+                    <Text
+                      style={
+                        value ? styles.genderActiveText : styles.genderText
+                      }>
+                      Male
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.genderButton, !value && styles.genderActive]}
+                    onPress={() => onChange(false)}>
+                    <Text
+                      style={
+                        !value ? styles.genderActiveText : styles.genderText
+                      }>
+                      Female
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+
+            <TouchableOpacity
+              style={[
+                styles.button,
+                formState.isSubmitting && styles.buttonDisabled,
+              ]}
+              onPress={handleSubmit(onSubmit)}
+              disabled={formState.isSubmitting}>
+              {formState.isSubmitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Save Profile</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleSubmit(onSubmit)}
-          disabled={formState.isSubmitting}>
-          <Text style={styles.buttonText}>Simpan</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -239,9 +303,7 @@ const styles = StyleSheet.create({
   input: {
     width: "80%",
     padding: 12,
-    marginBottom: 16,
     backgroundColor: "transparent",
-    borderBottomWidth: 1,
     fontSize: 16,
     color: "#536162",
   },
@@ -325,5 +387,51 @@ const styles = StyleSheet.create({
   },
   genderActive: {
     backgroundColor: "#B17457",
+  },
+  keyboardView: {
+    flex: 1,
+    width: "100%",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  header: {
+    marginBottom: 32,
+    alignItems: "center",
+  },
+  formContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
+  inputGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    width: "80%",
+    borderBottomWidth: 1,
+    borderColor: "#B17457",
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  inputError: {
+    borderColor: "red",
+  },
+  buttonDisabled: {
+    backgroundColor: "#B17457",
+    opacity: 0.5,
+  },
+  genderText: {
+    color: "#B17457",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  genderActiveText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
