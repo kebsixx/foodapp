@@ -1,49 +1,55 @@
+import { useState, useCallback } from "react";
 import {
   View,
   FlatList,
   StyleSheet,
   Text,
   RefreshControl,
-  ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
 import { getProductsAndCategories } from "../../api/api";
-import { useState } from "react";
-import { ProductSkeleton } from "../../components/product-skeleton";
 import { CategoryProducts } from "../../components/category-products";
+
+const ITEMS_PER_PAGE = 4;
 
 const Home = () => {
   const { data, error, isLoading, refetch } = getProductsAndCategories();
   const [refreshing, setRefreshing] = useState(false);
+  const [visibleCategories, setVisibleCategories] = useState(2);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const onRefresh = async () => {
     try {
       setRefreshing(true);
       await refetch();
+      setVisibleCategories(2); // Reset on refresh
     } finally {
       setRefreshing(false);
     }
   };
 
-  // Get featured/newest products (first 6)
-  const featuredProducts = data?.products.slice(0, 6) || [];
+  const onEndReached = useCallback(() => {
+    if (
+      !loadingMore &&
+      data?.categories &&
+      visibleCategories < data.categories.length
+    ) {
+      setLoadingMore(true);
+      setTimeout(() => {
+        setVisibleCategories((prev) =>
+          Math.min(prev + 2, data.categories.length)
+        );
+        setLoadingMore(false);
+      }, 500);
+    }
+  }, [data?.categories, visibleCategories, loadingMore]);
 
   if (isLoading && !refreshing) {
     return (
       <View style={styles.container}>
-        <FlatList
-          data={[1, 2, 3, 4, 5, 6]}
-          renderItem={() => <ProductSkeleton />}
-          keyExtractor={(item) => item.toString()}
-          numColumns={2}
-          contentContainerStyle={[
-            styles.flatListContent,
-            { paddingBottom: 80 },
-          ]}
-          columnWrapperStyle={styles.flatListColumn}
-          style={{ paddingHorizontal: 10, paddingVertical: 5 }}
-        />
+        <ActivityIndicator size="large" color="#B17457" />
       </View>
     );
   }
@@ -51,36 +57,35 @@ const Home = () => {
   if (error || !data)
     return <Text>{error?.message || "An error occurred"}</Text>;
 
+  const visibleData = {
+    ...data,
+    categories: data.categories.slice(0, visibleCategories),
+  };
+
   return (
-    <ScrollView
+    <FlatList
       style={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={["#B17457"]}
-          tintColor="#B17457"
-        />
-      }>
-      <ListHeader categories={data.categories} users={data.users!} />
+      ListHeaderComponent={() => (
+        <>
+          <ListHeader categories={data.categories} users={data.users!} />
 
-      {/* Best Seller Menu Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Best Seller Menu</Text>
-        <FlatList
-          data={featuredProducts}
-          renderItem={({ item }) => <ProductListItem product={item} />}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          scrollEnabled={false}
-          columnWrapperStyle={styles.flatListColumn}
-          contentContainerStyle={styles.featuredProducts}
-          style={{ flex: 1 }}
-        />
-      </View>
-
-      {/* Categories Sections */}
-      {data.categories.map((category) => {
+          {/* Best Seller Menu Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Best Seller Menu</Text>
+            <FlatList
+              data={data.products.slice(0, 6)}
+              renderItem={({ item }) => <ProductListItem product={item} />}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={2}
+              scrollEnabled={false}
+              columnWrapperStyle={styles.flatListColumn}
+              contentContainerStyle={styles.featuredProducts}
+            />
+          </View>
+        </>
+      )}
+      data={visibleData.categories}
+      renderItem={({ item: category }) => {
         const categoryProducts = data.products.filter(
           (product) => product.category === category.id
         );
@@ -95,8 +100,24 @@ const Home = () => {
             categorySlug={category.slug}
           />
         );
-      })}
-    </ScrollView>
+      }}
+      keyExtractor={(item) => item.id.toString()}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={() =>
+        loadingMore ? (
+          <ActivityIndicator color="#B17457" style={{ padding: 20 }} />
+        ) : null
+      }
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#B17457"]}
+          tintColor="#B17457"
+        />
+      }
+    />
   );
 };
 
@@ -110,12 +131,12 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 24,
     marginBottom: 16,
+    marginHorizontal: 14,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 16,
-    paddingHorizontal: 16,
     color: "#333",
   },
   flatListColumn: {
@@ -130,5 +151,9 @@ const styles = StyleSheet.create({
   featuredProducts: {
     paddingHorizontal: 10,
     gap: 12,
+  },
+  loadingFooter: {
+    padding: 20,
+    alignItems: "center",
   },
 });

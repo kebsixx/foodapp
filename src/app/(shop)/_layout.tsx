@@ -15,7 +15,16 @@ function TabBarIcon(props: {
 const TabsLayout = () => {
   const { session, mounting } = useAuth();
 
-  if (mounting) return <ActivityIndicator />;
+  // Show a quick loading state
+  if (mounting) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#B17457" />
+      </View>
+    );
+  }
+
+  // Redirect if no session
   if (!session) return <Redirect href="/auth" />;
 
   return (
@@ -81,6 +90,8 @@ const TabsLayout = () => {
               shadowRadius: 4,
             },
             headerShown: false,
+            lazy: true, // Only render screens when they're active
+            tabBarHideOnKeyboard: true, // Hide tab bar when keyboard is shown
           }}>
           <Tabs.Screen
             name="index"
@@ -109,6 +120,12 @@ export default TabsLayout;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#fff",
   },
 });

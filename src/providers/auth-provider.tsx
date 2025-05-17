@@ -43,71 +43,68 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<UserType | null>(null);
   const [mounting, setMounting] = useState(true);
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        setMounting(true);
+  // Separate session and user fetching
+  const fetchUserData = async (sessionUserId: string) => {
+    try {
+      const { data: user, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", sessionUserId)
+        .single();
 
+      if (error) throw error;
+      setUser(user as UserType);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      setUser(null);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        // Get stored session first
         const {
           data: { session },
-          error: sessionError,
+          error,
         } = await supabase.auth.getSession();
 
-        if (sessionError) throw sessionError;
+        if (mounted) {
+          if (error) throw error;
+          setSession(session);
 
-        setSession(session);
-
-        if (session?.user?.id) {
-          const { data: user, error: userError } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          if (userError) throw userError;
-          setUser(user);
-        } else {
-          setUser(null);
+          // Fetch user data if session exists
+          if (session?.user?.id) {
+            fetchUserData(session.user.id);
+          }
         }
       } catch (error) {
-        console.error("Error fetching session:", error);
-        setSession(null);
-        setUser(null);
+        console.error("Auth initialization error:", error);
       } finally {
-        setMounting(false);
+        if (mounted) setMounting(false);
       }
     };
 
-    fetchSession();
+    initializeAuth();
 
+    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        setMounting(true);
+      if (mounted) {
         setSession(session);
-
         if (session?.user?.id) {
-          const { data: user, error } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          if (error) throw error;
-          setUser(user as UserType);
+          fetchUserData(session.user.id);
         } else {
           setUser(null);
         }
-      } catch (error) {
-        console.error("Auth state change error:", error);
-        setUser(null);
-      } finally {
-        setMounting(false);
       }
     });
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);
