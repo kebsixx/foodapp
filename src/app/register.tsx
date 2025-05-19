@@ -16,7 +16,7 @@ import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
 import { Redirect, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
 
 const userSchema = zod.object({
@@ -102,13 +102,14 @@ export default function Register() {
     }
   };
 
-  if (!session) {
-    return <Redirect href="/signup" />;
-  }
-
-  if (user?.name) {
-    return <Redirect href="/" />;
-  }
+  useEffect(() => {
+    // Handle navigation based on auth state
+    if (!session) {
+      router.replace("/signup");
+    } else if (user?.name) {
+      router.replace("/(shop)");
+    }
+  }, [session, user, router]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -137,7 +138,7 @@ export default function Register() {
                     style={styles.inputIcon}
                   />
                   <TextInput
-                    placeholder="Full Name"
+                    placeholder="Name"
                     placeholderTextColor="#666"
                     style={[styles.input, error && styles.inputError]}
                     value={value}
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   title: {
-    fontSize: 45,
+    fontSize: 36,
     fontWeight: "bold",
     color: "#424642",
     marginBottom: 8,
@@ -301,14 +302,14 @@ const styles = StyleSheet.create({
     margin: 20,
   },
   input: {
-    width: "80%",
+    width: "100%",
     padding: 12,
     backgroundColor: "transparent",
     fontSize: 16,
     color: "#536162",
   },
   dropdownButtonStyle: {
-    width: "80%",
+    width: "100%",
     backgroundColor: "transparent",
     borderBottomWidth: 1,
     flexDirection: "row",
@@ -350,7 +351,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 50,
     marginBottom: 16,
-    width: "80%",
+    width: "100%",
     alignItems: "center",
   },
   buttonText: {
@@ -369,12 +370,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingLeft: 20,
     textAlign: "left",
-    width: "90%",
+    width: "100%",
   },
   genderContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "80%",
+    width: "100%",
     marginBottom: 16,
   },
   genderButton: {
@@ -403,14 +404,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   formContainer: {
-    width: "100%",
+    width: "90%",
     alignItems: "center",
   },
   inputGroup: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
-    width: "80%",
+    width: "100%",
     borderBottomWidth: 1,
     borderColor: "#B17457",
   },

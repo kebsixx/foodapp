@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/auth-provider";
 import { generateOrderSlug } from "../utils/utils";
 
+type PickupMethod = 'pickup' | 'delivery';
 interface OrderItem {
   id?: number;
   order: number;
@@ -17,14 +18,17 @@ interface OrderItem {
   };
 }
 
-interface Order {
-  id: number;
-  slug: string;
+// Update the Order interface to match your exact database schema
+interface DatabaseOrder {
+  id?: number;
+  created_at?: string;
   status: string;
-  created_at: string;
+  description: string | null;
+  user: string;        // Changed back to 'user'
+  slug: string;
   totalPrice: number;
-  user: string;
-  order_item: OrderItem[];
+  pickup_method: string | null;
+  payment_proof: string | null;
 }
 
 export const getUsers = () => {
@@ -119,6 +123,8 @@ export const getMyOrders = () => {
   return useQuery({
     queryKey: ['orders', user?.id],
     queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      
       const { data, error } = await supabase
         .from('order')
         .select(`
@@ -134,7 +140,7 @@ export const getMyOrders = () => {
             variant_id
           )
         `)
-        .eq('user', user?.id)
+        .eq('user', user.id)  // Changed from 'user' to 'user_id'
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -154,9 +160,11 @@ export const getMyOrders = () => {
 };
 
 export const createOrder = () => {
-  const {
-    user: { id },
-  } = useAuth();
+  const { user } = useAuth();
+  
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
 
   const slug = generateOrderSlug();
   const queryClient = useQueryClient();
@@ -168,14 +176,15 @@ export const createOrder = () => {
         .insert({
           totalPrice,
           slug,
-          user: id,
+          user: user.id,
           status: "Pending",
         })
         .select("*")
         .single();
 
       if (error) {
-        throw new Error("Failed to create order : " + error.message);
+        console.error("Order creation error details:", error);
+        throw new Error("Failed to create order: " + error.message);
       }
 
       return data;
@@ -183,8 +192,12 @@ export const createOrder = () => {
 
     async onSuccess() {
       await queryClient.invalidateQueries({ queryKey: ["order"] });
-      await queryClient.invalidateQueries({ queryKey: ["orders", id] });
+      await queryClient.invalidateQueries({ queryKey: ["orders", user.id] });
     },
+    onError(error) {
+      // Handle errors gracefully
+      console.error('Order creation failed:', error);
+    }
   });
 };
 
@@ -220,9 +233,11 @@ export const createOrderItem = () => {
 };
 
 export const getMyOrder = (slug: string) => {
-  const {
-    user: { id },
-  } = useAuth();
+  const { user } = useAuth();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
 
   return useQuery({
     queryKey: ["orders", slug],
@@ -231,7 +246,7 @@ export const getMyOrder = (slug: string) => {
         .from("order")
         .select("*, order_item:order_item(*, products:product(*))")
         .eq("slug", slug)
-        .eq("user", id)
+        .eq("user", user.id)
         .single();
 
       if (error || !data) {

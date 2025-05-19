@@ -7,11 +7,12 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../providers/auth-provider";
 import { useToast } from "react-native-toast-notifications";
 import { supabase } from "../lib/supabase";
+import { useRouter, Stack } from "expo-router";
 
 interface EditModalProps {
   title: string;
@@ -23,10 +24,12 @@ interface EditModalProps {
   [key: string]: any;
 }
 
-const Profile = () => {
-  const { user, updateProfile } = useAuth();
+export default function Profile() {
+  const { session, user, updateProfile } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignOutLoading, setIsSignOutLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || "",
     username: user?.username || "",
@@ -49,6 +52,17 @@ const Profile = () => {
   const [newPhone, setNewPhone] = useState(formData.phone);
 
   const Toast = useToast();
+
+  useEffect(() => {
+    if (!session) {
+      router.replace("/auth");
+      return;
+    }
+    if (!user?.name) {
+      router.replace("/register");
+      return;
+    }
+  }, [session, user]);
 
   // Update handlers for each field
   const handleNameUpdate = async () => {
@@ -243,200 +257,251 @@ const Profile = () => {
     }
   };
 
-  return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <FontAwesome name="user-o" size={72} color="#fff" />
-        </View>
-        <Text style={styles.userName}>{formData.name}</Text>
-      </View>
+  const handleSignOut = async () => {
+    try {
+      setIsSignOutLoading(true);
+      await supabase.auth.signOut();
+      router.replace("/auth");
+    } catch (error) {
+      Toast.show("Failed to sign out", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsSignOutLoading(false);
+    }
+  };
 
-      <View style={styles.content}>
-        <View style={styles.info}>
-          {/* Name Section */}
-          <View style={styles.infoItem}>
-            <View style={styles.infoHeader}>
-              <View>
-                <Text style={styles.label}>Name</Text>
-                <Text style={styles.text}>{formData.name}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => {
-                  setNewName(formData.name);
-                  setIsNameEditing(true);
-                }}>
-                <FontAwesome name="edit" size={16} color="#B17457" />
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleteLoading(true);
+      // You can add confirmation dialog here if needed
+      router.push("https://ceritasenjacafe.com/user/delete");
+    } catch (error) {
+      Toast.show("Failed to navigate to delete page", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: "Profile",
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#B17457",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "600",
+          },
+          headerShadowVisible: false, // Removes the bottom border
+        }}
+      />
+
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.iconContainer}>
+            <FontAwesome name="user-o" size={72} color="#fff" />
           </View>
-          {/* Username Section */}
-          <View style={styles.infoItem}>
-            <View style={styles.infoHeader}>
-              <View>
-                <Text style={styles.label}>Username</Text>
-                <Text style={styles.text}>{formData.username}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => {
-                  setNewUsername(formData.username);
-                  setIsUsernameEditing(true);
-                }}>
-                <FontAwesome name="edit" size={16} color="#B17457" />
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* Email Section */}
-          <View style={styles.infoItem}>
-            <View style={styles.infoHeader}>
-              <View>
-                <Text style={styles.label}>Email</Text>
-                <Text style={styles.text}>{user?.email}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => {
-                  setNewEmail(user?.email || "");
-                  setIsEmailEditing(true);
-                }}>
-                <FontAwesome name="envelope" size={16} color="#B17457" />
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* Address Section */}
-          <View style={styles.infoItem}>
-            <View style={styles.infoHeader}>
-              <View>
-                <Text style={styles.label}>Address</Text>
-                <Text style={styles.text}>{formData.address}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => {
-                  setNewAddress(formData.address);
-                  setIsAddressEditing(true);
-                }}>
-                <FontAwesome name="edit" size={16} color="#B17457" />
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          {/* Phone Section */}
-          <View style={styles.infoItem}>
-            <View style={styles.infoHeader}>
-              <View>
-                <Text style={styles.label}>Phone</Text>
-                <Text style={styles.text}>{formData.phone}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => {
-                  setNewPhone(formData.phone);
-                  setIsPhoneEditing(true);
-                }}>
-                <FontAwesome name="phone" size={16} color="#B17457" />
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <Text style={styles.userName}>{formData.name}</Text>
         </View>
-        {/* Edit Modals */}
-        {isNameEditing && (
-          <EditModal
-            title="Edit Name"
-            value={newName}
-            onChangeText={setNewName}
-            onSave={handleNameUpdate}
-            onCancel={() => setIsNameEditing(false)}
-            isLoading={isLoading}
-          />
-        )}
-        {isUsernameEditing && (
-          <EditModal
-            title="Edit Username"
-            value={newUsername}
-            onChangeText={(text) => setNewUsername(text.toLowerCase())}
-            onSave={handleUsernameUpdate}
-            onCancel={() => setIsUsernameEditing(false)}
-            isLoading={isLoading}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        )}
-        {isEmailEditing && (
-          <EditModal
-            title="Update Email"
-            value={newEmail}
-            onChangeText={setNewEmail}
-            onSave={handleEmailUpdate}
-            onCancel={() => setIsEmailEditing(false)}
-            isLoading={isLoading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            autoCorrect={false}
-            placeholder="Enter new email"
-          />
-        )}
-        {isAddressEditing && (
-          <EditModal
-            title="Edit Address"
-            value={newAddress}
-            onChangeText={setNewAddress}
-            onSave={handleAddressUpdate}
-            onCancel={() => setIsAddressEditing(false)}
-            isLoading={isLoading}
-            multiline
-          />
-        )}
-        {isPhoneEditing && (
-          <EditModal
-            title="Edit Phone"
-            value={newPhone}
-            onChangeText={setNewPhone}
-            onSave={handlePhoneUpdate}
-            onCancel={() => setIsPhoneEditing(false)}
-            isLoading={isLoading}
-            keyboardType="phone-pad"
-          />
-        )}
-        <TouchableOpacity
-          style={styles.signOutButton}
-          onPress={async () => {
-            try {
-              setIsSignOutLoading(true);
-              await supabase.auth.signOut();
-            } catch (error) {
-              Toast.show("Failed to sign out", {
-                type: "custom_toast",
-                data: { title: "Error" },
-              });
-            } finally {
-              setIsSignOutLoading(false);
-            }
-          }}>
-          {isSignOutLoading ? (
-            <ActivityIndicator color="#ff4444" />
-          ) : (
-            <>
-              <Text style={styles.signOutText}>Sign Out</Text>
-              <FontAwesome
-                name="sign-out"
-                size={24}
-                style={styles.signOutIcon}
-              />
-            </>
+
+        <View style={styles.content}>
+          <View style={styles.info}>
+            {/* Name Section */}
+            <View style={styles.infoItem}>
+              <View style={styles.infoHeader}>
+                <View>
+                  <Text style={styles.label}>Name</Text>
+                  <Text style={styles.text}>{formData.name}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => {
+                    setNewName(formData.name);
+                    setIsNameEditing(true);
+                  }}>
+                  <FontAwesome name="edit" size={16} color="#B17457" />
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* Username Section */}
+            <View style={styles.infoItem}>
+              <View style={styles.infoHeader}>
+                <View>
+                  <Text style={styles.label}>Username</Text>
+                  <Text style={styles.text}>{formData.username}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => {
+                    setNewUsername(formData.username);
+                    setIsUsernameEditing(true);
+                  }}>
+                  <FontAwesome name="edit" size={16} color="#B17457" />
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* Email Section */}
+            <View style={styles.infoItem}>
+              <View style={styles.infoHeader}>
+                <View>
+                  <Text style={styles.label}>Email</Text>
+                  <Text style={styles.text}>{user?.email}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => {
+                    setNewEmail(user?.email || "");
+                    setIsEmailEditing(true);
+                  }}>
+                  <FontAwesome name="envelope" size={16} color="#B17457" />
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* Address Section */}
+            <View style={styles.infoItem}>
+              <View style={styles.infoHeader}>
+                <View>
+                  <Text style={styles.label}>Address</Text>
+                  <Text style={styles.text}>{formData.address}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => {
+                    setNewAddress(formData.address);
+                    setIsAddressEditing(true);
+                  }}>
+                  <FontAwesome name="edit" size={16} color="#B17457" />
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* Phone Section */}
+            <View style={styles.infoItem}>
+              <View style={styles.infoHeader}>
+                <View>
+                  <Text style={styles.label}>Phone</Text>
+                  <Text style={styles.text}>{formData.phone}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => {
+                    setNewPhone(formData.phone);
+                    setIsPhoneEditing(true);
+                  }}>
+                  <FontAwesome name="phone" size={16} color="#B17457" />
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          {/* Edit Modals */}
+          {isNameEditing && (
+            <EditModal
+              title="Edit Name"
+              value={newName}
+              onChangeText={setNewName}
+              onSave={handleNameUpdate}
+              onCancel={() => setIsNameEditing(false)}
+              isLoading={isLoading}
+            />
           )}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          {isUsernameEditing && (
+            <EditModal
+              title="Edit Username"
+              value={newUsername}
+              onChangeText={(text) => setNewUsername(text.toLowerCase())}
+              onSave={handleUsernameUpdate}
+              onCancel={() => setIsUsernameEditing(false)}
+              isLoading={isLoading}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          )}
+          {isEmailEditing && (
+            <EditModal
+              title="Update Email"
+              value={newEmail}
+              onChangeText={setNewEmail}
+              onSave={handleEmailUpdate}
+              onCancel={() => setIsEmailEditing(false)}
+              isLoading={isLoading}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect={false}
+              placeholder="Enter new email"
+            />
+          )}
+          {isAddressEditing && (
+            <EditModal
+              title="Edit Address"
+              value={newAddress}
+              onChangeText={setNewAddress}
+              onSave={handleAddressUpdate}
+              onCancel={() => setIsAddressEditing(false)}
+              isLoading={isLoading}
+              multiline
+            />
+          )}
+          {isPhoneEditing && (
+            <EditModal
+              title="Edit Phone"
+              value={newPhone}
+              onChangeText={setNewPhone}
+              onSave={handlePhoneUpdate}
+              onCancel={() => setIsPhoneEditing(false)}
+              isLoading={isLoading}
+              keyboardType="phone-pad"
+            />
+          )}
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={handleSignOut}>
+            {isSignOutLoading ? (
+              <ActivityIndicator color="#ff4444" />
+            ) : (
+              <>
+                <Text style={styles.signOutText}>Sign Out</Text>
+                <FontAwesome
+                  name="sign-out"
+                  size={24}
+                  style={styles.signOutIcon}
+                />
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.signOutButton,
+              { backgroundColor: "#f5f5f5", justifyContent: "center" },
+            ]}
+            onPress={handleDeleteAccount}>
+            {isDeleteLoading ? (
+              <ActivityIndicator color="#d32f2f" />
+            ) : (
+              <>
+                <Text style={[styles.signOutText, { color: "#d32f2f" }]}>
+                  Delete Account
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </>
   );
-};
+}
 
 const EditModal = ({
   title,
@@ -720,5 +785,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
-export default Profile;

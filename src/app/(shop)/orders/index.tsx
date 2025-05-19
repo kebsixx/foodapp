@@ -13,6 +13,7 @@ import { formatCurrency } from "../../../utils/utils";
 import { getMyOrders } from "../../../api/api";
 import { RefreshControl } from "react-native";
 import { useState } from "react";
+import { useAuth } from "../../../providers/auth-provider";
 
 interface Order {
   id: string;
@@ -25,6 +26,7 @@ interface Order {
 }
 
 export default function Orders() {
+  const { user } = useAuth();
   const { data: orders, error, isLoading, refetch } = getMyOrders();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -37,9 +39,38 @@ export default function Orders() {
     }
   };
 
-  if (isLoading && !refreshing)
-    return <ActivityIndicator size="large" color="#B17457" />;
-  if (error) return <Text>Error: {error.message}</Text>;
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="Orders" />
+        <View style={styles.centerContent}>
+          <Text>Please login to view orders</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (isLoading && !refreshing) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="Orders" />
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#B17457" />
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="Orders" />
+        <View style={styles.centerContent}>
+          <Text>Error: {error.message}</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -48,8 +79,13 @@ export default function Orders() {
 
       <FlatList
         data={orders}
-        keyExtractor={(item) => `${item.id}-${item.variant || "no-variant"}`} // Gunakan kombinasi ID dan variant sebagai key
-        contentContainerStyle={{ paddingBottom: 80, padding: 16 }}
+        keyExtractor={(item) => item.slug}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={() => (
+          <View style={styles.centerContent}>
+            <Text style={styles.emptyText}>No orders found</Text>
+          </View>
+        )}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -67,6 +103,9 @@ export default function Orders() {
                     {item.product_title}
                   </Text>
                   <Text style={styles.orderId}>Order #{item.slug}</Text>
+                  <Text style={styles.orderPrice}>
+                    {formatCurrency(item.totalPrice)}
+                  </Text>
                 </View>
                 <View
                   style={[
@@ -148,5 +187,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     color: "#333",
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 12, // Add top padding
+    paddingBottom: 80,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+  },
+  orderPrice: {
+    fontSize: 14,
+    color: "#B17457",
+    marginTop: 4,
+    fontWeight: "500",
   },
 });

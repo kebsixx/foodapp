@@ -36,6 +36,36 @@ export type Database = {
         }
         Relationships: []
       }
+      feedbacks: {
+        Row: {
+          created_at: string
+          feedback: string
+          id: string
+          name: string | null
+          status: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback: string
+          id?: string
+          name?: string | null
+          status?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string
+          id?: string
+          name?: string | null
+          status?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order: {
         Row: {
           created_at: string
@@ -47,7 +77,6 @@ export type Database = {
           status: string
           totalPrice: number
           user: string
-          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -59,7 +88,6 @@ export type Database = {
           status: string
           totalPrice: number
           user: string
-          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -71,17 +99,8 @@ export type Database = {
           status?: string
           totalPrice?: number
           user?: string
-          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "order_user_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       order_item: {
         Row: {
@@ -276,33 +295,6 @@ export type Database = {
         }
         Relationships: []
       }
-      verification_codes: {
-        Row: {
-          code: string
-          created_at: string
-          expires_at: string
-          id: number
-          phone: string
-          verified: boolean | null
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          expires_at: string
-          id?: number
-          phone: string
-          verified?: boolean | null
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          expires_at?: string
-          id?: number
-          phone?: string
-          verified?: boolean | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -319,6 +311,10 @@ export type Database = {
       is_store_open: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      login_with_username_or_email: {
+        Args: { p_identifier: string; p_password: string }
+        Returns: Json
       }
     }
     Enums: {

@@ -15,8 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { Link, Redirect } from "expo-router";
-import React, { useState } from "react";
+import { Redirect, Link, useRouter } from "expo-router";
+import React, { useState, useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
 
 const authSchema = zod.object({
@@ -27,12 +27,11 @@ const authSchema = zod.object({
 });
 
 export default function Auth() {
-  const { session } = useAuth();
+  const { session, user } = useAuth();
   const Toast = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [secureEntry, setSecureEntry] = useState(true);
-
-  if (session) return <Redirect href="/" />;
 
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(authSchema),
@@ -41,6 +40,15 @@ export default function Auth() {
       password: "",
     },
   });
+
+  // Move redirect logic into useEffect
+  useEffect(() => {
+    if (session && user) {
+      if (user.name) {
+        router.replace("/(shop)");
+      }
+    }
+  }, [session, user]);
 
   const signIn = async (data: zod.infer<typeof authSchema>) => {
     setIsLoading(true);
@@ -88,104 +96,107 @@ export default function Auth() {
     }
   };
 
+  // Remove early returns and render conditionally
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue</Text>
-          </View>
+      {!session ? (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}>
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subtitle}>Sign in to continue</Text>
+            </View>
 
-          <View style={styles.formContainer}>
-            <Controller
-              control={control}
-              name="login"
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error },
-              }) => (
-                <View style={styles.inputGroup}>
-                  <Feather
-                    name="user"
-                    size={20}
-                    color="#B17457"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    placeholder="Email or Username"
-                    placeholderTextColor="#666"
-                    style={[styles.input, error && styles.inputError]}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    autoCapitalize="none"
-                    editable={!isLoading}
-                  />
-                </View>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="password"
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error },
-              }) => (
-                <View style={styles.inputGroup}>
-                  <Feather
-                    name="lock"
-                    size={20}
-                    color="#B17457"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    placeholder="Password"
-                    placeholderTextColor="#666"
-                    style={[styles.input, error && styles.inputError]}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    secureTextEntry={secureEntry}
-                    autoCapitalize="none"
-                    editable={!isLoading}
-                  />
-                  <TouchableOpacity
-                    style={styles.eyeIcon}
-                    onPress={() => setSecureEntry(!secureEntry)}>
+            <View style={styles.formContainer}>
+              <Controller
+                control={control}
+                name="login"
+                render={({
+                  field: { value, onChange, onBlur },
+                  fieldState: { error },
+                }) => (
+                  <View style={styles.inputGroup}>
                     <Feather
-                      name={secureEntry ? "eye-off" : "eye"}
+                      name="user"
                       size={20}
-                      color="#666"
+                      color="#B17457"
+                      style={styles.inputIcon}
                     />
-                  </TouchableOpacity>
-                </View>
-              )}
-            />
+                    <TextInput
+                      placeholder="Email or Username"
+                      placeholderTextColor="#666"
+                      style={[styles.input, error && styles.inputError]}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      autoCapitalize="none"
+                      editable={!isLoading}
+                    />
+                  </View>
+                )}
+              />
 
-            <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleSubmit(signIn)}
-              disabled={isLoading}>
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Sign In</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+              <Controller
+                control={control}
+                name="password"
+                render={({
+                  field: { value, onChange, onBlur },
+                  fieldState: { error },
+                }) => (
+                  <View style={styles.inputGroup}>
+                    <Feather
+                      name="lock"
+                      size={20}
+                      color="#B17457"
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      placeholder="Password"
+                      placeholderTextColor="#666"
+                      style={[styles.input, error && styles.inputError]}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      secureTextEntry={secureEntry}
+                      autoCapitalize="none"
+                      editable={!isLoading}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setSecureEntry(!secureEntry)}>
+                      <Feather
+                        name={secureEntry ? "eye-off" : "eye"}
+                        size={20}
+                        color="#666"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
-            <Link href="/signup" style={styles.signUpLink}>
-              <Text style={styles.signUpLinkText}>Create one</Text>
-            </Link>
+              <TouchableOpacity
+                style={[styles.button, isLoading && styles.buttonDisabled]}
+                onPress={handleSubmit(signIn)}
+                disabled={isLoading}>
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Sign In</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Link href="/signup" style={styles.signUpLink}>
+                <Text style={styles.signUpLinkText}>Create one</Text>
+              </Link>
+            </View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      ) : null}
     </SafeAreaView>
   );
 }

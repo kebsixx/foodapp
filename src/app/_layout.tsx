@@ -3,100 +3,95 @@ import { ToastProvider } from "react-native-toast-notifications";
 import AuthProvider, { useAuth } from "../providers/auth-provider";
 import { QueryProvider } from "../providers/query-provider";
 import NotificationProvider from "../providers/notification-provider";
-import { View, Text, ActivityIndicator } from "react-native";
+import LoadingScreen from "../components/loading-screen";
+import { View, Text, StyleSheet } from "react-native";
 
-function LoadingScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" />
-      <Text style={{ marginTop: 10 }}>Loading...</Text>
-    </View>
-  );
-}
+// Define a custom layout component with proper typing
+const AuthLayout = () => (
+  <Stack screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="auth" />
+    <Stack.Screen name="signup" />
+  </Stack>
+);
 
-function StackNavigator() {
-  const { mounting } = useAuth();
+const RegisterLayout = () => (
+  <Stack screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="register" options={{ gestureEnabled: false }} />
+  </Stack>
+);
+
+const MainLayout = () => (
+  <Stack screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="(shop)" />
+    <Stack.Screen name="cart" options={{ presentation: "modal" }} />
+    <Stack.Screen name="profile" />
+  </Stack>
+);
+
+// Properly typed root navigation component
+function RootLayoutNav() {
+  const { mounting, session, user } = useAuth();
 
   if (mounting) {
     return <LoadingScreen />;
   }
 
-  return (
-    <Stack>
-      {/* Group untuk halaman yang tidak perlu header */}
-      <Stack.Screen name="(shop)" options={{ headerShown: false }} />
-      <Stack.Screen name="categories" options={{ headerShown: false }} />
-      <Stack.Screen name="product" options={{ headerShown: false }} />
+  if (!session) {
+    return <AuthLayout />;
+  }
 
-      {/* Halaman dengan header khusus */}
-      <Stack.Screen
-        name="cart"
-        options={{
-          presentation: "modal",
-          title: "Shopping Cart",
-          headerShown: true,
-          headerBackTitle: "Back",
-        }}
-      />
-      <Stack.Screen
-        name="profile"
-        options={{
-          presentation: "modal",
-          title: "My Profile",
-          headerShown: true,
-        }}
-      />
+  if (!user?.name) {
+    return <RegisterLayout />;
+  }
 
-      {/* Halaman auth */}
-      <Stack.Screen name="auth" options={{ headerShown: false }} />
-      <Stack.Screen name="signup" options={{ headerShown: false }} />
-      <Stack.Screen name="register" options={{ headerShown: false }} />
-    </Stack>
-  );
+  return <MainLayout />;
 }
 
+// Typed root layout
 export default function RootLayout() {
   return (
-    <ToastProvider
-      placement="top"
-      duration={5000}
-      offset={70}
-      renderType={{
-        custom_toast: (toast) => (
-          <View
-            style={{
-              minWidth: "90%",
-              paddingHorizontal: 15,
-              paddingVertical: 10,
-              backgroundColor: "#fff",
-              marginVertical: 4,
-              borderRadius: 8,
-              borderLeftColor: "#997C70",
-              borderLeftWidth: 6,
-              justifyContent: "center",
-              paddingLeft: 16,
-            }}>
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#333",
-                fontWeight: "bold",
-              }}>
-              {toast.data.title}
-            </Text>
-            <Text style={{ color: "#a3a3a3", marginTop: 2 }}>
-              {toast.message}
-            </Text>
-          </View>
-        ),
-      }}>
+    <QueryProvider>
       <AuthProvider>
-        <QueryProvider>
+        <ToastProvider
+          placement="top"
+          duration={3000}
+          offset={50}
+          renderType={{
+            custom_toast: (toast) => (
+              <View style={styles.toastContainer}>
+                <Text style={styles.toastTitle}>{toast.data.title}</Text>
+                <Text style={styles.toastMessage}>{toast.message}</Text>
+              </View>
+            ),
+          }}>
           <NotificationProvider>
-            <StackNavigator />
+            <RootLayoutNav />
           </NotificationProvider>
-        </QueryProvider>
+        </ToastProvider>
       </AuthProvider>
-    </ToastProvider>
+    </QueryProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  toastContainer: {
+    maxWidth: "85%",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+    marginVertical: 4,
+    borderRadius: 8,
+    borderLeftColor: "#997C70",
+    borderLeftWidth: 6,
+    justifyContent: "center",
+  },
+  toastTitle: {
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "bold",
+  },
+  toastMessage: {
+    color: "#666",
+    marginTop: 2,
+  },
+});

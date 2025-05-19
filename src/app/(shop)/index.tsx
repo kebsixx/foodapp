@@ -12,8 +12,6 @@ import { ListHeader } from "../../components/list-header";
 import { getProductsAndCategories } from "../../api/api";
 import { CategoryProducts } from "../../components/category-products";
 
-const ITEMS_PER_PAGE = 4;
-
 const Home = () => {
   const { data, error, isLoading, refetch } = getProductsAndCategories();
   const [refreshing, setRefreshing] = useState(false);
@@ -48,7 +46,7 @@ const Home = () => {
 
   if (isLoading && !refreshing) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingFooter}>
         <ActivityIndicator size="large" color="#B17457" />
       </View>
     );

@@ -17,7 +17,7 @@ import { createOrder, createOrderItem } from "../api/api";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import CustomHeader from "../components/customHeader";
 import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -97,9 +97,25 @@ export default function Cart() {
   const [selectedPickupMethod, setSelectedPickupMethod] = useState("");
   const [paymentProof, setPaymentProof] = useState<PaymentProof>(null);
   const [uploading, setUploading] = useState(false);
-  const {
-    user: { id },
-  } = useAuth();
+  const { session, user } = useAuth();
+  const router = useRouter();
+  const userId = user?.id;
+
+  useEffect(() => {
+    if (!session) {
+      router.replace("/auth");
+      return;
+    }
+    if (!user?.name) {
+      router.replace("/register");
+      return;
+    }
+  }, [session, user]);
+
+  if (!userId) {
+    router.push("/login");
+    return null;
+  }
 
   const {
     items,
@@ -188,98 +204,101 @@ export default function Cart() {
   };
 
   const handleCheckout = async () => {
+    if (!user?.id) {
+      Toast.show("Please login first", {
+        type: "custom_toast",
+        data: { title: "Error" },
+      });
+      router.replace("/auth");
+      return;
+    }
+
     if (!paymentProof?.base64) {
       Toast.show("Mohon Upload Bukti Pembayaran", {
         type: "custom_toast",
-        data: {
-          title: "Gagal",
-        },
+        data: { title: "Error" },
       });
       return;
     }
 
     if (!selectedPickupMethod) {
-      Toast.show("Mohon Pilih Pickup Method", {
+      Toast.show("Mohon Pilih Metode Pengambilan", {
         type: "custom_toast",
-        data: {
-          title: "Gagal",
-        },
+        data: { title: "Error" },
       });
       return;
     }
 
     try {
       setUploading(true);
-      const totalPrice = getTotalPrice();
-      const slug = generateOrderSlug();
 
-      // Upload image using base64 data
-      const filePath = `${slug}-${Date.now()}.jpg`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // 1. Upload payment proof
+      const filePath = `payment-proofs/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
         .from("payment-proofs")
         .upload(filePath, decode(paymentProof.base64), {
           contentType: "image/jpeg",
-          cacheControl: "3600",
         });
 
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        Toast.show("Mohon Masukkan Foto Bukti Pembayaran", {
-          type: "custom_toast",
-          data: {
-            title: "Gagal",
-          },
-        });
-        return;
-      }
+      if (uploadError) throw uploadError;
 
-      // Get public URL
+      // 2. Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from("payment-proofs").getPublicUrl(filePath);
 
-      // Create order
+      // 3. Create order with strict user_id check
+      const orderData = {
+        totalPrice: getTotalPrice(),
+        slug: generateOrderSlug(),
+        user: user.id, // Just use user foreign key
+        status: "Pending",
+        description,
+        pickup_method: selectedPickupMethod,
+        payment_proof: publicUrl,
+      };
+
       const { data: order, error: orderError } = await supabase
         .from("order")
-        .insert({
-          totalPrice,
-          slug,
-          status: "Pending",
-          user: id,
-          description,
-          pickup_method: selectedPickupMethod,
-          payment_proof: publicUrl,
-        })
+        .insert(orderData)
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error("Order creation error:", orderError, orderData);
+        throw orderError;
+      }
 
-      // Create order items with variant_id
-      const { error: itemsError } = await supabase.from("order_item").insert(
-        items.map((item) => ({
-          order: order.id,
-          product: item.id,
-          quantity: item.quantity,
-          variant_id: item.variant?.id || null, // Use variant_id instead of variant object
-        }))
-      );
+      // 4. Create order items
+      const orderItems = items.map((item) => ({
+        order: order.id,
+        product: item.id,
+        quantity: item.quantity,
+        variant_id: item.variant?.id || null,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("order_item")
+        .insert(orderItems);
 
       if (itemsError) throw itemsError;
 
-      // Success handling
+      // Success
       resetCart();
-      router.push("/orders");
-      Toast.show("Pesanan berhasil dibuat!", {
+      router.push("/(shop)/orders");
+      Toast.show("Pesanan berhasil dibuat", {
         type: "custom_toast",
         data: { title: "Sukses" },
       });
     } catch (error) {
-      console.error("Error creating order:", error);
-      Toast.show("Gagal membuat pesanan", {
-        type: "custom_toast",
-        data: { title: "Gagal" },
-      });
+      console.error("Checkout error:", error);
+      Toast.show(
+        error instanceof Error ? error.message : "Gagal membuat pesanan",
+        {
+          type: "custom_toast",
+          data: { title: "Error" },
+        }
+      );
     } finally {
       setUploading(false);
     }
@@ -410,12 +429,18 @@ export default function Cart() {
           </View>
           <TouchableOpacity
             onPress={handleCheckout}
+            disabled={uploading || !isStoreOpen || !selectedPickupMethod}
             style={[
               styles.checkoutButton,
-              (!isStoreOpen || !selectedPickupMethod) && styles.disabledButton,
+              (uploading || !isStoreOpen || !selectedPickupMethod) &&
+                styles.disabledButton,
             ]}>
             <Text style={styles.checkoutButtonText}>
-              {isStoreOpen ? "Checkout" : "Toko Tutup"}
+              {uploading
+                ? "Processing..."
+                : isStoreOpen
+                ? "Checkout"
+                : "Toko Tutup"}
             </Text>
           </TouchableOpacity>
         </View>
