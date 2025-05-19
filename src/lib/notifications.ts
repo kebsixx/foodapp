@@ -24,13 +24,14 @@ function handleRegistrationError(errorMessage: string) {
 }
 
 async function registerForPushNotificationsAsync() {
+  // Even in development, we want to get the token for testing
   if (__DEV__) {
-    handleRegistrationError('Notifications disabled in development');
-    return "simulated-device-token";
+    console.log('Running in development mode, but still attempting to get token');
+    // Don't return early - continue to get actual token
   }
 
   if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync('default', {
+    await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
@@ -40,7 +41,7 @@ async function registerForPushNotificationsAsync() {
 
   if (!Device.isDevice) {
     handleRegistrationError('Physical device required');
-    return;
+    return null;
   }
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -53,7 +54,7 @@ async function registerForPushNotificationsAsync() {
 
   if (finalStatus !== 'granted') {
     handleRegistrationError('Permission needed for notifications');
-    return;
+    return null;
   }
 
   const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? 
@@ -61,19 +62,20 @@ async function registerForPushNotificationsAsync() {
 
   if (!projectId) {
     handleRegistrationError('Project configuration error');
-    return;
+    return null;
   }
 
   try {
-    const pushTokenString = (
-      await Notifications.getExpoPushTokenAsync({
-        projectId,
-      })
-    ).data;
-    return pushTokenString;
+    const tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId,
+    });
+    console.log('Successfully obtained push token:', tokenData.data);
+    return tokenData.data;
   } catch (e: unknown) {
-    handleRegistrationError('Failed to get notification token');
-    return;
+    const error = e instanceof Error ? e.message : 'Unknown error';
+    console.error('Failed to get push token:', error);
+    handleRegistrationError(`Failed to get token: ${error}`);
+    return null;
   }
 }
 

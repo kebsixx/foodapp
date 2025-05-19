@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, PropsWithChildren } from "react";
 import * as Notifications from "expo-notifications";
 import registerForPushNotificationsAsync from "../lib/notifications";
 import { supabase } from "../lib/supabase";
-import React from "react";
+import { useAuth } from "../providers/auth-provider";
 import Toast from "react-native-toast-message";
 
+// Configure how notifications should be handled when app is foregrounded
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -14,30 +15,28 @@ Notifications.setNotificationHandler({
 });
 
 const NotificationsProvider = ({ children }: PropsWithChildren) => {
-  const [expoPushToken, setExpoPushToken] = useState("");
-  const [notification, setNotification] = useState<
-    Notifications.Notification | undefined
-  >(undefined);
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
+  const { session } = useAuth();
 
   const saveUserPushNotificationToken = async (token: string) => {
-    if (!token?.length) return;
+    if (!token || !session?.user?.id) return;
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) return;
-
-      await supabase
+      const { error } = await supabase
         .from("users")
         .update({
           expo_notification_token: token,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", session.user.id);
+
+      if (error) throw error;
+
+      console.log("Successfully saved push token to database");
     } catch (error) {
+      console.error("Failed to save notification token:", error);
       Toast.show({
         type: "custom_toast",
         position: "bottom",
@@ -50,43 +49,54 @@ const NotificationsProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    if (!__DEV__) {
-      registerForPushNotificationsAsync()
-        .then((token) => {
-          if (token) {
-            setExpoPushToken(token);
-            saveUserPushNotificationToken(token);
-          }
-        })
-        .catch(() => {
-          // Error already handled by registerForPushNotificationsAsync
-        });
+    // Initialize notifications
+    const initNotifications = async () => {
+      try {
+        // Always attempt to get token, even in development
+        const token = await registerForPushNotificationsAsync();
+        if (token) {
+          setExpoPushToken(token);
+          await saveUserPushNotificationToken(token);
+        }
 
-      notificationListener.current =
-        Notifications.addNotificationReceivedListener((notification) => {
-          setNotification(notification);
-        });
+        // Set up notification listeners
+        notificationListener.current =
+          Notifications.addNotificationReceivedListener((notification) => {
+            console.log("Notification received:", notification);
+            // You can add additional handling here
+          });
 
-      responseListener.current =
-        Notifications.addNotificationResponseReceivedListener((response) => {
-          console.log(response);
-        });
+        responseListener.current =
+          Notifications.addNotificationResponseReceivedListener((response) => {
+            console.log("Notification response:", response);
+            // Handle notification taps here
+          });
 
-      return () => {
-        notificationListener.current &&
-          Notifications.removeNotificationSubscription(
-            notificationListener.current
-          );
-        responseListener.current &&
-          Notifications.removeNotificationSubscription(
-            responseListener.current
-          );
-      };
-    }
-  }, []);
+        // Handle any initial notification that launched the app
+        const initialNotification =
+          await Notifications.getLastNotificationResponseAsync();
+        if (initialNotification) {
+          console.log("App launched by notification:", initialNotification);
+        }
+      } catch (error) {
+        console.error("Notification initialization error:", error);
+      }
+    };
 
-  console.log("expoPushToken", expoPushToken);
-  console.log("notification", notification);
+    initNotifications();
+
+    return () => {
+      // Clean up listeners
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(
+          notificationListener.current
+        );
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, [session?.user?.id]); // Re-run if user changes
 
   return <>{children}</>;
 };
