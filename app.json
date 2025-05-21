@@ -24,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.ceritasenja",
+      "package": "com.kebsixx.foodApp",
       "runtimeVersion": "1.0.0"
     },
     "web": {

@@ -6,47 +6,6 @@ import NotificationProvider from "../providers/notification-provider";
 import LoadingScreen from "../components/loading-screen";
 import { View, Text, StyleSheet } from "react-native";
 
-// Define a custom layout component with proper typing
-const AuthLayout = () => (
-  <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="auth" />
-    <Stack.Screen name="signup" />
-  </Stack>
-);
-
-const RegisterLayout = () => (
-  <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="register" options={{ gestureEnabled: false }} />
-  </Stack>
-);
-
-const MainLayout = () => (
-  <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="(shop)" />
-    <Stack.Screen name="cart" options={{ presentation: "modal" }} />
-    <Stack.Screen name="profile" />
-  </Stack>
-);
-
-// Properly typed root navigation component
-function RootLayoutNav() {
-  const { mounting, session, user } = useAuth();
-
-  if (mounting) {
-    return <LoadingScreen />;
-  }
-
-  if (!session) {
-    return <AuthLayout />;
-  }
-
-  if (!user?.name) {
-    return <RegisterLayout />;
-  }
-
-  return <MainLayout />;
-}
-
 // Typed root layout
 export default function RootLayout() {
   return (
@@ -70,6 +29,38 @@ export default function RootLayout() {
         </ToastProvider>
       </AuthProvider>
     </QueryProvider>
+  );
+}
+
+function RootLayoutNav() {
+  const { mounting, session, user } = useAuth();
+
+  // Show loading screen while auth state is being determined
+  if (mounting) {
+    return <LoadingScreen />;
+  }
+
+  // Use Stack for all navigation scenarios
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {!session ? (
+        // Auth routes
+        <>
+          <Stack.Screen name="auth" />
+          <Stack.Screen name="signup" />
+        </>
+      ) : !user?.name ? (
+        // Registration route
+        <Stack.Screen name="register" options={{ gestureEnabled: false }} />
+      ) : (
+        // Main app routes
+        <>
+          <Stack.Screen name="(shop)" />
+          <Stack.Screen name="cart" options={{ presentation: "modal" }} />
+          <Stack.Screen name="profile" />
+        </>
+      )}
+    </Stack>
   );
 }
 
