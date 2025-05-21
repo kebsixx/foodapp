@@ -3,7 +3,7 @@
     "name": "Cerita Senja",
     "scheme": "ceritasenja",
     "slug": "foodApp",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -25,7 +25,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.kebsixx.foodApp",
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.1.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"
