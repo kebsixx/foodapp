@@ -7,7 +7,9 @@
     "save": "Simpan",
     "edit": "Edit",
     "delete": "Hapus",
-    "welcome": "Selamat Datang"
+    "welcome": "Selamat Datang",
+    "email": "Email",
+    "password": "Kata Sandi"
   },
   "home": {
     "categories": "Kategori",
@@ -26,6 +28,41 @@
     "haveAccount": "Sudah punya akun?",
     "welcomeBack": "Selamat Datang Kembali",
     "signInContinue": "Masuk untuk melanjutkan"
+  },
+  "signup": {
+    "register": "Daftar",
+    "createAccount": "Buat Akun",
+    "registerToStart": "Daftar untuk memulai",
+    "haveAccount": "Sudah punya akun?",
+    "signIn": "Masuk",
+    "success": "Pendaftaran berhasil",
+    "completeProfile": "Silakan lengkapi profil Anda",
+    "errorMessage": "Terjadi kesalahan saat mendaftar"
+  },
+  "register": {
+    "completeProfile": "Lengkapi Profil",
+    "tellAboutYourself": "Ceritakan tentang diri Anda",
+    "name": "Nama",
+    "username": "Username",
+    "phoneNumber": "Nomor Telepon",
+    "addressOptional": "Alamat (Opsional)",
+    "male": "Laki-laki",
+    "female": "Perempuan",
+    "saveProfile": "Simpan Profil",
+    "usernameExists": "Username sudah digunakan",
+    "dataSaved": "Data berhasil disimpan",
+    "saveError": "Gagal menyimpan data"
+  },
+  "validation": {
+    "Username minimal 5 karakter": "Username minimal 5 karakter",
+    "Username maksimal 30 karakter": "Username maksimal 30 karakter",
+    "Username hanya boleh mengandung huruf, angka, dan underscore": "Username hanya boleh mengandung huruf, angka, dan underscore",
+    "Nama harus diisi": "Nama harus diisi",
+    "Nama minimal 2 karakter": "Nama minimal 2 karakter",
+    "Nama hanya boleh mengandung huruf dan spasi": "Nama hanya boleh mengandung huruf dan spasi",
+    "Nomor telepon minimal 10 digit": "Nomor telepon minimal 10 digit",
+    "Nomor telepon maksimal 15 digit": "Nomor telepon maksimal 15 digit",
+    "Format nomor telepon tidak valid": "Format nomor telepon tidak valid"
   },
   "profile": {
     "title": "Profil",
@@ -88,16 +125,6 @@
       "completed": "Selesai",
       "cancelled": "Dibatalkan"
     }
-  },
-  "register": {
-    "title": "Lengkapi Profil",
-    "subtitle": "Ceritakan tentang diri Anda",
-    "namePlaceholder": "Nama",
-    "phonePlaceholder": "Nomor Telepon",
-    "addressPlaceholder": "Alamat (Opsional)",
-    "male": "Laki-laki",
-    "female": "Perempuan",
-    "saveProfile": "Simpan Profil"
   },
   "language": {
     "title": "Bahasa",

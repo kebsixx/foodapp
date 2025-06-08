@@ -7,7 +7,9 @@
     "save": "Save",
     "edit": "Edit",
     "delete": "Delete",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "email": "Email",
+    "password": "Password"
   },
   "home": {
     "categories": "Categories",
@@ -26,6 +28,41 @@
     "haveAccount": "Already have an account?",
     "welcomeBack": "Welcome Back",
     "signInContinue": "Sign in to continue"
+  },
+  "signup": {
+    "register": "Register",
+    "createAccount": "Create Account",
+    "registerToStart": "Register to get started",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "success": "Sign up successful",
+    "completeProfile": "Please complete your profile",
+    "errorMessage": "An error occurred during signup"
+  },
+  "register": {
+    "completeProfile": "Complete Profile",
+    "tellAboutYourself": "Tell us about yourself",
+    "name": "Name",
+    "username": "Username",
+    "phoneNumber": "Phone Number",
+    "addressOptional": "Address (Optional)",
+    "male": "Male",
+    "female": "Female",
+    "saveProfile": "Save Profile",
+    "usernameExists": "Username already exists",
+    "dataSaved": "Data saved successfully",
+    "saveError": "Failed to save data"
+  },
+  "validation": {
+    "Username minimal 5 karakter": "Username must be at least 5 characters",
+    "Username maksimal 30 karakter": "Username must be at most 30 characters",
+    "Username hanya boleh mengandung huruf, angka, dan underscore": "Username can only contain letters, numbers, and underscore",
+    "Nama harus diisi": "Name is required",
+    "Nama minimal 2 karakter": "Name must be at least 2 characters",
+    "Nama hanya boleh mengandung huruf dan spasi": "Name can only contain letters and spaces",
+    "Nomor telepon minimal 10 digit": "Phone number must be at least 10 digits",
+    "Nomor telepon maksimal 15 digit": "Phone number must be at most 15 digits",
+    "Format nomor telepon tidak valid": "Invalid phone number format"
   },
   "profile": {
     "title": "Profile",
@@ -88,16 +125,6 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     }
-  },
-  "register": {
-    "title": "Complete Profile",
-    "subtitle": "Tell us about yourself",
-    "namePlaceholder": "Name",
-    "phonePlaceholder": "Phone Number",
-    "addressPlaceholder": "Address (Optional)",
-    "male": "Male",
-    "female": "Female",
-    "saveProfile": "Save Profile"
   },
   "language": {
     "title": "Language",

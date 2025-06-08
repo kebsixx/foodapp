@@ -18,6 +18,7 @@ import { useAuth } from "../providers/auth-provider";
 import { Redirect, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const userSchema = zod.object({
   username: zod
@@ -48,6 +49,7 @@ export default function Register() {
   const { session, setUser, user } = useAuth();
   const Toast = useToast();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -77,9 +79,9 @@ export default function Register() {
         .single();
 
       if (existingUser) {
-        Toast.show("Username sudah digunakan", {
+        Toast.show(t('register.usernameExists'), {
           type: "custom_toast",
-          data: { title: "Error" },
+          data: { title: t('common.error') },
         });
         return;
       }
@@ -105,17 +107,20 @@ export default function Register() {
 
       if (fetchError) throw fetchError;
 
-      setUser(userData);
-      Toast.show("Data berhasil disimpan", {
+      setUser({
+        ...userData,
+        avatar_url: null
+      });
+      Toast.show(t('register.dataSaved'), {
         type: "custom_toast",
-        data: { title: "Sukses" },
+        data: { title: t('common.success') },
       });
       router.push("/");
     } catch (error) {
       console.error("Registration error:", error);
-      Toast.show("Gagal menyimpan data", {
+      Toast.show(t('register.saveError'), {
         type: "custom_toast",
-        data: { title: "Error" },
+        data: { title: t('common.error') },
       });
     }
   };
@@ -136,8 +141,8 @@ export default function Register() {
         style={styles.keyboardView}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Lengkapi Profil</Text>
-            <Text style={styles.subtitle}>Ceritakan tentang diri Anda</Text>
+            <Text style={styles.title}>{t('register.completeProfile')}</Text>
+            <Text style={styles.subtitle}>{t('register.tellAboutYourself')}</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -161,7 +166,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Nama"
+                      placeholder={t('register.name')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -169,7 +174,7 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
+                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
                   )}
                 </View>
               )}
@@ -195,7 +200,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Username"
+                      placeholder={t('register.username')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -205,7 +210,7 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
+                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
                   )}
                 </View>
               )}
@@ -231,7 +236,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Nomor Telepon"
+                      placeholder={t('register.phoneNumber')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -240,7 +245,7 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
+                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
                   )}
                 </View>
               )}
@@ -266,7 +271,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Alamat (Opsional)"
+                      placeholder={t('register.addressOptional')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -275,7 +280,7 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
+                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
                   )}
                 </View>
               )}
@@ -293,7 +298,7 @@ export default function Register() {
                       style={
                         value ? styles.genderActiveText : styles.genderText
                       }>
-                      Laki-laki
+                      {t('register.male')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -303,7 +308,7 @@ export default function Register() {
                       style={
                         !value ? styles.genderActiveText : styles.genderText
                       }>
-                      Perempuan
+                      {t('register.female')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -317,7 +322,7 @@ export default function Register() {
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Simpan Profil</Text>
+                <Text style={styles.buttonText}>{t('register.saveProfile')}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -338,17 +343,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     width: "100%",
+    backgroundColor: "#fff",
   },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#424642",
     marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#536162",
     marginBottom: 16,
+    textAlign: "center",
+    marginHorizontal: 20,
   },
   form: {
     width: "100%",
@@ -376,6 +385,7 @@ const styles = StyleSheet.create({
     width: "100%",
     borderBottomWidth: 1,
     borderColor: "#B17457",
+    paddingVertical: 8,
   },
   inputGroupError: {
     borderColor: "#FF6B6B",
@@ -432,6 +442,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 24,
+    width: "100%",
   },
   buttonText: {
     color: "#fff",
@@ -455,6 +466,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 24,
+    width: "100%",
   },
   genderButton: {
     flex: 1,
@@ -483,6 +495,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 32,
     alignItems: "center",
+    width: "100%",
   },
   formContainer: {
     width: "90%",
@@ -490,7 +503,8 @@ const styles = StyleSheet.create({
   },
 
   inputIcon: {
-    marginRight: 8,
+    marginRight: 12,
+    minWidth: 20,
   },
 
   buttonDisabled: {

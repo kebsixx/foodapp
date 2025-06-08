@@ -18,6 +18,7 @@ import { useAuth } from "../providers/auth-provider";
 import { Link, Redirect, useRouter, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export const authSchema = zod.object({
   email: zod.string().email(),
@@ -28,6 +29,8 @@ export default function SignUp() {
   const { session, user } = useAuth();
   const Toast = useToast();
   const router = useRouter();
+  const { t } = useTranslation();
+  
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(authSchema),
     defaultValues: {
@@ -52,9 +55,9 @@ export default function SignUp() {
       const { error } = await supabase.auth.signUp(data);
       if (error) throw error;
 
-      Toast.show("Silahkan lengkapi data diri anda", {
+      Toast.show(t('signup.completeProfile'), {
         type: "custom_toast",
-        data: { title: "Sign up berhasil" },
+        data: { title: t('signup.success') },
       });
 
       // Force navigation to register
@@ -65,10 +68,10 @@ export default function SignUp() {
       Toast.show(
         error instanceof Error
           ? error.message
-          : "Terjadi kesalahan saat signup",
+          : t('signup.errorMessage'),
         {
           type: "custom_toast",
-          data: { title: "Error" },
+          data: { title: t('common.error') },
         }
       );
     }
@@ -79,7 +82,7 @@ export default function SignUp() {
     <>
       <Stack.Screen
         options={{
-          title: "Daftar",
+          title: t('signup.register'),
           headerShown: false,
           gestureEnabled: false,
         }}
@@ -91,8 +94,8 @@ export default function SignUp() {
           style={styles.keyboardView}>
           <View style={styles.content}>
             <View style={styles.header}>
-              <Text style={styles.title}>Buat Akun</Text>
-              <Text style={styles.subtitle}>Daftar untuk memulai</Text>
+              <Text style={styles.title}>{t('signup.createAccount')}</Text>
+              <Text style={styles.subtitle}>{t('signup.registerToStart')}</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -111,7 +114,7 @@ export default function SignUp() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Email"
+                      placeholder={t('common.email')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -139,7 +142,7 @@ export default function SignUp() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Password"
+                      placeholder={t('common.password')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -163,15 +166,15 @@ export default function SignUp() {
                 {formState.isSubmitting ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>Daftar</Text>
+                  <Text style={styles.buttonText}>{t('signup.register')}</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Sudah punya akun?</Text>
+              <Text style={styles.footerText}>{t('signup.haveAccount')}</Text>
               <Link href="/auth" style={styles.signInLink}>
-                <Text style={styles.signInLinkText}>Masuk</Text>
+                <Text style={styles.signInLinkText}>{t('signup.signIn')}</Text>
               </Link>
             </View>
           </View>
@@ -183,7 +186,7 @@ export default function SignUp() {
 
 const styles = StyleSheet.create({
   scrollViewContent: {
-    flexGrow: 1, // Agar konten dapat digulir
+    flexGrow: 1,
     padding: 16,
   },
   backgroundImage: {
@@ -200,15 +203,18 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#424642",
     marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#536162",
     marginBottom: 16,
+    textAlign: "center",
+    marginHorizontal: 20,
   },
   form: {
     width: "100%",
@@ -268,6 +274,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 16,
     marginBottom: 8,
+    width: "100%",
   },
   buttonText: {
     color: "#fff",
@@ -300,21 +307,24 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 32,
     alignItems: "center",
+    width: "100%",
   },
   formContainer: {
-    width: "100%",
+    width: "85%",
     alignItems: "center",
   },
   inputGroup: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
-    width: "80%",
+    width: "100%",
     borderBottomWidth: 1,
     borderColor: "#ccc",
+    paddingVertical: 10,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: 12,
+    minWidth: 20,
   },
   inputError: {
     borderColor: "red",
@@ -327,6 +337,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
+    flexWrap: "wrap",
   },
   footerText: {
     color: "#536162",

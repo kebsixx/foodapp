@@ -220,12 +220,14 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 32,
+    alignItems: "center",
   },
   headerTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 8,
+    width: "100%",
   },
   title: {
     fontSize: 28,
@@ -233,14 +235,18 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 8,
     textAlign: "center",
+    width: "100%",
+    flexShrink: 1,
   },
   subtitle: {
     fontSize: 16,
     color: "#666",
     textAlign: "center",
+    marginHorizontal: 20,
   },
   formContainer: {
     marginBottom: 24,
+    width: "100%",
   },
   inputGroup: {
     flexDirection: "row",
@@ -253,6 +259,7 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 12,
+    minWidth: 20,
   },
   input: {
     flex: 1,
@@ -289,6 +296,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 24,
+    flexWrap: "wrap",
   },
   footerText: {
     color: "#666",
