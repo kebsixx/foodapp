@@ -257,3 +257,53 @@ export const getMyOrder = (slug: string) => {
     },
   });
 };
+
+// Tambahkan fungsi untuk mendapatkan produk terlaris
+export const getBestSellerProducts = () => {
+  return useQuery({
+    queryKey: ["bestSellerProducts"],
+    queryFn: async () => {
+      // Query untuk mendapatkan produk terlaris berdasarkan jumlah order_item
+      const { data, error } = await supabase
+        .from('order_item')
+        .select(`
+          product,
+          quantity,
+          products:product(*)
+        `);
+
+      if (error) {
+        throw new Error("Failed to fetch best seller products: " + error.message);
+      }
+
+      // Hitung total quantity untuk setiap produk
+      const productMap = new Map();
+      data?.forEach(item => {
+        const productId = item.product;
+        const quantity = item.quantity || 1;
+        const product = item.products;
+        
+        if (productMap.has(productId)) {
+          const existingData = productMap.get(productId);
+          productMap.set(productId, {
+            ...existingData,
+            totalQuantity: existingData.totalQuantity + quantity
+          });
+        } else {
+          productMap.set(productId, {
+            product,
+            totalQuantity: quantity
+          });
+        }
+      });
+
+      // Konversi Map ke array, urutkan berdasarkan totalQuantity, dan ambil 6 teratas
+      const bestSellers = Array.from(productMap.values())
+        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+        .slice(0, 6)
+        .map(item => item.product);
+
+      return bestSellers;
+    },
+  });
+};

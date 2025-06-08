@@ -9,12 +9,18 @@ import {
 } from "react-native";
 import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
-import { getProductsAndCategories } from "../../api/api";
+import { getProductsAndCategories, getBestSellerProducts } from "../../api/api";
 import { CategoryProducts } from "../../components/category-products";
 import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const { data, error, isLoading, refetch } = getProductsAndCategories();
+  const { 
+    data: bestSellerProducts, 
+    isLoading: isBestSellerLoading, 
+    error: bestSellerError,
+    refetch: refetchBestSellers
+  } = getBestSellerProducts();
   const [refreshing, setRefreshing] = useState(false);
   const [visibleCategories, setVisibleCategories] = useState(2);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -23,7 +29,7 @@ const Home = () => {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      await refetch();
+      await Promise.all([refetch(), refetchBestSellers()]);
       setVisibleCategories(2); // Reset on refresh
     } finally {
       setRefreshing(false);
@@ -46,7 +52,7 @@ const Home = () => {
     }
   }, [data?.categories, visibleCategories, loadingMore]);
 
-  if (isLoading && !refreshing) {
+  if ((isLoading || isBestSellerLoading) && !refreshing) {
     return (
       <View style={styles.loadingFooter}>
         <ActivityIndicator size="large" color="#B17457" />
@@ -54,12 +60,12 @@ const Home = () => {
     );
   }
 
-  if (error || !data)
-    return <Text>{error?.message || t('common.error')}</Text>;
+  if ((error && !data) || (bestSellerError && !bestSellerProducts))
+    return <Text>{(error || bestSellerError)?.message || t('common.error')}</Text>;
 
   const visibleData = {
     ...data,
-    categories: data.categories.slice(0, visibleCategories),
+    categories: data?.categories?.slice(0, visibleCategories) || [],
   };
 
   return (
@@ -67,28 +73,33 @@ const Home = () => {
       style={styles.container}
       ListHeaderComponent={() => (
         <>
-          <ListHeader categories={data.categories} users={data.users!} />
+          <ListHeader categories={data?.categories || []} users={data?.users || []} />
 
           {/* Best Seller Menu Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('home.bestSeller')}</Text>
             <FlatList
-              data={data.products.slice(0, 6)}
+              data={bestSellerProducts || []}
               renderItem={({ item }) => <ProductListItem product={item} />}
               keyExtractor={(item) => item.id.toString()}
               numColumns={2}
               scrollEnabled={false}
               columnWrapperStyle={styles.flatListColumn}
               contentContainerStyle={styles.featuredProducts}
+              ListEmptyComponent={() => (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>Belum ada menu terlaris</Text>
+                </View>
+              )}
             />
           </View>
         </>
       )}
       data={visibleData.categories}
       renderItem={({ item: category }) => {
-        const categoryProducts = data.products.filter(
+        const categoryProducts = data?.products?.filter(
           (product) => product.category === category.id
-        );
+        ) || [];
 
         if (categoryProducts.length === 0) return null;
 
@@ -155,5 +166,16 @@ const styles = StyleSheet.create({
   loadingFooter: {
     padding: 20,
     alignItems: "center",
+  },
+  emptyContainer: {
+    width: "100%",
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    color: "#666",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
