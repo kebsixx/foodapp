@@ -1,7 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { formatCurrency } from "../utils/utils";
 import { useState } from "react";
-
 import { Link } from "expo-router";
 import { Tables } from "../types/database.types";
 

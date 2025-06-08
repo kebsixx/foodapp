@@ -22,6 +22,8 @@ import CustomHeader from "../components/customHeader";
 import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcherMini from "../components/language-switcher-mini";
 
 type VariantType = {
   id: string;
@@ -59,7 +61,10 @@ const CartItem = ({
 }: CartItemProps) => {
   return (
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.heroImage }} style={styles.itemImage} />
+      <Image 
+        source={{ uri: item.heroImage }} 
+        style={styles.itemImage} 
+      />
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle}>{item.title}</Text>
         {item.variant && (
@@ -100,6 +105,7 @@ export default function Cart() {
   const { session, user } = useAuth();
   const router = useRouter();
   const userId = user?.id;
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!session) {
@@ -205,7 +211,7 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (!user?.id) {
-      Toast.show("Please login first", {
+      Toast.show("Silahkan login terlebih dahulu", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -307,7 +313,7 @@ export default function Cart() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <CustomHeader title="Shopping Cart" />
+      <CustomHeader title={t("cart.title")} />
 
       <ScrollView style={styles.content}>
         {!isStoreOpen && <StoreBanner />}
@@ -340,7 +346,7 @@ export default function Cart() {
             />
 
             <View style={styles.pickupSection}>
-              <Text style={styles.sectionTitle}>Pickup Method</Text>
+              <Text style={styles.sectionTitle}>Metode Pengambilan</Text>
               <View style={styles.pickupButtons}>
                 <TouchableOpacity
                   style={[
@@ -437,9 +443,9 @@ export default function Cart() {
             ]}>
             <Text style={styles.checkoutButtonText}>
               {uploading
-                ? "Processing..."
+                ? "Memproses..."
                 : isStoreOpen
-                ? "Checkout"
+                ? "Pesan Sekarang"
                 : "Toko Tutup"}
             </Text>
           </TouchableOpacity>
@@ -544,13 +550,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
+    minWidth: 140,
   },
   disabledButton: {
     opacity: 0.5,
   },
   checkoutButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
   },
   cartList: {

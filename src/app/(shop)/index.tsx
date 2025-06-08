@@ -11,12 +11,14 @@ import { ProductListItem } from "../../components/product-list-item";
 import { ListHeader } from "../../components/list-header";
 import { getProductsAndCategories } from "../../api/api";
 import { CategoryProducts } from "../../components/category-products";
+import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const { data, error, isLoading, refetch } = getProductsAndCategories();
   const [refreshing, setRefreshing] = useState(false);
   const [visibleCategories, setVisibleCategories] = useState(2);
   const [loadingMore, setLoadingMore] = useState(false);
+  const { t } = useTranslation();
 
   const onRefresh = async () => {
     try {
@@ -53,7 +55,7 @@ const Home = () => {
   }
 
   if (error || !data)
-    return <Text>{error?.message || "An error occurred"}</Text>;
+    return <Text>{error?.message || t('common.error')}</Text>;
 
   const visibleData = {
     ...data,
@@ -69,7 +71,7 @@ const Home = () => {
 
           {/* Best Seller Menu Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Best Seller Menu</Text>
+            <Text style={styles.sectionTitle}>{t('home.bestSeller')}</Text>
             <FlatList
               data={data.products.slice(0, 6)}
               renderItem={({ item }) => <ProductListItem product={item} />}

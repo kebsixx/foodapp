@@ -100,7 +100,15 @@ export type Database = {
           totalPrice?: number
           user?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "order_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_item: {
         Row: {
@@ -184,6 +192,7 @@ export type Database = {
           category: number
           created_at: string
           heroImage: string
+          heroimageurls: Json | null
           id: number
           maxQuantity: number
           price: number | null
@@ -195,6 +204,7 @@ export type Database = {
           category: number
           created_at?: string
           heroImage: string
+          heroimageurls?: Json | null
           id?: number
           maxQuantity: number
           price?: number | null
@@ -206,6 +216,7 @@ export type Database = {
           category?: number
           created_at?: string
           heroImage?: string
+          heroimageurls?: Json | null
           id?: number
           maxQuantity?: number
           price?: number | null

@@ -20,6 +20,7 @@ type UserType = {
   create_at: string | null;
   updated_at: string | null;
   expo_notification_token: string | null;
+  avatar_url: string | null;
 };
 
 type AuthData = {
@@ -46,14 +47,16 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   // Separate session and user fetching
   const fetchUserData = async (sessionUserId: string) => {
     try {
-      const { data: user, error } = await supabase
+      const { data: userData, error } = await supabase
         .from("users")
         .select("*")
         .eq("id", sessionUserId)
         .single();
 
       if (error) throw error;
-      setUser(user as UserType);
+      
+      // Set user data directly
+      setUser(userData as UserType);
     } catch (error) {
       console.error("Error fetching user:", error);
       setUser(null);

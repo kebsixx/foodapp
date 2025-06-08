@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Linking,
-  Platform,
+  Image,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 
@@ -17,6 +17,8 @@ import { useToast } from "react-native-toast-notifications";
 import { supabase } from "../lib/supabase";
 import { useRouter, Stack } from "expo-router";
 import Constants from "expo-constants";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/language-switcher";
 
 interface SettingsItemProps {
   icon: React.ReactNode;
@@ -32,6 +34,7 @@ export default function Profile() {
   const [isSignOutLoading, setIsSignOutLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isContactLoading, setIsContactLoading] = useState(false);
+  const { t } = useTranslation();
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -126,17 +129,17 @@ export default function Profile() {
       Toast.show(
         `${
           editingField.charAt(0).toUpperCase() + editingField.slice(1)
-        } updated successfully`,
+        } berhasil diperbarui`,
         {
           type: "custom_toast",
-          data: { title: "Success" },
+          data: { title: "Berhasil" },
         }
       );
 
       // Exit edit mode
       setEditingField(null);
     } catch (error) {
-      Toast.show(error instanceof Error ? error.message : "An error occurred", {
+      Toast.show(error instanceof Error ? error.message : "Terjadi kesalahan", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -149,7 +152,7 @@ export default function Profile() {
     try {
       // Validate email format first
       if (!tempValue.includes("@") || !tempValue.includes(".")) {
-        throw new Error("Please enter a valid email address");
+        throw new Error("Masukkan alamat email yang valid");
       }
 
       // Check if email is actually changing
@@ -168,9 +171,9 @@ export default function Profile() {
 
       if (error) throw error;
 
-      Toast.show("Verification email sent. Please check your inbox.", {
+      Toast.show("Email verifikasi telah dikirim. Silakan periksa kotak masuk Anda.", {
         type: "custom_toast",
-        data: { title: "Email Verification" },
+        data: { title: "Verifikasi Email" },
         duration: 4000,
       });
 
@@ -178,10 +181,10 @@ export default function Profile() {
     } catch (error) {
       console.error("Email update error:", error);
 
-      let errorMessage = "Failed to update email";
+      let errorMessage = "Gagal memperbarui email";
       if (error instanceof Error) {
         errorMessage = error.message.includes("already in use")
-          ? "This email is already registered"
+          ? "Email ini sudah terdaftar"
           : error.message;
       }
 
@@ -199,7 +202,7 @@ export default function Profile() {
       await supabase.auth.signOut();
       router.replace("/auth");
     } catch (error) {
-      Toast.show("Failed to sign out", {
+      Toast.show("Gagal keluar", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -214,7 +217,7 @@ export default function Profile() {
       // You can add confirmation dialog here if needed
       router.push("https://ceritasenjacafe.com/user/delete");
     } catch (error) {
-      Toast.show("Failed to navigate to delete page", {
+      Toast.show("Gagal membuka halaman hapus akun", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -228,7 +231,7 @@ export default function Profile() {
       setIsContactLoading(true);
       await Linking.openURL("https://ceritasenjacafe.com/#contact");
     } catch (error) {
-      Toast.show("Failed to open contact page", {
+      Toast.show("Gagal membuka halaman kontak", {
         type: "custom_toast",
         data: { title: "Error" },
       });
@@ -330,7 +333,7 @@ export default function Profile() {
     <>
       <Stack.Screen
         options={{
-          title: "Profile",
+          title: t('profile.title'),
           headerShown: true,
           headerStyle: {
             backgroundColor: "#B17457",
@@ -345,21 +348,28 @@ export default function Profile() {
 
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <FontAwesome name="user-o" size={72} color="#fff" />
+          <View style={styles.avatarContainer}>
+            <Image
+              source={{ 
+                uri: user?.avatar_url 
+                  || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png" 
+              }}
+              style={styles.avatar}
+            />
           </View>
           <Text style={styles.userName}>{formData.name}</Text>
+          <Text style={styles.userUsername}>@{formData.username || "username"}</Text>
         </View>
 
         <View style={styles.content}>
           <View style={styles.info}>
-            <Text style={styles.sectionTitle}>User Information</Text>
-            {renderField("Name", "name", formData.name)}
+            <Text style={styles.sectionTitle}>{t('profile.userInfo')}</Text>
+            {renderField(t('profile.name'), "name", formData.name)}
             {renderField("Username", "username", formData.username)}
             {renderField("Email", "email", user?.email || "")}
-            {renderField("Phone", "phone", formData.phone, "phone-pad")}
+            {renderField(t('profile.phone'), "phone", formData.phone, "phone-pad")}
             {renderField(
-              "Address",
+              t('profile.address'),
               "address",
               formData.address,
               "default",
@@ -369,7 +379,7 @@ export default function Profile() {
 
           {/* Settings Section */}
           <View style={styles.settingsContainer}>
-            <Text style={styles.settingsTitle}>Settings</Text>
+            <Text style={styles.settingsTitle}>{t('profile.settings')}</Text>
 
             <SettingsItem
               icon={
@@ -380,7 +390,7 @@ export default function Profile() {
                   style={styles.settingsIcon}
                 />
               }
-              title="Terms of Use"
+              title={t('profile.termsOfUse')}
               onPress={openTermsOfUse}
             />
 
@@ -393,10 +403,16 @@ export default function Profile() {
                   style={styles.settingsIcon}
                 />
               }
-              title="Privacy Policy"
+              title={t('profile.privacyPolicy')}
               onPress={openPrivacyPolicy}
               showBorder={false}
             />
+          </View>
+
+          {/* Language Section */}
+          <View style={styles.settingsContainer}>
+            <Text style={styles.settingsTitle}>{t('language.title')}</Text>
+            <LanguageSwitcher />
           </View>
 
           {/* Contact Us Button */}
@@ -408,14 +424,14 @@ export default function Profile() {
             ) : (
               <>
                 <Ionicons name="mail-outline" size={22} color="#B17457" />
-                <Text style={styles.contactButtonText}>Contact Us</Text>
+                <Text style={styles.contactButtonText}>{t('profile.contactUs')}</Text>
               </>
             )}
           </TouchableOpacity>
 
           {/* App Version */}
           <View style={styles.versionContainer}>
-            <Text style={styles.versionText}>App Version {appVersion}</Text>
+            <Text style={styles.versionText}>{t('profile.appVersion')} {appVersion}</Text>
           </View>
 
           {/* Sign Out Button */}
@@ -426,7 +442,7 @@ export default function Profile() {
               <ActivityIndicator color="#ff4444" />
             ) : (
               <>
-                <Text style={styles.signOutText}>Sign Out</Text>
+                <Text style={styles.signOutText}>{t('auth.logout')}</Text>
                 <FontAwesome
                   name="sign-out"
                   size={24}
@@ -448,7 +464,7 @@ export default function Profile() {
             ) : (
               <>
                 <Text style={[styles.signOutText, { color: "#d32f2f" }]}>
-                  Delete Account
+                  {t('profile.deleteAccount')}
                 </Text>
               </>
             )}
@@ -459,7 +475,6 @@ export default function Profile() {
   );
 }
 
-// Update styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -478,12 +493,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
+  avatarContainer: {
+    position: "relative",
+    marginBottom: 12,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#f0f0f0",
   },
   userName: {
     color: "#fff",
@@ -491,6 +509,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 12,
     marginBottom: 4,
+  },
+  userUsername: {
+    color: "#fff",
+    fontSize: 16,
+    opacity: 0.8,
   },
   content: {
     flex: 1,
@@ -682,7 +705,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
-  // New styles for settings section
+  // Styles for settings section
   settingsContainer: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -721,7 +744,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-  // New styles for inline editing
+  // Styles for inline editing
   fieldValueContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

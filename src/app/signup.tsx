@@ -79,7 +79,7 @@ export default function SignUp() {
     <>
       <Stack.Screen
         options={{
-          title: "Sign Up",
+          title: "Daftar",
           headerShown: false,
           gestureEnabled: false,
         }}
@@ -91,8 +91,8 @@ export default function SignUp() {
           style={styles.keyboardView}>
           <View style={styles.content}>
             <View style={styles.header}>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Sign up to get started</Text>
+              <Text style={styles.title}>Buat Akun</Text>
+              <Text style={styles.subtitle}>Daftar untuk memulai</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -163,15 +163,15 @@ export default function SignUp() {
                 {formState.isSubmitting ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>Sign Up</Text>
+                  <Text style={styles.buttonText}>Daftar</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
+              <Text style={styles.footerText}>Sudah punya akun?</Text>
               <Link href="/auth" style={styles.signInLink}>
-                <Text style={styles.signInLinkText}>Sign In</Text>
+                <Text style={styles.signInLinkText}>Masuk</Text>
               </Link>
             </View>
           </View>
@@ -262,16 +262,17 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#B17457",
-    padding: 16,
-    borderRadius: 50,
-    marginBottom: 16,
-    width: "80%",
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    marginBottom: 8,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
     color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   signInButton: {
     color: "#B17457",
@@ -337,5 +338,6 @@ const styles = StyleSheet.create({
   signInLinkText: {
     color: "#B17457",
     fontWeight: "600",
+    fontSize: 15,
   },
 });

@@ -14,6 +14,7 @@ import { ListHeaderSkeleton } from "./skeletons/list-header-skeleton";
 import { useCartStore } from "../store/cart-store";
 import { Tables } from "../types/database.types";
 import { useAuth } from "../providers/auth-provider";
+import { useTranslation } from "react-i18next";
 
 export const ListHeader = ({
   categories,
@@ -29,8 +30,8 @@ export const ListHeader = ({
   }
 
   const { getItemCount } = useCartStore();
-
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const currentUser = users.find((u) => u.id === user?.id);
 
@@ -48,9 +49,9 @@ export const ListHeader = ({
                 numberOfLines={1}
                 ellipsizeMode="tail">
                 {currentUser?.name ? (
-                  <>Hi, {currentUser.name}</>
+                  <>Halo, {currentUser.name}</>
                 ) : (
-                  "Welcome, Guest"
+                  t('common.welcome')
                 )}
               </Text>
             </Pressable>
@@ -85,7 +86,7 @@ export const ListHeader = ({
         />
       </View>
 
-      <Text style={styles.sectionTitle}>Categories</Text>
+      <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
       <View style={styles.categoriesContainer}>
         <FlatList
           data={categories}

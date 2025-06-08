@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "../../../utils/utils";
 import { supabase } from "../../../lib/supabase";
 import { router } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { RefreshControl } from "react-native";
 
 interface Order {
@@ -46,10 +46,10 @@ const OrderDetails = () => {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, title: "Order Details" }} />
+        <Stack.Screen options={{ headerShown: true, title: "Detail Pesanan" }} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#B17457" />
-          <Text style={styles.loadingText}>Loading order details...</Text>
+          <Text style={styles.loadingText}>Memuat detail pesanan...</Text>
         </View>
       </View>
     );
@@ -72,7 +72,7 @@ const OrderDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: true, title: "Order Details" }} />
+      <Stack.Screen options={{ headerShown: true, title: "Detail Pesanan" }} />
 
       <ScrollView
         style={styles.scrollView}
@@ -87,14 +87,14 @@ const OrderDetails = () => {
         }>
         {/* Order Info Card */}
         <View style={styles.card}>
-          <Text style={styles.orderNumber}>Order #{order.slug}</Text>
+          <Text style={styles.orderNumber}>Pesanan #{order.slug}</Text>
           <Text style={styles.date}>
-            {format(new Date(order.created_at), "MMM dd, yyyy")}
+            {format(new Date(order.created_at), "dd MMM yyyy")}
           </Text>
 
           <View style={styles.row}>
             <View style={styles.infoItem}>
-              <Text style={styles.label}>Pickup Method</Text>
+              <Text style={styles.label}>Metode Pengambilan</Text>
               <Text style={styles.value}>
                 {order.pickup_method === "pickup"
                   ? "Ambil Sendiri"
@@ -110,14 +110,20 @@ const OrderDetails = () => {
                 order.status === "Completed" && styles.statusBadge_Completed,
                 order.status === "Cancelled" && styles.statusBadge_Cancelled,
               ]}>
-              <Text style={styles.statusText}>{order.status}</Text>
+              <Text style={styles.statusText}>
+                {order.status === "Pending" ? "Menunggu" :
+                 order.status === "On Review" ? "Ditinjau" :
+                 order.status === "Process" ? "Diproses" :
+                 order.status === "Completed" ? "Selesai" :
+                 order.status === "Cancelled" ? "Dibatalkan" : order.status}
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Items Card */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Items Ordered</Text>
+          <Text style={styles.sectionTitle}>Item Pesanan</Text>
           {orderItems.map((item) => (
             <View
               key={`${item.id}-${item.variant || "no-variant"}`}
@@ -130,10 +136,10 @@ const OrderDetails = () => {
                 <Text style={styles.itemName}>{item.title}</Text>
                 {item.variant && (
                   <Text style={styles.variantText}>
-                    Variant: {item.variant}
+                    Varian: {item.variant}
                   </Text>
                 )}
-                <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                <Text style={styles.itemQuantity}>Jumlah: {item.quantity}</Text>
                 <Text style={styles.itemPrice}>
                   {formatCurrency(item.price * item.quantity)}
                 </Text>
@@ -155,7 +161,7 @@ const OrderDetails = () => {
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowCancelModal(true)}>
-              <Text style={styles.cancelButtonText}>Cancel Order</Text>
+              <Text style={styles.cancelButtonText}>Batalkan Pesanan</Text>
             </TouchableOpacity>
 
             <Modal
@@ -165,16 +171,16 @@ const OrderDetails = () => {
               onRequestClose={() => setShowCancelModal(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Cancel Order</Text>
+                  <Text style={styles.modalTitle}>Batalkan Pesanan</Text>
                   <Text style={styles.modalMessage}>
-                    Are you sure you want to cancel this order?
+                    Apakah Anda yakin ingin membatalkan pesanan ini?
                   </Text>
                   <View style={styles.modalButtons}>
                     <TouchableOpacity
                       style={[styles.modalButton, styles.modalButtonNo]}
                       onPress={() => setShowCancelModal(false)}>
                       <Text style={styles.modalButtonTextNo}>
-                        No, Keep Order
+                        Tidak, Tetap Pesan
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -190,11 +196,11 @@ const OrderDetails = () => {
                           router.replace("/orders");
                         } catch (error) {
                           console.error("Error cancelling order:", error);
-                          Alert.alert("Error", "Failed to cancel order");
+                          Alert.alert("Error", "Gagal membatalkan pesanan");
                         }
                       }}>
                       <Text style={styles.modalButtonTextYes}>
-                        Yes, Cancel Order
+                        Ya, Batalkan Pesanan
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -207,7 +213,7 @@ const OrderDetails = () => {
         {/* Total Card */}
         <View style={[styles.card, styles.totalCard]}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalLabel}>Total Pembayaran</Text>
             <Text style={styles.totalAmount}>
               {formatCurrency(
                 orderItems.reduce(
@@ -427,28 +433,28 @@ const styles: { [key: string]: any } = StyleSheet.create({
     gap: 12,
   },
   modalButton: {
-    padding: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderRadius: 8,
+    flex: 1,
+    marginHorizontal: 4,
     alignItems: "center",
-    width: "100%",
   },
   modalButtonNo: {
-    backgroundColor: "#ff4444",
+    backgroundColor: "#f0f0f0",
   },
   modalButtonYes: {
-    backgroundColor: "#f5f5f5",
-    borderWidth: 1,
-    borderColor: "#ddd",
+    backgroundColor: "#ff4444",
   },
   modalButtonTextNo: {
-    color: "#fff",
-    fontSize: 16,
+    color: "#333",
     fontWeight: "600",
+    fontSize: 14,
   },
   modalButtonTextYes: {
-    color: "#666",
-    fontSize: 16,
+    color: "#fff",
     fontWeight: "600",
+    fontSize: 14,
   },
   variantText: {
     color: "#666",

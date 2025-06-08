@@ -3,6 +3,7 @@ import { ToastProvider } from "react-native-toast-notifications";
 import AuthProvider, { useAuth } from "../providers/auth-provider";
 import { QueryProvider } from "../providers/query-provider";
 import NotificationProvider from "../providers/notification-provider";
+import LanguageProvider from "../providers/language-provider";
 import LoadingScreen from "../components/loading-screen";
 import { View, Text, StyleSheet } from "react-native";
 import { Redirect } from "expo-router";
@@ -12,22 +13,24 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <AuthProvider>
-        <ToastProvider
-          placement="top"
-          duration={3000}
-          offset={50}
-          renderType={{
-            custom_toast: (toast) => (
-              <View style={styles.toastContainer}>
-                <Text style={styles.toastTitle}>{toast.data.title}</Text>
-                <Text style={styles.toastMessage}>{toast.message}</Text>
-              </View>
-            ),
-          }}>
-          <NotificationProvider>
-            <RootLayoutNav />
-          </NotificationProvider>
-        </ToastProvider>
+        <LanguageProvider>
+          <ToastProvider
+            placement="top"
+            duration={3000}
+            offset={50}
+            renderType={{
+              custom_toast: (toast) => (
+                <View style={styles.toastContainer}>
+                  <Text style={styles.toastTitle}>{toast.data.title}</Text>
+                  <Text style={styles.toastMessage}>{toast.message}</Text>
+                </View>
+              ),
+            }}>
+            <NotificationProvider>
+              <RootLayoutNav />
+            </NotificationProvider>
+          </ToastProvider>
+        </LanguageProvider>
       </AuthProvider>
     </QueryProvider>
   );

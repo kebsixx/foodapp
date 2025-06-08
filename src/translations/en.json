@@ -1,0 +1,108 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "welcome": "Welcome"
+  },
+  "home": {
+    "categories": "Categories",
+    "bestSeller": "Best Seller Menu"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "createOne": "Create one",
+    "haveAccount": "Already have an account?",
+    "welcomeBack": "Welcome Back",
+    "signInContinue": "Sign in to continue"
+  },
+  "profile": {
+    "title": "Profile",
+    "userInfo": "User Information",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "settings": "Settings",
+    "termsOfUse": "Terms of Use",
+    "privacyPolicy": "Privacy Policy",
+    "contactUs": "Contact Us",
+    "appVersion": "App Version",
+    "deleteAccount": "Delete Account"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Shopping cart is empty",
+    "total": "Total",
+    "checkout": "Checkout",
+    "processing": "Processing...",
+    "storeClosed": "Store Closed",
+    "pickupMethod": "Pickup Method",
+    "selfPickup": "Self Pickup",
+    "delivery": "Delivery",
+    "additionalNotes": "Additional Notes",
+    "notesPlaceholder": "Add notes for your order",
+    "paymentInfo": "Payment Information",
+    "transferTo": "Please transfer to:",
+    "uploadProof": "Upload Payment Proof",
+    "changeProof": "Change Payment Proof",
+    "selectPhoto": "Select Photo"
+  },
+  "product": {
+    "bestSeller": "Best Seller Menu",
+    "related": "Related Products",
+    "noRelated": "No related products found",
+    "addToCart": "Add to Cart",
+    "customizeOrder": "Customize Order",
+    "stock": "Stock",
+    "selectVariant": "Select Variant",
+    "quantity": "Quantity"
+  },
+  "orders": {
+    "title": "Orders",
+    "details": "Order Details",
+    "empty": "No orders found",
+    "orderNumber": "Order #",
+    "items": "Items Ordered",
+    "variant": "Variant",
+    "qty": "Qty",
+    "totalPayment": "Total Amount",
+    "cancel": "Cancel Order",
+    "cancelConfirm": "Are you sure you want to cancel this order?",
+    "cancelNo": "No, Keep Order",
+    "cancelYes": "Yes, Cancel Order",
+    "status": {
+      "pending": "Pending",
+      "onReview": "On Review",
+      "process": "Process",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "register": {
+    "title": "Complete Profile",
+    "subtitle": "Tell us about yourself",
+    "namePlaceholder": "Name",
+    "phonePlaceholder": "Phone Number",
+    "addressPlaceholder": "Address (Optional)",
+    "male": "Male",
+    "female": "Female",
+    "saveProfile": "Save Profile"
+  },
+  "language": {
+    "title": "Language",
+    "indonesian": "Indonesian",
+    "english": "English",
+    "switchInfo": "Slide to change the application language. Changes will be applied immediately."
+  }
+} 

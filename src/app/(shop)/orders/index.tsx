@@ -42,9 +42,9 @@ export default function Orders() {
   if (!user) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Orders" />
+        <CustomHeader title="Pesanan" />
         <View style={styles.centerContent}>
-          <Text>Please login to view orders</Text>
+          <Text>Silakan login untuk melihat pesanan</Text>
         </View>
       </View>
     );
@@ -53,7 +53,7 @@ export default function Orders() {
   if (isLoading && !refreshing) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Orders" />
+        <CustomHeader title="Pesanan" />
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color="#B17457" />
         </View>
@@ -64,7 +64,7 @@ export default function Orders() {
   if (error) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Orders" />
+        <CustomHeader title="Pesanan" />
         <View style={styles.centerContent}>
           <Text>Error: {error.message}</Text>
         </View>
@@ -74,7 +74,7 @@ export default function Orders() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Orders" />
+      <CustomHeader title="Pesanan" />
       <Stack.Screen options={{ headerShown: false }} />
 
       <FlatList
@@ -83,7 +83,7 @@ export default function Orders() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={() => (
           <View style={styles.centerContent}>
-            <Text style={styles.emptyText}>No orders found</Text>
+            <Text style={styles.emptyText}>Tidak ada pesanan</Text>
           </View>
         )}
         refreshControl={
@@ -102,7 +102,7 @@ export default function Orders() {
                   <Text style={styles.orderNumber} numberOfLines={1}>
                     {item.product_title}
                   </Text>
-                  <Text style={styles.orderId}>Order #{item.slug}</Text>
+                  <Text style={styles.orderId}>Pesanan #{item.slug}</Text>
                   <Text style={styles.orderPrice}>
                     {formatCurrency(item.totalPrice)}
                   </Text>
@@ -116,7 +116,13 @@ export default function Orders() {
                     item.status === "Completed" && styles.statusBadge_Completed,
                     item.status === "Cancelled" && styles.statusBadge_Cancelled,
                   ]}>
-                  <Text style={styles.statusText}>{item.status}</Text>
+                  <Text style={styles.statusText}>
+                    {item.status === "Pending" ? "Menunggu" :
+                     item.status === "On Review" ? "Ditinjau" :
+                     item.status === "Process" ? "Diproses" :
+                     item.status === "Completed" ? "Selesai" :
+                     item.status === "Cancelled" ? "Dibatalkan" : item.status}
+                  </Text>
                 </View>
               </View>
             </TouchableOpacity>

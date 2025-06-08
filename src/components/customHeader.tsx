@@ -1,53 +1,79 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface CustomHeaderProps {
   title: string;
+  showBackButton?: boolean;
 }
 
-const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
+const CustomHeader: React.FC<CustomHeaderProps> = ({
+  title,
+  showBackButton = true,
+}) => {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={styles.backButton}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <Ionicons name="arrow-back-sharp" size={24} color="#333" />
-      </TouchableOpacity>
-      <Text style={styles.title}>{title}</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <View style={styles.header}>
+        <View style={styles.leftContainer}>
+          {showBackButton && (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={24} color="#333" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <Text style={styles.title}>{title}</Text>
+        
+        <View style={styles.rightContainer} />
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
+  safeArea: {
+    backgroundColor: "#ffffff",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  },
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingHorizontal: 24,
+    justifyContent: "space-between",
+    height: 60,
+    paddingHorizontal: 16,
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 3,
+    borderBottomColor: "#f0f0f0",
+  },
+  leftContainer: {
+    width: 40,
+  },
+  rightContainer: {
+    width: 80,
+    alignItems: "flex-end",
   },
   backButton: {
     padding: 8,
-    marginRight: 12,
-    marginLeft: -8,
   },
   title: {
     fontSize: 18,
     fontWeight: "600",
     color: "#333",
+    textAlign: "center",
     flex: 1,
   },
 });

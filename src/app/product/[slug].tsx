@@ -234,7 +234,10 @@ const ProductDetails = () => {
           />
         }>
         <View style={styles.imageContainer}>
-          <Image source={{ uri: product.heroImage }} style={styles.heroImage} />
+          <Image 
+            source={{ uri: product.heroImage }} 
+            style={styles.heroImage} 
+          />
         </View>
 
         <View style={styles.contentContainer}>
@@ -287,7 +290,7 @@ const ProductDetails = () => {
                 contentContainerStyle={styles.relatedProductsContainer}
                 ListEmptyComponent={() => (
                   <Text style={styles.emptyText}>
-                    No related products found
+                    Tidak ada produk terkait
                   </Text>
                 )}
               />
@@ -302,7 +305,7 @@ const ProductDetails = () => {
           onPress={openModal}
           activeOpacity={0.8}>
           <Ionicons name="cart-outline" size={22} color="#fff" />
-          <Text style={styles.addToCartText}>Add to Cart</Text>
+          <Text style={styles.addToCartText}>Tambahkan ke Keranjang</Text>
         </TouchableOpacity>
       </View>
 
@@ -328,7 +331,7 @@ const ProductDetails = () => {
             <View style={styles.modalHandle} />
 
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Customize Order</Text>
+              <Text style={styles.modalTitle}>Sesuaikan Pesanan</Text>
               <TouchableOpacity onPress={closeModal}>
                 <Ionicons name="close" size={24} color="#333" />
               </TouchableOpacity>
@@ -350,7 +353,7 @@ const ProductDetails = () => {
                     : formatCurrency(0)}
                 </Text>
                 <Text style={styles.modalProductStock}>
-                  Stock: {product.maxQuantity}
+                  Stok: {product.maxQuantity}
                 </Text>
               </View>
             </View>
@@ -459,7 +462,7 @@ const ProductDetails = () => {
                   color="#fff"
                   style={styles.confirmButtonIcon}
                 />
-                <Text style={styles.confirmButtonText}>Add to Cart</Text>
+                <Text style={styles.confirmButtonText}>Tambahkan ke Keranjang</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -602,7 +605,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
     marginLeft: 8,
   },
@@ -803,7 +806,7 @@ const styles = StyleSheet.create({
   confirmButton: {
     backgroundColor: "#B17457",
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -811,12 +814,13 @@ const styles = StyleSheet.create({
     minWidth: 150,
   },
   confirmButtonIcon: {
-    marginRight: 8,
+    marginRight: 6,
   },
   confirmButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
+    maxWidth: 100,
   },
   variantContent: {
     flex: 1,

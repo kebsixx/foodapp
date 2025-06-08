@@ -1,0 +1,108 @@
+{
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "success": "Berhasil",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "welcome": "Selamat Datang"
+  },
+  "home": {
+    "categories": "Kategori",
+    "bestSeller": "Menu Terlaris"
+  },
+  "auth": {
+    "login": "Masuk",
+    "signup": "Daftar",
+    "logout": "Keluar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "username": "Nama Pengguna",
+    "forgotPassword": "Lupa Kata Sandi?",
+    "noAccount": "Belum punya akun?",
+    "createOne": "Buat akun",
+    "haveAccount": "Sudah punya akun?",
+    "welcomeBack": "Selamat Datang Kembali",
+    "signInContinue": "Masuk untuk melanjutkan"
+  },
+  "profile": {
+    "title": "Profil",
+    "userInfo": "Informasi Pengguna",
+    "name": "Nama",
+    "phone": "Telepon",
+    "address": "Alamat",
+    "settings": "Pengaturan",
+    "termsOfUse": "Ketentuan Penggunaan",
+    "privacyPolicy": "Kebijakan Privasi",
+    "contactUs": "Hubungi Kami",
+    "appVersion": "Versi Aplikasi",
+    "deleteAccount": "Hapus Akun"
+  },
+  "cart": {
+    "title": "Keranjang Belanja",
+    "empty": "Keranjang belanja kosong",
+    "total": "Total",
+    "checkout": "Pesan Sekarang",
+    "processing": "Memproses...",
+    "storeClosed": "Toko Tutup",
+    "pickupMethod": "Metode Pengambilan",
+    "selfPickup": "Ambil Sendiri",
+    "delivery": "Jasa Antar",
+    "additionalNotes": "Catatan Tambahan",
+    "notesPlaceholder": "Tambahkan catatan untuk pesanan Anda",
+    "paymentInfo": "Informasi Pembayaran",
+    "transferTo": "Silahkan transfer ke:",
+    "uploadProof": "Upload Bukti Transfer",
+    "changeProof": "Ubah Bukti Transfer",
+    "selectPhoto": "Pilih Foto"
+  },
+  "product": {
+    "bestSeller": "Menu Terlaris",
+    "related": "Produk Terkait",
+    "noRelated": "Tidak ada produk terkait",
+    "addToCart": "Tambahkan ke Keranjang",
+    "customizeOrder": "Sesuaikan Pesanan",
+    "stock": "Stok",
+    "selectVariant": "Pilih Varian",
+    "quantity": "Jumlah"
+  },
+  "orders": {
+    "title": "Pesanan",
+    "details": "Detail Pesanan",
+    "empty": "Tidak ada pesanan",
+    "orderNumber": "Pesanan #",
+    "items": "Item Pesanan",
+    "variant": "Varian",
+    "qty": "Jumlah",
+    "totalPayment": "Total Pembayaran",
+    "cancel": "Batalkan Pesanan",
+    "cancelConfirm": "Apakah Anda yakin ingin membatalkan pesanan ini?",
+    "cancelNo": "Tidak, Tetap Pesan",
+    "cancelYes": "Ya, Batalkan Pesanan",
+    "status": {
+      "pending": "Menunggu",
+      "onReview": "Ditinjau",
+      "process": "Diproses",
+      "completed": "Selesai",
+      "cancelled": "Dibatalkan"
+    }
+  },
+  "register": {
+    "title": "Lengkapi Profil",
+    "subtitle": "Ceritakan tentang diri Anda",
+    "namePlaceholder": "Nama",
+    "phonePlaceholder": "Nomor Telepon",
+    "addressPlaceholder": "Alamat (Opsional)",
+    "male": "Laki-laki",
+    "female": "Perempuan",
+    "saveProfile": "Simpan Profil"
+  },
+  "language": {
+    "title": "Bahasa",
+    "indonesian": "Bahasa Indonesia",
+    "english": "Bahasa Inggris",
+    "switchInfo": "Geser untuk mengubah bahasa aplikasi. Perubahan akan diterapkan secara langsung."
+  }
+} 

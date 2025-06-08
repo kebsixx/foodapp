@@ -18,12 +18,13 @@ import { useAuth } from "../providers/auth-provider";
 import { Redirect, Link, useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const authSchema = zod.object({
-  login: zod.string().min(1, { message: "Email or username is required" }),
+  login: zod.string().min(1, { message: "Email atau username wajib diisi" }),
   password: zod
     .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
+    .min(6, { message: "Password minimal 6 karakter" }),
 });
 
 export default function Auth() {
@@ -32,6 +33,7 @@ export default function Auth() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [secureEntry, setSecureEntry] = useState(true);
+  const { t } = useTranslation();
 
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(authSchema),
@@ -76,19 +78,19 @@ export default function Auth() {
 
       if (error) throw error;
 
-      Toast.show("🎉 You've successfully logged in", {
+      Toast.show("🎉 Anda berhasil masuk", {
         type: "custom_toast",
         duration: 2000,
         data: {
-          title: "Welcome Back!",
+          title: "Selamat Datang Kembali!",
         },
       });
     } catch (error: any) {
-      Toast.show("Login Failed", {
+      Toast.show("Login Gagal", {
         type: "custom_toast",
         duration: 3000,
         data: {
-          title: "Login Failed",
+          title: "Login Gagal",
         },
       });
     } finally {
@@ -105,8 +107,10 @@ export default function Auth() {
           style={styles.keyboardView}>
           <View style={styles.content}>
             <View style={styles.header}>
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Sign in to continue</Text>
+              <View style={styles.headerTop}>
+                <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+              </View>
+              <Text style={styles.subtitle}>{t('auth.signInContinue')}</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -125,7 +129,7 @@ export default function Auth() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Email or Username"
+                      placeholder={t('auth.email') + " / " + t('auth.username')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -153,7 +157,7 @@ export default function Auth() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder="Password"
+                      placeholder={t('auth.password')}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -183,15 +187,15 @@ export default function Auth() {
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>Sign In</Text>
+                  <Text style={styles.buttonText}>{t('auth.login')}</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Text style={styles.footerText}>{t('auth.noAccount')}</Text>
               <Link href="/signup" style={styles.signUpLink}>
-                <Text style={styles.signUpLinkText}>Create one</Text>
+                <Text style={styles.signUpLinkText}>{t('auth.createOne')}</Text>
               </Link>
             </View>
           </View>
@@ -211,12 +215,17 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    padding: 24,
     justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingBottom: 40,
   },
   header: {
     marginBottom: 32,
+  },
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
@@ -260,12 +269,12 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#B17457",
-    padding: 16,
     borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
-    height: 56,
-    marginTop: 8,
+    marginTop: 16,
+    marginBottom: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
@@ -291,5 +300,6 @@ const styles = StyleSheet.create({
   signUpLinkText: {
     color: "#B17457",
     fontWeight: "600",
+    fontSize: 15,
   },
 });

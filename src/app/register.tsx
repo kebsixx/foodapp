@@ -24,10 +24,22 @@ const userSchema = zod.object({
     .string()
     .min(5, "Username minimal 5 karakter")
     .max(30, "Username maksimal 30 karakter")
-    .regex(/^[a-zA-Z\s]+$/, "Nama hanya boleh mengandung huruf dan spasi")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username hanya boleh mengandung huruf, angka, dan underscore"
+    )
     .toLowerCase(),
-  name: zod.string().min(1, "Nama harus diisi"),
-  phone: zod.string().min(10, "Nomor telepon tidak valid"),
+
+  name: zod
+    .string()
+    .min(1, "Nama harus diisi")
+    .min(2, "Nama minimal 2 karakter")
+    .regex(/^[a-zA-Z\s]+$/, "Nama hanya boleh mengandung huruf dan spasi"),
+  phone: zod
+    .string()
+    .min(10, "Nomor telepon minimal 10 digit")
+    .max(15, "Nomor telepon maksimal 15 digit")
+    .regex(/^[0-9+\-\s()]+$/, "Format nomor telepon tidak valid"),
   address: zod.string().optional(),
   gender: zod.boolean(),
 });
@@ -37,7 +49,11 @@ export default function Register() {
   const Toast = useToast();
   const router = useRouter();
 
-  const { control, handleSubmit, formState } = useForm({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: {
       username: "",
@@ -46,6 +62,7 @@ export default function Register() {
       address: "",
       gender: true,
     },
+    mode: "onChange", // Enable real-time validation
   });
 
   const onSubmit = async (data: zod.infer<typeof userSchema>) => {
@@ -95,6 +112,7 @@ export default function Register() {
       });
       router.push("/");
     } catch (error) {
+      console.error("Registration error:", error);
       Toast.show("Gagal menyimpan data", {
         type: "custom_toast",
         data: { title: "Error" },
@@ -118,8 +136,8 @@ export default function Register() {
         style={styles.keyboardView}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Complete Profile</Text>
-            <Text style={styles.subtitle}>Tell us about yourself</Text>
+            <Text style={styles.title}>Lengkapi Profil</Text>
+            <Text style={styles.subtitle}>Ceritakan tentang diri Anda</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -130,20 +148,29 @@ export default function Register() {
                 field: { value, onChange },
                 fieldState: { error },
               }) => (
-                <View style={styles.inputGroup}>
-                  <Feather
-                    name="user"
-                    size={20}
-                    color="#B17457"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    placeholder="Name"
-                    placeholderTextColor="#666"
-                    style={[styles.input, error && styles.inputError]}
-                    value={value}
-                    onChangeText={onChange}
-                  />
+                <View style={styles.inputContainer}>
+                  <View
+                    style={[
+                      styles.inputGroup,
+                      error && styles.inputGroupError,
+                    ]}>
+                    <Feather
+                      name="user"
+                      size={20}
+                      color={error ? "#FF6B6B" : "#B17457"}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      placeholder="Nama"
+                      placeholderTextColor="#666"
+                      style={[styles.input, error && styles.inputError]}
+                      value={value}
+                      onChangeText={onChange}
+                    />
+                  </View>
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
                 </View>
               )}
             />
@@ -155,22 +182,31 @@ export default function Register() {
                 field: { value, onChange },
                 fieldState: { error },
               }) => (
-                <View style={styles.inputGroup}>
-                  <Feather
-                    name="at-sign"
-                    size={20}
-                    color="#B17457"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    placeholder="Username"
-                    placeholderTextColor="#666"
-                    style={[styles.input, error && styles.inputError]}
-                    value={value}
-                    onChangeText={(text) => onChange(text.toLowerCase())}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
+                <View style={styles.inputContainer}>
+                  <View
+                    style={[
+                      styles.inputGroup,
+                      error && styles.inputGroupError,
+                    ]}>
+                    <Feather
+                      name="at-sign"
+                      size={20}
+                      color={error ? "#FF6B6B" : "#B17457"}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      placeholder="Username"
+                      placeholderTextColor="#666"
+                      style={[styles.input, error && styles.inputError]}
+                      value={value}
+                      onChangeText={(text) => onChange(text.toLowerCase())}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
                 </View>
               )}
             />
@@ -182,21 +218,30 @@ export default function Register() {
                 field: { value, onChange },
                 fieldState: { error },
               }) => (
-                <View style={styles.inputGroup}>
-                  <Feather
-                    name="phone"
-                    size={20}
-                    color="#B17457"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    placeholder="Phone Number"
-                    placeholderTextColor="#666"
-                    style={[styles.input, error && styles.inputError]}
-                    value={value}
-                    onChangeText={onChange}
-                    keyboardType="phone-pad"
-                  />
+                <View style={styles.inputContainer}>
+                  <View
+                    style={[
+                      styles.inputGroup,
+                      error && styles.inputGroupError,
+                    ]}>
+                    <Feather
+                      name="phone"
+                      size={20}
+                      color={error ? "#FF6B6B" : "#B17457"}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      placeholder="Nomor Telepon"
+                      placeholderTextColor="#666"
+                      style={[styles.input, error && styles.inputError]}
+                      value={value}
+                      onChangeText={onChange}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
                 </View>
               )}
             />
@@ -204,22 +249,34 @@ export default function Register() {
             <Controller
               control={control}
               name="address"
-              render={({ field: { value, onChange } }) => (
-                <View style={styles.inputGroup}>
-                  <Feather
-                    name="map-pin"
-                    size={20}
-                    color="#B17457"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    placeholder="Address (Optional)"
-                    placeholderTextColor="#666"
-                    style={styles.input}
-                    value={value}
-                    onChangeText={onChange}
-                    multiline
-                  />
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) => (
+                <View style={styles.inputContainer}>
+                  <View
+                    style={[
+                      styles.inputGroup,
+                      error && styles.inputGroupError,
+                    ]}>
+                    <Feather
+                      name="map-pin"
+                      size={20}
+                      color={error ? "#FF6B6B" : "#B17457"}
+                      style={styles.inputIcon}
+                    />
+                    <TextInput
+                      placeholder="Alamat (Opsional)"
+                      placeholderTextColor="#666"
+                      style={[styles.input, error && styles.inputError]}
+                      value={value}
+                      onChangeText={onChange}
+                      multiline
+                    />
+                  </View>
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
                 </View>
               )}
             />
@@ -236,7 +293,7 @@ export default function Register() {
                       style={
                         value ? styles.genderActiveText : styles.genderText
                       }>
-                      Male
+                      Laki-laki
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -246,7 +303,7 @@ export default function Register() {
                       style={
                         !value ? styles.genderActiveText : styles.genderText
                       }>
-                      Female
+                      Perempuan
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -254,16 +311,13 @@ export default function Register() {
             />
 
             <TouchableOpacity
-              style={[
-                styles.button,
-                formState.isSubmitting && styles.buttonDisabled,
-              ]}
+              style={[styles.button, isSubmitting && styles.buttonDisabled]}
               onPress={handleSubmit(onSubmit)}
-              disabled={formState.isSubmitting}>
-              {formState.isSubmitting ? (
+              disabled={isSubmitting}>
+              {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Save Profile</Text>
+                <Text style={styles.buttonText}>Simpan Profil</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -275,7 +329,7 @@ export default function Register() {
 
 const styles = StyleSheet.create({
   scrollViewContent: {
-    flexGrow: 1, // Agar konten dapat digulir
+    flexGrow: 1,
     padding: 16,
   },
   container: {
@@ -307,6 +361,31 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     fontSize: 16,
     color: "#536162",
+  },
+  inputError: {
+    color: "#FF6B6B",
+  },
+  // New styles for error handling
+  inputContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  inputGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    borderBottomWidth: 1,
+    borderColor: "#B17457",
+  },
+  inputGroupError: {
+    borderColor: "#FF6B6B",
+  },
+  errorText: {
+    color: "#FF6B6B",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 28, // Align with input text (icon width + margin)
+    fontWeight: "400",
   },
   dropdownButtonStyle: {
     width: "100%",
@@ -348,16 +427,16 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#B17457",
-    padding: 16,
-    borderRadius: 50,
-    marginBottom: 16,
-    width: "100%",
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
+    justifyContent: "center",
+    marginTop: 24,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
     color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   signInButton: {
     color: "#B17457",
@@ -375,19 +454,21 @@ const styles = StyleSheet.create({
   genderContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 16,
+    marginBottom: 24,
   },
   genderButton: {
-    padding: 12,
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#B17457",
-    width: "48%",
+    borderColor: "#ddd",
     alignItems: "center",
+    marginHorizontal: 4,
   },
   genderActive: {
-    backgroundColor: "#B17457",
+    borderColor: "#B17457",
+    backgroundColor: "#f8f1ee",
   },
   keyboardView: {
     flex: 1,
@@ -407,32 +488,22 @@ const styles = StyleSheet.create({
     width: "90%",
     alignItems: "center",
   },
-  inputGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    width: "100%",
-    borderBottomWidth: 1,
-    borderColor: "#B17457",
-  },
+
   inputIcon: {
     marginRight: 8,
   },
-  inputError: {
-    borderColor: "red",
-  },
+
   buttonDisabled: {
     backgroundColor: "#B17457",
     opacity: 0.5,
   },
   genderText: {
-    color: "#B17457",
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 14,
+    color: "#666",
   },
   genderActiveText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 14,
+    color: "#B17457",
+    fontWeight: "600",
   },
 });
