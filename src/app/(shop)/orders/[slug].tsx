@@ -18,6 +18,7 @@ import { supabase } from "../../../lib/supabase";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { RefreshControl } from "react-native";
+import CustomHeader from "../../../components/customHeader";
 
 interface Order {
   id: string;
@@ -46,7 +47,8 @@ const OrderDetails = () => {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: true, title: "Detail Pesanan" }} />
+        <Stack.Screen options={{ headerShown: false }} />
+        <CustomHeader title="Detail Pesanan" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#B17457" />
           <Text style={styles.loadingText}>Memuat detail pesanan...</Text>
@@ -72,7 +74,8 @@ const OrderDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: true, title: "Detail Pesanan" }} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title="Detail Pesanan" />
 
       <ScrollView
         style={styles.scrollView}

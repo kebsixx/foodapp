@@ -47,7 +47,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: "#ffffff",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === "android" ? 0 : 0,
   },
   header: {
     flexDirection: "row",
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   rightContainer: {
-    width: 80,
+    width: 60,
     alignItems: "flex-end",
   },
   backButton: {

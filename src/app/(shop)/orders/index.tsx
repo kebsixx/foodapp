@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,7 +8,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Link, Stack } from "expo-router";
-import { format } from "date-fns";
 import CustomHeader from "../../../components/customHeader";
 import { formatCurrency } from "../../../utils/utils";
 import { getMyOrders } from "../../../api/api";
@@ -75,7 +75,6 @@ export default function Orders() {
   return (
     <View style={styles.container}>
       <CustomHeader title="Pesanan" />
-      <Stack.Screen options={{ headerShown: false }} />
 
       <FlatList
         data={orders}
