@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   rightContainer: {
-    width: 60,
+    width: 40,
     alignItems: "flex-end",
   },
   backButton: {

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import React from "react";
 import { Redirect, Stack, useLocalSearchParams } from "expo-router";
@@ -15,6 +16,7 @@ import { useState } from "react";
 import { ProductListItem } from "../../components/product-list-item";
 import { getCategoryAndProducts } from "../../api/api";
 import { CategorySkeleton } from "../../components/category-skeleton";
+import CustomHeader from "../../components/customHeader";
 
 const Category = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -36,21 +38,11 @@ const Category = () => {
 
   if (isLoading && !refreshing) {
     return (
-      <View style={styles.container}>
-        <Stack.Screen
-          options={{
-            headerShown: true,
-            headerTitle: () => (
-              <View style={{ marginLeft: 16 }}>
-                <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                  {formatTitle(slug)}
-                </Text>
-              </View>
-            ),
-          }}
-        />
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <CustomHeader title={formatTitle(slug)} />
         <CategorySkeleton />
-      </View>
+      </SafeAreaView>
     );
   }
   if (error || !data) return <Text>Error: {error?.message}</Text>;
@@ -59,46 +51,40 @@ const Category = () => {
   const { category, products } = data;
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          progressViewOffset={60}
-          colors={["#B17457"]}
-          tintColor="#B17457"
-        />
-      }>
-      <Stack.Screen
-        options={{
-          headerTitle: () => (
-            <View style={{ marginLeft: 16 }}>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                {category.name}
-              </Text>
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title={category.name} />
+      
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            progressViewOffset={60}
+            colors={["#B17457"]}
+            tintColor="#B17457"
+          />
+        }>
+        <Image source={{ uri: category.imageUrl }} style={styles.categoryImage} />
+        <Text style={styles.categoryName}>{category.name}</Text>
+        <FlatList
+          data={products}
+          scrollEnabled={false}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => <ProductListItem product={item} />}
+          numColumns={2}
+          columnWrapperStyle={styles.productRow}
+          contentContainerStyle={styles.productsList}
+          ListEmptyComponent={
+            <View
+              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ fontSize: 16 }}>No products found</Text>
             </View>
-          ),
-        }}
-      />
-      <Image source={{ uri: category.imageUrl }} style={styles.categoryImage} />
-      <Text style={styles.categoryName}>{category.name}</Text>
-      <FlatList
-        data={products}
-        scrollEnabled={false}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <ProductListItem product={item} />}
-        numColumns={2}
-        columnWrapperStyle={styles.productRow}
-        contentContainerStyle={styles.productsList}
-        ListEmptyComponent={
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ fontSize: 16 }}>No products found</Text>
-          </View>
-        }
-      />
-    </ScrollView>
+          }
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -106,6 +92,10 @@ export default Category;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollView: {
     flex: 1,
     backgroundColor: "#fff",
     padding: 16,

@@ -10,29 +10,27 @@ export default function ShopLayout() {
         tabBarActiveTintColor: "#B17457",
         tabBarInactiveTintColor: "#666",
         tabBarStyle: {
-          position: "absolute",
-          bottom: 20,
-          width: "80%",
-          marginHorizontal: "10%",
-          elevation: 4,
           backgroundColor: "#fff",
-          borderRadius: 15,
-          height: 70,
-          alignItems: "center",
-          paddingVertical: 8,
-          paddingHorizontal: 15,
+          height: 60,
+          paddingBottom: 2,
+          paddingTop: 2,
+          borderTopColor: "#eee",
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 30,
           shadowColor: "#000",
           shadowOffset: {
             width: 0,
-            height: 4,
+            height: -2,
           },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.5,
-          borderTopWidth: 0,
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
+          elevation: 8,
+          width: "70%",
+          marginHorizontal: "15%",
+          position: "absolute",
         },
         tabBarItemStyle: {
-          paddingTop: 8,
-          height: 60,
+          paddingTop: 2,
         },
         tabBarIconStyle: {
           marginBottom: 4,
@@ -40,17 +38,7 @@ export default function ShopLayout() {
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
-          marginBottom: 8,
         },
-        tabBarBackground: () => (
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 15,
-              flex: 1,
-            }}
-          />
-        ),
       }}>
       <Tabs.Screen
         name="index"
