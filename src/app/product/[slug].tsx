@@ -12,6 +12,7 @@ import {
   Animated,
   Dimensions,
   SafeAreaView,
+  PanResponder,
 } from "react-native";
 
 import { formatCurrency } from "../../utils/utils";
@@ -39,33 +40,37 @@ const ProductDetails = () => {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const toast = useToast();
 
-  const { data: product, error, isLoading, refetch } = getProduct(slug);
-
-  const { items, addItem } = useCartStore();
-
-  const cartItem = items.find((item) => item.id === product?.id);
-
-  const initialQuantity = cartItem ? cartItem.quantity : 1;
-
-  const [quantity, setQuantity] = useState(initialQuantity);
+  // PENTING: Semua useState harus didefinisikan terlebih dahulu, sebelum useRef
+  const [quantity, setQuantity] = useState(1);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [showCloseButton, setShowCloseButton] = useState(true);
+  
+  // Semua useRef harus didefinisikan setelah semua useState
   const slideAnim = useRef(new Animated.Value(height)).current;
+  const panY = useRef(new Animated.Value(0)).current;
+  const handleOpacity = useRef(new Animated.Value(1)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
 
+  // API calls
+  const { data: product, error, isLoading, refetch } = getProduct(slug);
   const { data: productsData } = getProductsAndCategories();
 
-  const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      await refetch();
-    } finally {
-      setRefreshing(false);
+  // Cart integration
+  const { items, addItem } = useCartStore();
+  const cartItem = items.find((item) => item.id === product?.id);
+
+  // Pastikan useEffect selalu berada setelah semua hooks lainnya
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(cartItem.quantity);
+    } else {
+      setQuantity(1);
     }
-  };
+  }, [cartItem]);
 
   useEffect(() => {
     if (product && product.variants) {
@@ -101,39 +106,75 @@ const ProductDetails = () => {
     }
   }, [product]);
 
-  // Create a filtered list of related products
-  const relatedProducts =
-    product && productsData?.products
-      ? productsData.products
-          .filter((p) => p.category === product.category && p.id !== product.id)
-          .slice(0, 5)
-      : [];
-
-  const formatTitle = (slug: string) => {
-    return slug
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  // Update the loading state
-  // Ganti bagian loading state dengan ini:
-  if (isLoading && !refreshing) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <CustomHeader title={formatTitle(slug as string)} />
-        <ProductDetailsSkeleton />
-      </SafeAreaView>
-    );
-  }
-  if (error) return <Text>Error: {error.message}</Text>;
-  if (!product) return <Redirect href="/404" />;
+  // Modal functions
+  const closeModal = () => {
+    // First animate the slide out
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+    
+    // Simultaneously fade out the backdrop
+    Animated.timing(backdropOpacity, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      // After animations complete, hide the modal
+      setModalVisible(false);
+      
+      // Reset all animation values
+      requestAnimationFrame(() => {
+        panY.setValue(0);
+        handleOpacity.setValue(1);
+        slideAnim.setValue(height);
+      });
+    });
+  };
 
+  const openModal = () => {
+    // Reset all animation values before showing modal
+    panY.setValue(0);
+    handleOpacity.setValue(1);
+    slideAnim.setValue(height);
+    backdropOpacity.setValue(0);
+    
+    // Show modal
+    setModalVisible(true);
+    setShowCloseButton(true);
+    
+    // Animate backdrop fade in and slide up
+    requestAnimationFrame(() => {
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        })
+      ]).start();
+    });
+  };
+
+  // Product functions
   const increaseQuantity = () => {
-    if (quantity < product.maxQuantity) {
+    if (product && quantity < product.maxQuantity) {
       setQuantity(quantity + 1);
-    } else {
+    } else if (product) {
       toast.show("Maksimal pembelian adalah " + product.maxQuantity, {
         type: "custom_toast",
         data: {
@@ -167,27 +208,58 @@ const ProductDetails = () => {
     setQuantity(1);
   };
 
-  const openModal = () => {
-    setModalVisible(true);
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const closeModal = () => {
-    Animated.timing(slideAnim, {
-      toValue: height,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false);
-    });
-  };
+  // Setup PanResponder for modal gestures - PENTING: definisikan setelah semua fungsi yang digunakan di dalamnya
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (evt, gestureState) => {
+        // Only allow downward movement
+        if (gestureState.dy > 0) {
+          panY.setValue(gestureState.dy);
+          
+          // Fade the handle as user drags down
+          const opacity = 1 - Math.min(gestureState.dy / 200, 0.6);
+          handleOpacity.setValue(opacity);
+          
+          // Hide close button when dragging significantly
+          if (gestureState.dy > 50 && showCloseButton) {
+            setShowCloseButton(false);
+          } else if (gestureState.dy <= 50 && !showCloseButton) {
+            setShowCloseButton(true);
+          }
+        }
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        // If user dragged down more than 100px, close the modal
+        if (gestureState.dy > 100) {
+          closeModal();
+        } else {
+          // Otherwise, reset to original position with a spring animation
+          Animated.parallel([
+            Animated.spring(panY, {
+              toValue: 0,
+              useNativeDriver: true,
+              bounciness: 5,
+              speed: 10,
+            }),
+            Animated.timing(handleOpacity, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            })
+          ]).start();
+          
+          // Show close button again if it was hidden
+          if (!showCloseButton) {
+            setShowCloseButton(true);
+          }
+        }
+      },
+    })
+  ).current;
 
   const addToCart = async () => {
-    if (currentPrice !== null) {
+    if (currentPrice !== null && product) {
       const itemToAdd = {
         id: product.id,
         title: product.title,
@@ -213,10 +285,37 @@ const ProductDetails = () => {
     }
   };
 
+  const formatTitle = (slug: string) => {
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   const totalPrice =
     currentPrice !== null
       ? formatCurrency(currentPrice * quantity)
       : formatCurrency(0);
+
+  // Update the loading state
+  if (isLoading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <CustomHeader title={formatTitle(slug as string)} />
+        <ProductDetailsSkeleton />
+      </SafeAreaView>
+    );
+  }
+  if (error) return <Text>Error: {error.message}</Text>;
+  if (!product) return <Redirect href="/404" />;
+
+  // Create a filtered list of related products
+  const relatedProducts = productsData?.products
+    ? productsData.products
+        .filter((p) => p.category === product.category && p.id !== product.id)
+        .slice(0, 5)
+    : [];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -315,26 +414,62 @@ const ProductDetails = () => {
         transparent={true}
         visible={modalVisible}
         onRequestClose={closeModal}>
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity
-            style={styles.modalBackdrop}
-            onPress={closeModal}
-            activeOpacity={1}
-          />
+        <View style={styles.modalContainer}>
+          {/* Backdrop - separate from content */}
+          <Animated.View 
+            style={[
+              styles.modalBackdrop,
+              { opacity: backdropOpacity }
+            ]}
+          >
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={closeModal}
+              activeOpacity={1}
+            />
+          </Animated.View>
+          
+          {/* Modal content */}
           <Animated.View
             style={[
               styles.modalContent,
               {
-                transform: [{ translateY: slideAnim }],
+                transform: [
+                  { translateY: slideAnim },
+                  { translateY: panY },
+                ],
               },
             ]}>
-            <View style={styles.modalHandle} />
+            {/* Handle for dragging with visual indicator */}
+            <View style={styles.dragHandleArea} {...panResponder.panHandlers}>
+              <Animated.View style={[styles.modalHandle, { opacity: handleOpacity }]} />
+              <Animated.Text 
+                style={[
+                  styles.dragHint, 
+                  { 
+                    opacity: Animated.multiply(
+                      handleOpacity, 
+                      Animated.subtract(1, Animated.divide(handleOpacity, 1.5))
+                    )
+                  }
+                ]}
+              >
+                Geser ke bawah untuk menutup
+              </Animated.Text>
+            </View>
 
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Sesuaikan Pesanan</Text>
-              <TouchableOpacity onPress={closeModal}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
+              {showCloseButton && (
+                <TouchableOpacity 
+                  onPress={closeModal}
+                  style={styles.closeButton}
+                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="close" size={24} color="#333" />
+                </TouchableOpacity>
+              )}
             </View>
 
             {/* Product Image and Basic Info */}
@@ -622,13 +757,17 @@ const styles = StyleSheet.create({
   },
 
   // Modal styles
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   modalBackdrop: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
@@ -638,13 +777,24 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     maxHeight: height * 0.85,
   },
+  dragHandleArea: {
+    width: "100%",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
   modalHandle: {
     width: 40,
     height: 5,
     backgroundColor: "#ddd",
     borderRadius: 3,
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 8,
+  },
+  dragHint: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 2,
+    marginBottom: 8,
   },
   modalHeader: {
     flexDirection: "row",
@@ -830,5 +980,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 5,
     right: 5,
+  },
+  closeButton: {
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
   },
 });
