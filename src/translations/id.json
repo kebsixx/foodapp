@@ -73,6 +73,7 @@
     "settings": "Pengaturan",
     "termsOfUse": "Ketentuan Penggunaan",
     "privacyPolicy": "Kebijakan Privasi",
+    "refundPolicy": "Kebijakan Pengembalian Dana",
     "contactUs": "Hubungi Kami",
     "appVersion": "Versi Aplikasi",
     "deleteAccount": "Hapus Akun"
@@ -131,5 +132,28 @@
     "indonesian": "Bahasa Indonesia",
     "english": "Bahasa Inggris",
     "switchInfo": "Geser untuk mengubah bahasa aplikasi. Perubahan akan diterapkan secara langsung."
+  },
+  "refundPolicy": {
+    "title": "Kebijakan Pengembalian Dana",
+    "subtitle": "Cerita Senja Cafe",
+    "effectiveDate": "Efektif berlaku mulai:",
+    "introduction": "Kami di Cerita Senja Cafe berkomitmen untuk memberikan produk dan layanan terbaik. Kebijakan ini menjelaskan situasi di mana pengembalian dana (refund) dapat diberikan.",
+    "eligibleConditionsTitle": "1. Kondisi Pengajuan Pengembalian Dana",
+    "eligibleConditionsIntro": "Anda berhak mengajukan pengembalian dana jika mengalami salah satu kondisi berikut:",
+    "cancelledByCafe": "• Pesanan Dibatalkan oleh Pihak Cafe: Jika kami tidak dapat memenuhi pesanan Anda karena bahan baku habis atau alasan teknis lainnya, kami akan memberikan pengembalian dana penuh (100%).",
+    "wrongOrIncomplete": "• Item Pesanan Salah atau Tidak Lengkap: Jika Anda menerima item yang salah atau ada item yang kurang dari pesanan Anda, kami akan memberikan pengembalian dana senilai harga item yang bermasalah.",
+    "poorQuality": "• Kualitas Produk Tidak Layak Konsumsi: Jika produk yang Anda terima terbukti tidak layak konsumsi (misalnya, basi atau rusak), kami akan memberikan pengembalian dana penuh setelah verifikasi.",
+    "nonEligibleTitle": "2. Kondisi yang Tidak Termasuk dalam Kebijakan Pengembalian Dana",
+    "nonEligibleIntro": "Pengembalian dana tidak akan diberikan untuk kondisi berikut:",
+    "changeOfMind": "• Perubahan Pikiran: Jika Anda berubah pikiran setelah pesanan masuk ke tahap \"Disiapkan\".",
+    "thirdPartyDelivery": "• Kesalahan oleh Jasa Pengiriman Pihak Ketiga: Kami tidak bertanggung jawab atas masalah yang disebabkan oleh driver yang Anda pesan, seperti keterlambatan pengiriman, kerusakan makanan selama perjalanan, atau pesanan yang hilang setelah diambil dari cafe.",
+    "notPickedUp": "• Pesanan Tidak Diambil: Jika Anda memilih metode \"Ambil Sendiri\" namun tidak mengambil pesanan Anda hingga jam operasional cafe berakhir.",
+    "refundProcessTitle": "3. Proses Pengajuan Pengembalian Dana",
+    "contactUs": "• Hubungi Kami Segera: Laporkan masalah Anda dalam waktu maksimal 1x24 jam setelah pesanan diterima melalui email di cerita@senja.id atau telepon di 085175003172.",
+    "provideEvidence": "• Sertakan Bukti: Wajib menyertakan nomor pesanan dan foto yang jelas sebagai bukti kondisi (misalnya, foto item yang salah atau rusak).",
+    "verification": "• Verifikasi: Tim kami akan melakukan verifikasi laporan Anda dalam 1-2 hari kerja.",
+    "refundProcess": "• Proses Refund: Jika disetujui, pengembalian dana akan diproses melalui transfer bank ke rekening Anda dalam waktu 3-5 hari kerja.",
+    "contactTitle": "4. Kontak",
+    "contactInfo": "Untuk semua pertanyaan terkait kebijakan ini, silakan hubungi tim dukungan kami melalui email di cerita@senja.id atau telepon di 085175003172."
   }
 } 

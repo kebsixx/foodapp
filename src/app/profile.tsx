@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Linking,
   Image,
+  Modal,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 
@@ -34,6 +35,7 @@ export default function Profile() {
   const [isSignOutLoading, setIsSignOutLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isContactLoading, setIsContactLoading] = useState(false);
+  const [showRefundPolicy, setShowRefundPolicy] = useState(false);
   const { t } = useTranslation();
 
   // Form data state
@@ -249,6 +251,10 @@ export default function Profile() {
     Linking.openURL("https://ceritasenjacafe.com/user/policy");
   };
 
+  const openRefundPolicy = () => {
+    setShowRefundPolicy(true);
+  };
+
   const SettingsItem = ({
     icon,
     title,
@@ -329,6 +335,98 @@ export default function Profile() {
     );
   };
 
+  // Refund Policy Modal
+  const RefundPolicyModal = () => (
+    <Modal
+      visible={showRefundPolicy}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setShowRefundPolicy(false)}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.refundPolicyContainer}>
+          <View style={styles.refundPolicyHeader}>
+            <Text style={styles.refundPolicyTitle}>
+              {t('refundPolicy.title')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowRefundPolicy(false)}
+              style={styles.closeButton}>
+              <MaterialIcons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.refundPolicyContent}>
+            <Text style={styles.refundPolicySubtitle}>
+              {t('refundPolicy.subtitle')}
+            </Text>
+            <Text style={styles.refundPolicyDate}>
+              {t('refundPolicy.effectiveDate')} {appVersion.includes("1.0") ? "1 Juni 2025" : "1 Januari 2025"}
+            </Text>
+            
+            <Text style={styles.refundPolicyText}>
+              {t('refundPolicy.introduction')}
+            </Text>
+            
+            <Text style={styles.refundPolicySectionTitle}>
+              {t('refundPolicy.eligibleConditionsTitle')}
+            </Text>
+            <Text style={styles.refundPolicyText}>
+              {t('refundPolicy.eligibleConditionsIntro')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.cancelledByCafe')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.wrongOrIncomplete')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.poorQuality')}
+            </Text>
+            
+            <Text style={styles.refundPolicySectionTitle}>
+              {t('refundPolicy.nonEligibleTitle')}
+            </Text>
+            <Text style={styles.refundPolicyText}>
+              {t('refundPolicy.nonEligibleIntro')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.changeOfMind')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.thirdPartyDelivery')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.notPickedUp')}
+            </Text>
+            
+            <Text style={styles.refundPolicySectionTitle}>
+              {t('refundPolicy.refundProcessTitle')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.contactUs')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.provideEvidence')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.verification')}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t('refundPolicy.refundProcess')}
+            </Text>
+            
+            <Text style={styles.refundPolicySectionTitle}>
+              {t('refundPolicy.contactTitle')}
+            </Text>
+            <Text style={styles.refundPolicyText}>
+              {t('refundPolicy.contactInfo')}
+            </Text>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <>
       <Stack.Screen
@@ -342,6 +440,7 @@ export default function Profile() {
           headerTitleStyle: {
             fontWeight: "600",
           },
+          headerTitleAlign: "center",
           headerShadowVisible: false, // Removes the bottom border
         }}
       />
@@ -405,6 +504,19 @@ export default function Profile() {
               }
               title={t('profile.privacyPolicy')}
               onPress={openPrivacyPolicy}
+            />
+            
+            <SettingsItem
+              icon={
+                <MaterialIcons
+                  name="monetization-on"
+                  size={22}
+                  color="#555"
+                  style={styles.settingsIcon}
+                />
+              }
+              title={t('profile.refundPolicy')}
+              onPress={openRefundPolicy}
               showBorder={false}
             />
           </View>
@@ -471,6 +583,9 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Render Refund Policy Modal */}
+      <RefundPolicyModal />
     </>
   );
 }
@@ -804,5 +919,78 @@ const styles = StyleSheet.create({
   versionText: {
     color: "#888",
     fontSize: 14,
+  },
+  // Refund Policy Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  refundPolicyContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    width: "90%",
+    maxHeight: "80%",
+    padding: 0,
+    paddingBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  refundPolicyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  refundPolicyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    flex: 1,
+  },
+  closeButton: {
+    padding: 8,
+  },
+  refundPolicyContent: {
+    padding: 16,
+    maxHeight: "100%",
+  },
+  refundPolicySubtitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#B17457",
+    marginBottom: 8,
+  },
+  refundPolicyDate: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 16,
+    fontStyle: "italic",
+  },
+  refundPolicyText: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  refundPolicySectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  refundPolicyItem: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 8,
+    paddingLeft: 8,
+    lineHeight: 20,
   },
 });

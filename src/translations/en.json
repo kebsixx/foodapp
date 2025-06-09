@@ -73,6 +73,7 @@
     "settings": "Settings",
     "termsOfUse": "Terms of Use",
     "privacyPolicy": "Privacy Policy",
+    "refundPolicy": "Refund Policy",
     "contactUs": "Contact Us",
     "appVersion": "App Version",
     "deleteAccount": "Delete Account"
@@ -131,5 +132,28 @@
     "indonesian": "Indonesian",
     "english": "English",
     "switchInfo": "Slide to change the application language. Changes will be applied immediately."
+  },
+  "refundPolicy": {
+    "title": "Refund Policy",
+    "subtitle": "Cerita Senja Cafe",
+    "effectiveDate": "Effective from:",
+    "introduction": "We at Cerita Senja Cafe are committed to providing the best products and services. This policy explains the situations where refunds may be granted.",
+    "eligibleConditionsTitle": "1. Eligible Refund Conditions",
+    "eligibleConditionsIntro": "You are entitled to request a refund if you experience any of the following conditions:",
+    "cancelledByCafe": "• Order Cancelled by Cafe: If we cannot fulfill your order due to out-of-stock ingredients or other technical reasons, we will provide a full refund (100%).",
+    "wrongOrIncomplete": "• Wrong or Incomplete Order: If you receive incorrect items or if items are missing from your order, we will provide a refund for the value of the problematic items.",
+    "poorQuality": "• Poor Product Quality: If the product you receive is proven to be unfit for consumption (e.g., spoiled or damaged), we will provide a full refund after verification.",
+    "nonEligibleTitle": "2. Non-Eligible Refund Conditions",
+    "nonEligibleIntro": "Refunds will not be provided for the following conditions:",
+    "changeOfMind": "• Change of Mind: If you change your mind after the order has entered the \"Preparation\" stage.",
+    "thirdPartyDelivery": "• Third-Party Delivery Service Issues: We are not responsible for problems caused by delivery drivers you ordered, such as late delivery, food damage during transit, or lost orders after being picked up from the cafe.",
+    "notPickedUp": "• Order Not Picked Up: If you choose the \"Self Pickup\" method but do not pick up your order before the cafe's operating hours end.",
+    "refundProcessTitle": "3. Refund Request Process",
+    "contactUs": "• Contact Us Immediately: Report your issue within a maximum of 24 hours after receiving the order via email at cerita@senja.id or phone at 085175003172.",
+    "provideEvidence": "• Provide Evidence: You must include the order number and clear photos as evidence of the condition (e.g., photos of incorrect or damaged items).",
+    "verification": "• Verification: Our team will verify your report within 1-2 business days.",
+    "refundProcess": "• Refund Process: If approved, the refund will be processed via bank transfer to your account within 3-5 business days.",
+    "contactTitle": "4. Contact",
+    "contactInfo": "For all questions regarding this policy, please contact our support team via email at cerita@senja.id or phone at 085175003172."
   }
 } 
