@@ -24,6 +24,7 @@ import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcherMini from "../components/language-switcher-mini";
+import { uploadToCloudinary } from "../lib/cloudinary";
 
 type VariantType = {
   id: string;
@@ -61,10 +62,7 @@ const CartItem = ({
 }: CartItemProps) => {
   return (
     <View style={styles.cartItem}>
-      <Image 
-        source={{ uri: item.heroImage }} 
-        style={styles.itemImage} 
-      />
+      <Image source={{ uri: item.heroImage }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemTitle}>{item.title}</Text>
         {item.variant && (
@@ -238,30 +236,20 @@ export default function Cart() {
     try {
       setUploading(true);
 
-      // 1. Upload payment proof
-      const filePath = `payment-proofs/${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from("payment-proofs")
-        .upload(filePath, decode(paymentProof.base64), {
-          contentType: "image/jpeg",
-        });
+      // 1. Upload payment proof ke Cloudinary
+      const { url: paymentProofUrl } = await uploadToCloudinary(
+        paymentProof.base64
+      );
 
-      if (uploadError) throw uploadError;
-
-      // 2. Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("payment-proofs").getPublicUrl(filePath);
-
-      // 3. Create order with strict user_id check
+      // 2. Create order dengan strict user_id check
       const orderData = {
         totalPrice: getTotalPrice(),
         slug: generateOrderSlug(),
-        user: user.id, // Just use user foreign key
+        user: user.id,
         status: "Pending",
         description,
         pickup_method: selectedPickupMethod,
-        payment_proof: publicUrl,
+        payment_proof: paymentProofUrl,
       };
 
       const { data: order, error: orderError } = await supabase
@@ -275,7 +263,7 @@ export default function Cart() {
         throw orderError;
       }
 
-      // 4. Create order items
+      // 3. Create order items
       const orderItems = items.map((item) => ({
         order: order.id,
         product: item.id,

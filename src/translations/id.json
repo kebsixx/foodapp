@@ -9,7 +9,11 @@
     "delete": "Hapus",
     "welcome": "Selamat Datang",
     "email": "Email",
-    "password": "Kata Sandi"
+    "password": "Kata Sandi",
+    "uploading": "Mengunggah...",
+    "dropHere": "Jatuhkan file di sini",
+    "dragOrClick": "Seret dan jatuhkan file di sini, atau klik untuk memilih",
+    "maxFileSize": "Ukuran file maksimal: {{size}}MB"
   },
   "home": {
     "categories": "Kategori",
@@ -62,7 +66,8 @@
     "Nama hanya boleh mengandung huruf dan spasi": "Nama hanya boleh mengandung huruf dan spasi",
     "Nomor telepon minimal 10 digit": "Nomor telepon minimal 10 digit",
     "Nomor telepon maksimal 15 digit": "Nomor telepon maksimal 15 digit",
-    "Format nomor telepon tidak valid": "Format nomor telepon tidak valid"
+    "Format nomor telepon tidak valid": "Format nomor telepon tidak valid",
+    "fileTooLarge": "Ukuran file melebihi {{size}}MB"
   },
   "profile": {
     "title": "Profil",
@@ -156,4 +161,4 @@
     "contactTitle": "4. Kontak",
     "contactInfo": "Untuk semua pertanyaan terkait kebijakan ini, silakan hubungi tim dukungan kami melalui email di cerita@senja.id atau telepon di 085175003172."
   }
-} 
+}

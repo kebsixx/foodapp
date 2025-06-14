@@ -4,6 +4,7 @@ import registerForPushNotificationsAsync from "../lib/notifications";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/auth-provider";
 import Toast from "react-native-toast-message";
+import React from "react";
 
 // Configure how notifications should be handled when app is foregrounded
 Notifications.setNotificationHandler({

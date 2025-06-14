@@ -191,7 +191,7 @@ export type Database = {
         Row: {
           category: number
           created_at: string
-          heroImage: string
+          heroImage: string | null
           heroimageurls: Json | null
           id: number
           maxQuantity: number
@@ -203,7 +203,7 @@ export type Database = {
         Insert: {
           category: number
           created_at?: string
-          heroImage: string
+          heroImage?: string | null
           heroimageurls?: Json | null
           id?: number
           maxQuantity: number
@@ -215,7 +215,7 @@ export type Database = {
         Update: {
           category?: number
           created_at?: string
-          heroImage?: string
+          heroImage?: string | null
           heroimageurls?: Json | null
           id?: number
           maxQuantity?: number
