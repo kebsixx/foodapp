@@ -15,8 +15,6 @@ import { CategoryProducts } from "../../components/category-products";
 import { useTranslation } from "react-i18next";
 import { useScroll } from "../../contexts/_ScrollContext";
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 const Home = () => {
   const { data, error, isLoading, refetch } = getProductsAndCategories();
   const {
@@ -31,35 +29,31 @@ const Home = () => {
   const { t } = useTranslation();
   const { onScroll } = useScroll();
 
-  // --- START PERUBAHAN 1: Mengurutkan kategori untuk Header ---
   const sortedCategoriesForHeader = useMemo(() => {
     if (!data?.categories) return [];
-    // Buat salinan agar tidak mengubah data asli dari cache
+
     return [...data.categories].sort((a, b) => {
       const aIsSenja = a.imageUrl?.includes("ceritasenja");
       const bIsSenja = b.imageUrl?.includes("ceritasenja");
-      if (aIsSenja && !bIsSenja) return 1; // 'a' (senja) ke belakang
-      if (!aIsSenja && bIsSenja) return -1; // 'a' (bukan senja) ke depan
-      return 0; // Jaga urutan asli jika keduanya sama
+      if (aIsSenja && !bIsSenja) return 1;
+      if (!aIsSenja && bIsSenja) return -1;
+      return 0;
     });
   }, [data?.categories]);
 
-  // --- START PERUBAHAN 2: Mengurutkan kategori untuk Daftar Utama ---
   const sortedCategoriesForList = useMemo(() => {
     if (!data?.categories || !data?.products) return [];
 
-    // Fungsi untuk menghitung produk "ceritasenja" dalam sebuah kategori
     const countSenjaProducts = (categoryId: number) => {
       return data.products.filter(
         (p) => p.category === categoryId && p.heroImage?.includes("ceritasenja")
       ).length;
     };
 
-    // Buat salinan dan urutkan
     return [...data.categories].sort((a, b) => {
       const countA = countSenjaProducts(a.id);
       const countB = countSenjaProducts(b.id);
-      return countA - countB; // Urutkan dari jumlah terkecil ke terbesar
+      return countA - countB;
     });
   }, [data?.categories, data?.products]);
 
@@ -74,7 +68,6 @@ const Home = () => {
   };
 
   const onEndReached = useCallback(() => {
-    // --- START PERUBAHAN 3: Gunakan panjang data yang sudah diurutkan ---
     if (!loadingMore && visibleCategories < sortedCategoriesForList.length) {
       setLoadingMore(true);
       setTimeout(() => {
@@ -99,7 +92,6 @@ const Home = () => {
       <Text>{(error || bestSellerError)?.message || t("common.error")}</Text>
     );
 
-  // --- START PERUBAHAN 4: Buat visibleData dari data yang sudah diurutkan ---
   const visibleData = {
     ...data,
     categories: sortedCategoriesForList.slice(0, visibleCategories),
@@ -136,7 +128,6 @@ const Home = () => {
           </View>
         </>
       )}
-      // Gunakan 'visibleData.categories' yang sudah diurutkan dan dipotong
       data={visibleData.categories}
       renderItem={({ item: category }) => {
         const categoryProducts =
@@ -198,13 +189,13 @@ const styles = StyleSheet.create({
   },
   flatListColumn: {
     justifyContent: "space-between",
-    gap: 12, // Add gap between columns
+    gap: 12,
   },
   flatListContent: {
     paddingBottom: 20,
-    gap: 12, // Add gap between rows
+    gap: 12,
   },
-  // Add new style for featured products container
+
   featuredProducts: {
     paddingHorizontal: 10,
     gap: 12,

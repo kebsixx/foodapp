@@ -29,6 +29,7 @@ type AuthData = {
   user: UserType | null;
   setUser: (user: UserType | null) => void;
   updateProfile: (updates: Partial<UserType>) => Promise<void>;
+  profile?: UserType | null; // Optional for backward compatibility
 };
 
 const AuthContext = createContext<AuthData>({
@@ -54,7 +55,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         .single();
 
       if (error) throw error;
-      
+
       // Set user data directly
       setUser(userData as UserType);
     } catch (error) {
@@ -135,7 +136,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         .single();
 
       if (fetchError) throw fetchError;
-      setUser(updatedUser);
+      setUser(updatedUser as UserType);
     } catch (error) {
       console.error("Error updating profile:", error);
       throw error;

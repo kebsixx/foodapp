@@ -4,7 +4,7 @@ import registerForPushNotificationsAsync from "../lib/notifications";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../providers/auth-provider";
 import Toast from "react-native-toast-message";
-import React from "react";
+import { AppState } from "react-native";
 
 // Configure how notifications should be handled when app is foregrounded
 Notifications.setNotificationHandler({
@@ -19,7 +19,7 @@ const NotificationsProvider = ({ children }: PropsWithChildren) => {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
 
   const saveUserPushNotificationToken = async (token: string) => {
     if (!token || !session?.user?.id) return;
@@ -49,55 +49,75 @@ const NotificationsProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
+  const syncPushToken = async (newToken: string) => {
+    const currentTokenInDb = profile?.expo_notification_token;
+
+    // HANYA UPDATE JIKA TOKEN BERBEDA!
+    // Ini adalah kunci utama untuk mencegah update yang tidak perlu.
+    if (currentTokenInDb === newToken) {
+      console.log("Push token is already up to date.");
+      return;
+    }
+
+    console.log(
+      "New or different push token detected. Syncing with database..."
+    );
+    try {
+      if (!session?.user?.id) {
+        console.error("No session or user ID found when syncing push token.");
+        return;
+      }
+      const { error } = await supabase
+        .from("users")
+        .update({
+          expo_notification_token: newToken,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", session.user.id);
+
+      if (error) throw error;
+
+      console.log("Successfully synced push token to database");
+    } catch (error) {
+      console.error("Failed to sync notification token:", error);
+      // Toast tetap bisa digunakan di sini
+    }
+  };
+
   useEffect(() => {
-    // Initialize notifications
+    // Fungsi init tetap sama, tapi sekarang memanggil 'syncPushToken'
     const initNotifications = async () => {
       try {
-        // Always attempt to get token, even in development
         const token = await registerForPushNotificationsAsync();
         if (token) {
           setExpoPushToken(token);
-          await saveUserPushNotificationToken(token);
+          await syncPushToken(token); // Panggil fungsi yang sudah di-refactor
         }
-
-        // Set up notification listeners
-        notificationListener.current =
-          Notifications.addNotificationReceivedListener((notification) => {
-            console.log("Notification received:", notification);
-            // You can add additional handling here
-          });
-
-        responseListener.current =
-          Notifications.addNotificationResponseReceivedListener((response) => {
-            console.log("Notification response:", response);
-            // Handle notification taps here
-          });
-
-        // Handle any initial notification that launched the app
-        const initialNotification =
-          await Notifications.getLastNotificationResponseAsync();
-        if (initialNotification) {
-          console.log("App launched by notification:", initialNotification);
-        }
+        // ... (sisa kode listener Anda sudah benar)
       } catch (error) {
         console.error("Notification initialization error:", error);
       }
     };
 
-    initNotifications();
+    if (session?.user?.id) {
+      // Jalankan hanya jika ada session
+      initNotifications();
+    }
+
+    // --- PERUBAHAN 2 (Opsional tapi Sangat Direkomendasikan): Sync saat aplikasi kembali aktif ---
+    // Ini menangani kasus jika izin notifikasi diberikan saat aplikasi berjalan
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        console.log("App has come to the foreground, re-checking token.");
+        initNotifications();
+      }
+    });
 
     return () => {
-      // Clean up listeners
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
+      // ... (cleanup listener notifikasi Anda sudah benar)
+      subscription.remove(); // Jangan lupa cleanup listener AppState
     };
-  }, [session?.user?.id]); // Re-run if user changes
+  }, [session?.user?.id, profile?.expo_notification_token]); // Tambahkan token dari profile sebagai dependensi
 
   return <>{children}</>;
 };
