@@ -51,7 +51,7 @@ export const ListHeader = ({
                 {currentUser?.name ? (
                   <>Halo, {currentUser.name}</>
                 ) : (
-                  t('common.welcome')
+                  t("common.welcome")
                 )}
               </Text>
             </Pressable>
@@ -86,7 +86,7 @@ export const ListHeader = ({
         />
       </View>
 
-      <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
+      <Text style={styles.sectionTitle}>{t("home.categories")}</Text>
       <View style={styles.categoriesContainer}>
         <FlatList
           data={categories}

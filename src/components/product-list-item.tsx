@@ -18,11 +18,16 @@ export const ProductListItem = ({
           {imageLoading && (
             <View style={[styles.itemImage, styles.imagePlaceholder]} />
           )}
-          <Image
-            source={{ uri: product.heroImage }}
-            style={[styles.itemImage, imageLoading ? styles.hiddenImage : null]}
-            onLoadEnd={() => setImageLoading(false)}
-          />
+          {product.heroImage && (
+            <Image
+              source={{ uri: product.heroImage ?? undefined }}
+              style={[
+                styles.itemImage,
+                imageLoading ? styles.hiddenImage : null,
+              ]}
+              onLoadEnd={() => setImageLoading(false)}
+            />
+          )}
         </View>
         <View style={styles.itemTextContainer}>
           <Text style={styles.itemTitle} numberOfLines={2}>

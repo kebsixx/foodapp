@@ -48,7 +48,7 @@ const ProductDetails = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showCloseButton, setShowCloseButton] = useState(true);
-  
+
   // Semua useRef harus didefinisikan setelah semua useState
   const slideAnim = useRef(new Animated.Value(height)).current;
   const panY = useRef(new Animated.Value(0)).current;
@@ -123,7 +123,7 @@ const ProductDetails = () => {
       duration: 300,
       useNativeDriver: true,
     }).start();
-    
+
     // Simultaneously fade out the backdrop
     Animated.timing(backdropOpacity, {
       toValue: 0,
@@ -132,7 +132,7 @@ const ProductDetails = () => {
     }).start(() => {
       // After animations complete, hide the modal
       setModalVisible(false);
-      
+
       // Reset all animation values
       requestAnimationFrame(() => {
         panY.setValue(0);
@@ -148,11 +148,11 @@ const ProductDetails = () => {
     handleOpacity.setValue(1);
     slideAnim.setValue(height);
     backdropOpacity.setValue(0);
-    
+
     // Show modal
     setModalVisible(true);
     setShowCloseButton(true);
-    
+
     // Animate backdrop fade in and slide up
     requestAnimationFrame(() => {
       Animated.parallel([
@@ -165,7 +165,7 @@ const ProductDetails = () => {
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
-        })
+        }),
       ]).start();
     });
   };
@@ -216,11 +216,11 @@ const ProductDetails = () => {
         // Only allow downward movement
         if (gestureState.dy > 0) {
           panY.setValue(gestureState.dy);
-          
+
           // Fade the handle as user drags down
           const opacity = 1 - Math.min(gestureState.dy / 200, 0.6);
           handleOpacity.setValue(opacity);
-          
+
           // Hide close button when dragging significantly
           if (gestureState.dy > 50 && showCloseButton) {
             setShowCloseButton(false);
@@ -246,9 +246,9 @@ const ProductDetails = () => {
               toValue: 1,
               duration: 200,
               useNativeDriver: true,
-            })
+            }),
           ]).start();
-          
+
           // Show close button again if it was hidden
           if (!showCloseButton) {
             setShowCloseButton(true);
@@ -276,7 +276,11 @@ const ProductDetails = () => {
           : null,
       };
 
-      addItem(itemToAdd);
+      // Ensure heroImage is always a string (fallback to empty string if null)
+      addItem({
+        ...itemToAdd,
+        heroImage: itemToAdd.heroImage ?? "",
+      });
       toast.show("Produk ditambahkan ke keranjang", {
         type: "custom_toast",
         data: { title: "Berhasil" },
@@ -333,9 +337,9 @@ const ProductDetails = () => {
           />
         }>
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: product.heroImage }} 
-            style={styles.heroImage} 
+          <Image
+            source={product.heroImage ? { uri: product.heroImage } : undefined}
+            style={styles.heroImage}
           />
         </View>
 
@@ -369,7 +373,9 @@ const ProductDetails = () => {
                     style={styles.relatedProductItem}
                     onPress={() => router.push(`/product/${item.slug}`)}>
                     <Image
-                      source={{ uri: item.heroImage }}
+                      source={
+                        item.heroImage ? { uri: item.heroImage } : undefined
+                      }
                       style={styles.relatedProductImage}
                     />
                     <View style={styles.relatedProductInfo}>
@@ -388,9 +394,7 @@ const ProductDetails = () => {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.relatedProductsContainer}
                 ListEmptyComponent={() => (
-                  <Text style={styles.emptyText}>
-                    Tidak ada produk terkait
-                  </Text>
+                  <Text style={styles.emptyText}>Tidak ada produk terkait</Text>
                 )}
               />
             </View>
@@ -416,44 +420,38 @@ const ProductDetails = () => {
         onRequestClose={closeModal}>
         <View style={styles.modalContainer}>
           {/* Backdrop - separate from content */}
-          <Animated.View 
-            style={[
-              styles.modalBackdrop,
-              { opacity: backdropOpacity }
-            ]}
-          >
+          <Animated.View
+            style={[styles.modalBackdrop, { opacity: backdropOpacity }]}>
             <TouchableOpacity
               style={{ flex: 1 }}
               onPress={closeModal}
               activeOpacity={1}
             />
           </Animated.View>
-          
+
           {/* Modal content */}
           <Animated.View
             style={[
               styles.modalContent,
               {
-                transform: [
-                  { translateY: slideAnim },
-                  { translateY: panY },
-                ],
+                transform: [{ translateY: slideAnim }, { translateY: panY }],
               },
             ]}>
             {/* Handle for dragging with visual indicator */}
             <View style={styles.dragHandleArea} {...panResponder.panHandlers}>
-              <Animated.View style={[styles.modalHandle, { opacity: handleOpacity }]} />
-              <Animated.Text 
+              <Animated.View
+                style={[styles.modalHandle, { opacity: handleOpacity }]}
+              />
+              <Animated.Text
                 style={[
-                  styles.dragHint, 
-                  { 
+                  styles.dragHint,
+                  {
                     opacity: Animated.multiply(
-                      handleOpacity, 
+                      handleOpacity,
                       Animated.subtract(1, Animated.divide(handleOpacity, 1.5))
-                    )
-                  }
-                ]}
-              >
+                    ),
+                  },
+                ]}>
                 Geser ke bawah untuk menutup
               </Animated.Text>
             </View>
@@ -461,12 +459,11 @@ const ProductDetails = () => {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Sesuaikan Pesanan</Text>
               {showCloseButton && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={closeModal}
                   style={styles.closeButton}
                   hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                  activeOpacity={0.7}
-                >
+                  activeOpacity={0.7}>
                   <Ionicons name="close" size={24} color="#333" />
                 </TouchableOpacity>
               )}
@@ -475,7 +472,9 @@ const ProductDetails = () => {
             {/* Product Image and Basic Info */}
             <View style={styles.modalProductInfo}>
               <Image
-                source={{ uri: product.heroImage }}
+                source={
+                  product.heroImage ? { uri: product.heroImage } : undefined
+                }
                 style={styles.modalProductImage}
               />
               <View style={styles.modalProductDetails}>
@@ -597,7 +596,9 @@ const ProductDetails = () => {
                   color="#fff"
                   style={styles.confirmButtonIcon}
                 />
-                <Text style={styles.confirmButtonText}>Tambahkan ke Keranjang</Text>
+                <Text style={styles.confirmButtonText}>
+                  Tambahkan ke Keranjang
+                </Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -762,7 +763,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalBackdrop: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -984,6 +985,6 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 6,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
 });
