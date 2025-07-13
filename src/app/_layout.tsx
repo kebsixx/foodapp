@@ -6,7 +6,7 @@ import NotificationProvider from "../providers/notification-provider";
 import LanguageProvider from "../providers/language-provider";
 import LoadingScreen from "../components/loading-screen";
 import { View, Text, StyleSheet } from "react-native";
-import { Redirect } from "expo-router";
+import { useCheckAppUpdate } from "../lib/useCheckAppUpdate";
 
 // Typed root layout
 export default function RootLayout() {
@@ -38,6 +38,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { mounting, session, user } = useAuth();
+  useCheckAppUpdate();
 
   if (mounting) {
     return <LoadingScreen />;

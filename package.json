@@ -54,6 +54,7 @@
     "react-native-toast-message": "^2.3.0",
     "react-native-toast-notifications": "^3.4.0",
     "react-native-url-polyfill": "^2.0.0",
+    "react-native-version-check": "^3.5.0",
     "react-native-webview": "13.13.5",
     "stream": "^0.0.3",
     "stripe": "^17.4.0",
@@ -65,9 +66,12 @@
     "@babel/core": "^7.20.0",
     "@types/aes-js": "^3.1.4",
     "@types/react": "~19.0.10",
+    "@types/react-native-version-check": "^3.4.8",
     "typescript": "~5.8.3"
   },
   "overrides": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "node-gyp-build": "4.8.0"
   },
   "browser": {
