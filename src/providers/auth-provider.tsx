@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { supabase } from "../lib/supabase";
+import * as Notifications from "expo-notifications";
 
 type UserType = {
   id: string;
@@ -44,6 +45,44 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<UserType | null>(null);
   const [mounting, setMounting] = useState(true);
+
+  const handleAuthChange = async (_event: string, session: Session | null) => {
+    try {
+      // 1. Handle logout case
+      if (!session) {
+        // Clear token dari database saat logout
+        if (user?.id) {
+          await supabase
+            .from("users")
+            .update({ expo_notification_token: null })
+            .eq("id", user.id);
+        }
+        setUser(null);
+        setSession(null);
+        return;
+      }
+
+      // 2. Handle login case
+      setSession(session);
+      await fetchUserData(session.user.id);
+
+      // 3. Generate dan simpan token baru
+      const newToken = await Notifications.getExpoPushTokenAsync();
+      if (newToken.data) {
+        await supabase
+          .from("users")
+          .update({ expo_notification_token: newToken.data })
+          .eq("id", session.user.id);
+
+        // Update local state
+        setUser((prev) =>
+          prev ? { ...prev, expo_notification_token: newToken.data } : null
+        );
+      }
+    } catch (error) {
+      console.error("Auth state change error:", error);
+    }
+  };
 
   // Separate session and user fetching
   const fetchUserData = async (sessionUserId: string) => {
@@ -96,16 +135,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     // Set up auth state change listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (mounted) {
-        setSession(session);
-        if (session?.user?.id) {
-          fetchUserData(session.user.id);
-        } else {
-          setUser(null);
-        }
-      }
-    });
+    } = supabase.auth.onAuthStateChange(handleAuthChange);
 
     return () => {
       mounted = false;

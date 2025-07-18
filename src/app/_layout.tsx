@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { ToastProvider } from "react-native-toast-notifications";
 import AuthProvider, { useAuth } from "../providers/auth-provider";
@@ -7,6 +8,10 @@ import LanguageProvider from "../providers/language-provider";
 import LoadingScreen from "../components/loading-screen";
 import { View, Text, StyleSheet } from "react-native";
 import { useCheckAppUpdate } from "../lib/useCheckAppUpdate";
+import {
+  registerForPushNotificationsAsync,
+  setupNotificationHandlers,
+} from "../lib/notifications";
 
 // Typed root layout
 export default function RootLayout() {
@@ -43,6 +48,19 @@ function RootLayoutNav() {
   if (mounting) {
     return <LoadingScreen />;
   }
+
+  // Setup notifikasi saat user login
+  useEffect(() => {
+    // Setup handler untuk menerima notifikasi
+    setupNotificationHandlers();
+
+    // Registrasi token jika user login
+    if (session?.user?.id) {
+      registerForPushNotificationsAsync(session.user.id).catch((error) =>
+        console.error("Push registration failed:", error)
+      );
+    }
+  }, [session?.user?.id]);
 
   // Jika belum login, arahkan ke auth
   if (!session) {
