@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Stack } from "expo-router";
+import * as Linking from "expo-linking";
 import { ToastProvider } from "react-native-toast-notifications";
 import AuthProvider, { useAuth } from "../providers/auth-provider";
 import { QueryProvider } from "../providers/query-provider";
@@ -45,22 +46,29 @@ function RootLayoutNav() {
   const { mounting, session, user } = useAuth();
   useCheckAppUpdate();
 
-  if (mounting) {
-    return <LoadingScreen />;
-  }
-
   // Setup notifikasi saat user login
   useEffect(() => {
-    // Setup handler untuk menerima notifikasi
     setupNotificationHandlers();
-
-    // Registrasi token jika user login
     if (session?.user?.id) {
       registerForPushNotificationsAsync(session.user.id).catch((error) =>
         console.error("Push registration failed:", error)
       );
     }
   }, [session?.user?.id]);
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      const { path, queryParams } = Linking.parse(url);
+      if (path === "order-detail" && queryParams?.slug) {
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  if (mounting) {
+    return <LoadingScreen />;
+  }
 
   // Jika belum login, arahkan ke auth
   if (!session) {

@@ -1,8 +1,11 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking'
+import { NavigationProp } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import Toast from 'react-native-toast-message';
 import { supabase } from './supabase';
+
 
 function handleRegistrationError(errorMessage: string) {
   console.error("Notification registration error:", errorMessage);
@@ -95,14 +98,41 @@ export function setupNotificationHandlers() {
 
   // Handle notification taps
   Notifications.addNotificationResponseReceivedListener(response => {
-    const data = response.notification.request.content.data;
+    const data = response.notification.request.content.data as {
+      url?: string;
+      type?: string;
+      slug?: string;
+    };
     
-    if (data?.type === 'order-status-update') {
-      // Navigate to order detail screen
-      console.log('Notification tapped for order:', data.orderId);
-      // navigation.navigate('OrderDetail', { orderId: data.orderId });
+    // Prioritaskan deep link jika ada
+    if (data?.url && typeof data.url === 'string') {
+      Linking.openURL(data.url);
+    }
+    // Gunakan custom deep link untuk order detail
+    else if (data?.type === 'order-status-update' && data?.slug) {
+      const deepLink = Linking.createURL(`/order-detail/${data.slug}`);
+      Linking.openURL(deepLink);
     }
   });
+
+  // Handle notifications when app is opened from quit state
+  Notifications.getLastNotificationResponseAsync()
+    .then(response => {
+      if (!response) return;
+      const data = response.notification.request.content.data as {
+        url?: string;
+        type?: string;
+        slug?: string;
+      };
+      
+      if (data?.url && typeof data.url === 'string') {
+        Linking.openURL(data.url);
+      }
+      else if (data?.type === 'order-status-update' && data?.slug) {
+        const deepLink = Linking.createURL(`/order-detail/${data.slug}`);
+        Linking.openURL(deepLink);
+      }
+    });
 }
 
 export default registerForPushNotificationsAsync;

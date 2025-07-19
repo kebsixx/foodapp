@@ -7,6 +7,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "deepLinking": {
+      "customScheme": "ceritasenja"
+    },
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -26,7 +29,19 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.kebsixx.foodApp",
-      "runtimeVersion": "1.2.1"
+      "runtimeVersion": "1.2.1",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "ceritasenja",
+              "host": "order-detail"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
