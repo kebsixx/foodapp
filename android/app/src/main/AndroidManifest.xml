@@ -34,6 +34,13 @@
         <data android:scheme="ceritasenja"/>
         <data android:scheme="exp+foodapp"/>
       </intent-filter>
+      <intent-filter data-generated="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <data android:scheme="ceritasenja" android:host="order-detail"/>
+        <data android:scheme="exp+foodapp"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
     </activity>
   </application>
 </manifest>

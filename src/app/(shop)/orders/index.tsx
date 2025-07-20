@@ -7,7 +7,7 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { Link, Stack } from "expo-router";
+import { Link } from "expo-router";
 import CustomHeader from "../../../components/customHeader";
 import { formatCurrency } from "../../../utils/utils";
 import { getMyOrders } from "../../../api/api";
@@ -116,11 +116,17 @@ export default function Orders() {
                     item.status === "Cancelled" && styles.statusBadge_Cancelled,
                   ]}>
                   <Text style={styles.statusText}>
-                    {item.status === "Pending" ? "Menunggu" :
-                     item.status === "On Review" ? "Ditinjau" :
-                     item.status === "Process" ? "Diproses" :
-                     item.status === "Completed" ? "Selesai" :
-                     item.status === "Cancelled" ? "Dibatalkan" : item.status}
+                    {item.status === "Pending"
+                      ? "Menunggu"
+                      : item.status === "On Review"
+                      ? "Ditinjau"
+                      : item.status === "Process"
+                      ? "Diproses"
+                      : item.status === "Completed"
+                      ? "Selesai"
+                      : item.status === "Cancelled"
+                      ? "Dibatalkan"
+                      : item.status}
                   </Text>
                 </View>
               </View>

@@ -4,7 +4,6 @@ import {
   View,
   Image,
   FlatList,
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   SafeAreaView,
@@ -54,7 +53,7 @@ const Category = () => {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <CustomHeader title={category.name} />
-      
+
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -66,7 +65,10 @@ const Category = () => {
             tintColor="#B17457"
           />
         }>
-        <Image source={{ uri: category.imageUrl }} style={styles.categoryImage} />
+        <Image
+          source={{ uri: category.imageUrl }}
+          style={styles.categoryImage}
+        />
         <Text style={styles.categoryName}>{category.name}</Text>
         <FlatList
           data={products}
@@ -78,7 +80,11 @@ const Category = () => {
           contentContainerStyle={styles.productsList}
           ListEmptyComponent={
             <View
-              style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}>
               <Text style={{ fontSize: 16 }}>No products found</Text>
             </View>
           }

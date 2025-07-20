@@ -1,6 +1,5 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import {
-  FlatList,
   StyleSheet,
   Text,
   View,

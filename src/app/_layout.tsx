@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import * as Linking from "expo-linking";
 import { ToastProvider } from "react-native-toast-notifications";
@@ -7,7 +7,7 @@ import { QueryProvider } from "../providers/query-provider";
 import NotificationProvider from "../providers/notification-provider";
 import LanguageProvider from "../providers/language-provider";
 import LoadingScreen from "../components/loading-screen";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { useCheckAppUpdate } from "../lib/useCheckAppUpdate";
 import {
   registerForPushNotificationsAsync,
@@ -44,6 +44,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { mounting, session, user } = useAuth();
+  const [appIsReady, setAppIsReady] = useState(false);
   useCheckAppUpdate();
 
   // Setup notifikasi saat user login
@@ -66,8 +67,34 @@ function RootLayoutNav() {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Lakukan inisialisasi di sini (jika ada)
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Contoh: delay 2 detik
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
   if (mounting) {
     return <LoadingScreen />;
+  }
+
+  if (!appIsReady || mounting) {
+    return (
+      <View style={styles.splashContainer}>
+        <Image
+          source={require("../../assets/splash.png")}
+          style={styles.splashImage}
+        />
+      </View>
+    );
   }
 
   // Jika belum login, arahkan ke auth
@@ -112,6 +139,17 @@ function RootLayoutNav() {
 }
 
 const styles = StyleSheet.create({
+  splashContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  splashImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
   toastContainer: {
     maxWidth: "85%",
     paddingHorizontal: 15,

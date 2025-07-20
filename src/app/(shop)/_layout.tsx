@@ -2,7 +2,6 @@ import { Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import {
   Animated,
-  View,
   TouchableOpacity,
   Text,
   StyleSheet,

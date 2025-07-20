@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";

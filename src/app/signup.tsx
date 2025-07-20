@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { Link, Redirect, useRouter, Stack } from "expo-router";
+import { Link, useRouter, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,7 @@ export default function SignUp() {
   const Toast = useToast();
   const router = useRouter();
   const { t } = useTranslation();
-  
+
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(authSchema),
     defaultValues: {
@@ -55,9 +55,9 @@ export default function SignUp() {
       const { error } = await supabase.auth.signUp(data);
       if (error) throw error;
 
-      Toast.show(t('signup.completeProfile'), {
+      Toast.show(t("signup.completeProfile"), {
         type: "custom_toast",
-        data: { title: t('signup.success') },
+        data: { title: t("signup.success") },
       });
 
       // Force navigation to register
@@ -66,12 +66,10 @@ export default function SignUp() {
       }, 1000);
     } catch (error) {
       Toast.show(
-        error instanceof Error
-          ? error.message
-          : t('signup.errorMessage'),
+        error instanceof Error ? error.message : t("signup.errorMessage"),
         {
           type: "custom_toast",
-          data: { title: t('common.error') },
+          data: { title: t("common.error") },
         }
       );
     }
@@ -82,7 +80,7 @@ export default function SignUp() {
     <>
       <Stack.Screen
         options={{
-          title: t('signup.register'),
+          title: t("signup.register"),
           headerShown: false,
           gestureEnabled: false,
         }}
@@ -94,8 +92,8 @@ export default function SignUp() {
           style={styles.keyboardView}>
           <View style={styles.content}>
             <View style={styles.header}>
-              <Text style={styles.title}>{t('signup.createAccount')}</Text>
-              <Text style={styles.subtitle}>{t('signup.registerToStart')}</Text>
+              <Text style={styles.title}>{t("signup.createAccount")}</Text>
+              <Text style={styles.subtitle}>{t("signup.registerToStart")}</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -114,7 +112,7 @@ export default function SignUp() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('common.email')}
+                      placeholder={t("common.email")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -142,7 +140,7 @@ export default function SignUp() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('common.password')}
+                      placeholder={t("common.password")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -166,15 +164,15 @@ export default function SignUp() {
                 {formState.isSubmitting ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>{t('signup.register')}</Text>
+                  <Text style={styles.buttonText}>{t("signup.register")}</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>{t('signup.haveAccount')}</Text>
+              <Text style={styles.footerText}>{t("signup.haveAccount")}</Text>
               <Link href="/auth" style={styles.signInLink}>
-                <Text style={styles.signInLinkText}>{t('signup.signIn')}</Text>
+                <Text style={styles.signInLinkText}>{t("signup.signIn")}</Text>
               </Link>
             </View>
           </View>

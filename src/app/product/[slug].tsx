@@ -6,7 +6,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   ScrollView,
   Modal,
   Animated,

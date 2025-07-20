@@ -15,16 +15,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { Redirect, Link, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 const authSchema = zod.object({
   login: zod.string().min(1, { message: "Email atau username wajib diisi" }),
-  password: zod
-    .string()
-    .min(6, { message: "Password minimal 6 karakter" }),
+  password: zod.string().min(6, { message: "Password minimal 6 karakter" }),
 });
 
 export default function Auth() {
@@ -108,9 +106,9 @@ export default function Auth() {
           <View style={styles.content}>
             <View style={styles.header}>
               <View style={styles.headerTop}>
-                <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+                <Text style={styles.title}>{t("auth.welcomeBack")}</Text>
               </View>
-              <Text style={styles.subtitle}>{t('auth.signInContinue')}</Text>
+              <Text style={styles.subtitle}>{t("auth.signInContinue")}</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -129,7 +127,7 @@ export default function Auth() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('auth.email') + " / " + t('auth.username')}
+                      placeholder={t("auth.email") + " / " + t("auth.username")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -157,7 +155,7 @@ export default function Auth() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('auth.password')}
+                      placeholder={t("auth.password")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -187,15 +185,15 @@ export default function Auth() {
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>{t('auth.login')}</Text>
+                  <Text style={styles.buttonText}>{t("auth.login")}</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>{t('auth.noAccount')}</Text>
+              <Text style={styles.footerText}>{t("auth.noAccount")}</Text>
               <Link href="/signup" style={styles.signUpLink}>
-                <Text style={styles.signUpLinkText}>{t('auth.createOne')}</Text>
+                <Text style={styles.signUpLinkText}>{t("auth.createOne")}</Text>
               </Link>
             </View>
           </View>

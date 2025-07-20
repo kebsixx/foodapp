@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "155394588329",
+    "project_id": "ceritasenja-40f5c",
+    "storage_bucket": "ceritasenja-40f5c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155394588329:android:1737e94d63226dd4b533b8",
+        "android_client_info": {
+          "package_name": "com.kebsixx.foodApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFc5Bx25xWcoKWrgWJiexHQ4KS6X0b-IQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

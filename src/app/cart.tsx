@@ -2,7 +2,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Alert,
   TouchableOpacity,
   FlatList,
   Image,
@@ -17,13 +16,11 @@ import { createOrder, createOrderItem } from "../api/api";
 import { supabase } from "../lib/supabase";
 import { useToast } from "react-native-toast-notifications";
 import { useAuth } from "../providers/auth-provider";
-import { router, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import CustomHeader from "../components/customHeader";
 import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { decode } from "base64-arraybuffer";
 import { useTranslation } from "react-i18next";
-import LanguageSwitcherMini from "../components/language-switcher-mini";
 import { uploadToCloudinary } from "../lib/cloudinary";
 
 type VariantType = {
