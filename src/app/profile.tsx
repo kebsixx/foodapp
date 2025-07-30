@@ -173,11 +173,14 @@ export default function Profile() {
 
       if (error) throw error;
 
-      Toast.show("Email verifikasi telah dikirim. Silakan periksa kotak masuk Anda.", {
-        type: "custom_toast",
-        data: { title: "Verifikasi Email" },
-        duration: 4000,
-      });
+      Toast.show(
+        "Email verifikasi telah dikirim. Silakan periksa kotak masuk Anda.",
+        {
+          type: "custom_toast",
+          data: { title: "Verifikasi Email" },
+          duration: 4000,
+        }
+      );
 
       setEditingField(null);
     } catch (error) {
@@ -346,7 +349,7 @@ export default function Profile() {
         <View style={styles.refundPolicyContainer}>
           <View style={styles.refundPolicyHeader}>
             <Text style={styles.refundPolicyTitle}>
-              {t('refundPolicy.title')}
+              {t("refundPolicy.title")}
             </Text>
             <TouchableOpacity
               onPress={() => setShowRefundPolicy(false)}
@@ -354,72 +357,73 @@ export default function Profile() {
               <MaterialIcons name="close" size={24} color="#333" />
             </TouchableOpacity>
           </View>
-          
+
           <ScrollView style={styles.refundPolicyContent}>
             <Text style={styles.refundPolicySubtitle}>
-              {t('refundPolicy.subtitle')}
+              {t("refundPolicy.subtitle")}
             </Text>
             <Text style={styles.refundPolicyDate}>
-              {t('refundPolicy.effectiveDate')} {appVersion.includes("1.0") ? "1 Juni 2025" : "1 Januari 2025"}
+              {t("refundPolicy.effectiveDate")}{" "}
+              {appVersion.includes("1.0") ? "1 Juni 2025" : "1 Januari 2025"}
             </Text>
-            
+
             <Text style={styles.refundPolicyText}>
-              {t('refundPolicy.introduction')}
+              {t("refundPolicy.introduction")}
             </Text>
-            
+
             <Text style={styles.refundPolicySectionTitle}>
-              {t('refundPolicy.eligibleConditionsTitle')}
-            </Text>
-            <Text style={styles.refundPolicyText}>
-              {t('refundPolicy.eligibleConditionsIntro')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.cancelledByCafe')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.wrongOrIncomplete')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.poorQuality')}
-            </Text>
-            
-            <Text style={styles.refundPolicySectionTitle}>
-              {t('refundPolicy.nonEligibleTitle')}
+              {t("refundPolicy.eligibleConditionsTitle")}
             </Text>
             <Text style={styles.refundPolicyText}>
-              {t('refundPolicy.nonEligibleIntro')}
+              {t("refundPolicy.eligibleConditionsIntro")}
             </Text>
             <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.changeOfMind')}
+              {t("refundPolicy.cancelledByCafe")}
             </Text>
             <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.thirdPartyDelivery')}
+              {t("refundPolicy.wrongOrIncomplete")}
             </Text>
             <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.notPickedUp')}
+              {t("refundPolicy.poorQuality")}
             </Text>
-            
+
             <Text style={styles.refundPolicySectionTitle}>
-              {t('refundPolicy.refundProcessTitle')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.contactUs')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.provideEvidence')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.verification')}
-            </Text>
-            <Text style={styles.refundPolicyItem}>
-              {t('refundPolicy.refundProcess')}
-            </Text>
-            
-            <Text style={styles.refundPolicySectionTitle}>
-              {t('refundPolicy.contactTitle')}
+              {t("refundPolicy.nonEligibleTitle")}
             </Text>
             <Text style={styles.refundPolicyText}>
-              {t('refundPolicy.contactInfo')}
+              {t("refundPolicy.nonEligibleIntro")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.changeOfMind")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.thirdPartyDelivery")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.notPickedUp")}
+            </Text>
+
+            <Text style={styles.refundPolicySectionTitle}>
+              {t("refundPolicy.refundProcessTitle")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.contactUs")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.provideEvidence")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.verification")}
+            </Text>
+            <Text style={styles.refundPolicyItem}>
+              {t("refundPolicy.refundProcess")}
+            </Text>
+
+            <Text style={styles.refundPolicySectionTitle}>
+              {t("refundPolicy.contactTitle")}
+            </Text>
+            <Text style={styles.refundPolicyText}>
+              {t("refundPolicy.contactInfo")}
             </Text>
           </ScrollView>
         </View>
@@ -431,7 +435,7 @@ export default function Profile() {
     <>
       <Stack.Screen
         options={{
-          title: t('profile.title'),
+          title: t("profile.title"),
           headerShown: true,
           headerStyle: {
             backgroundColor: "#B17457",
@@ -449,26 +453,34 @@ export default function Profile() {
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
             <Image
-              source={{ 
-                uri: user?.avatar_url 
-                  || "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png" 
+              source={{
+                uri:
+                  user?.avatar_url ||
+                  "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
               }}
               style={styles.avatar}
             />
           </View>
           <Text style={styles.userName}>{formData.name}</Text>
-          <Text style={styles.userUsername}>@{formData.username || "username"}</Text>
+          <Text style={styles.userUsername}>
+            @{formData.username || "username"}
+          </Text>
         </View>
 
         <View style={styles.content}>
           <View style={styles.info}>
-            <Text style={styles.sectionTitle}>{t('profile.userInfo')}</Text>
-            {renderField(t('profile.name'), "name", formData.name)}
+            <Text style={styles.sectionTitle}>{t("profile.userInfo")}</Text>
+            {renderField(t("profile.name"), "name", formData.name)}
             {renderField("Username", "username", formData.username)}
             {renderField("Email", "email", user?.email || "")}
-            {renderField(t('profile.phone'), "phone", formData.phone, "phone-pad")}
             {renderField(
-              t('profile.address'),
+              t("profile.phone"),
+              "phone",
+              formData.phone,
+              "phone-pad"
+            )}
+            {renderField(
+              t("profile.address"),
               "address",
               formData.address,
               "default",
@@ -478,7 +490,7 @@ export default function Profile() {
 
           {/* Settings Section */}
           <View style={styles.settingsContainer}>
-            <Text style={styles.settingsTitle}>{t('profile.settings')}</Text>
+            <Text style={styles.settingsTitle}>{t("profile.settings")}</Text>
 
             <SettingsItem
               icon={
@@ -489,7 +501,7 @@ export default function Profile() {
                   style={styles.settingsIcon}
                 />
               }
-              title={t('profile.termsOfUse')}
+              title={t("profile.termsOfUse")}
               onPress={openTermsOfUse}
             />
 
@@ -502,10 +514,10 @@ export default function Profile() {
                   style={styles.settingsIcon}
                 />
               }
-              title={t('profile.privacyPolicy')}
+              title={t("profile.privacyPolicy")}
               onPress={openPrivacyPolicy}
             />
-            
+
             <SettingsItem
               icon={
                 <MaterialIcons
@@ -515,7 +527,7 @@ export default function Profile() {
                   style={styles.settingsIcon}
                 />
               }
-              title={t('profile.refundPolicy')}
+              title={t("profile.refundPolicy")}
               onPress={openRefundPolicy}
               showBorder={false}
             />
@@ -523,7 +535,7 @@ export default function Profile() {
 
           {/* Language Section */}
           <View style={styles.settingsContainer}>
-            <Text style={styles.settingsTitle}>{t('language.title')}</Text>
+            <Text style={styles.settingsTitle}>{t("language.title")}</Text>
             <LanguageSwitcher />
           </View>
 
@@ -536,14 +548,18 @@ export default function Profile() {
             ) : (
               <>
                 <Ionicons name="mail-outline" size={22} color="#B17457" />
-                <Text style={styles.contactButtonText}>{t('profile.contactUs')}</Text>
+                <Text style={styles.contactButtonText}>
+                  {t("profile.contactUs")}
+                </Text>
               </>
             )}
           </TouchableOpacity>
 
           {/* App Version */}
           <View style={styles.versionContainer}>
-            <Text style={styles.versionText}>{t('profile.appVersion')} {appVersion}</Text>
+            <Text style={styles.versionText}>
+              {t("profile.appVersion")} {appVersion}
+            </Text>
           </View>
 
           {/* Sign Out Button */}
@@ -554,7 +570,7 @@ export default function Profile() {
               <ActivityIndicator color="#ff4444" />
             ) : (
               <>
-                <Text style={styles.signOutText}>{t('auth.logout')}</Text>
+                <Text style={styles.signOutText}>{t("auth.logout")}</Text>
                 <FontAwesome
                   name="sign-out"
                   size={24}
@@ -576,7 +592,7 @@ export default function Profile() {
             ) : (
               <>
                 <Text style={[styles.signOutText, { color: "#d32f2f" }]}>
-                  {t('profile.deleteAccount')}
+                  {t("profile.deleteAccount")}
                 </Text>
               </>
             )}

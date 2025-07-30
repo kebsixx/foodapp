@@ -2,9 +2,7 @@
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
+  "deno.enablePaths": ["supabase/functions"],
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -21,5 +19,17 @@
     "http",
     "net"
   ],
-  "deno.enable": true
+  "deno.enable": true,
+  "chat.mcp.serverSampling": {
+    "foodApp/.vscode/mcp.json: supabase": {
+      "allowedModels": [
+        "github.copilot-chat/gpt-4.1",
+        "github.copilot-chat/claude-3.5-sonnet",
+        "github.copilot-chat/Ollama-deepseek-r1",
+        "github.copilot-chat/gemini-2.0-flash-001",
+        "github.copilot-chat/gpt-4o",
+        "github.copilot-chat/o3-mini"
+      ]
+    }
+  }
 }

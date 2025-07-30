@@ -54,6 +54,7 @@ export default function Register() {
   const {
     control,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(userSchema),
@@ -79,9 +80,9 @@ export default function Register() {
         .single();
 
       if (existingUser) {
-        Toast.show(t('register.usernameExists'), {
-          type: "custom_toast",
-          data: { title: t('common.error') },
+        setError("username", {
+          type: "manual",
+          message: t("register.usernameExists"),
         });
         return;
       }
@@ -92,7 +93,7 @@ export default function Register() {
           username: data.username,
           name: data.name,
           phone: data.phone,
-          address: data.address,
+          address: data.address?.trim() ? data.address : null, // pastikan null jika kosong
           gender: data.gender,
         })
         .eq("id", session.user.id);
@@ -109,19 +110,27 @@ export default function Register() {
 
       setUser({
         ...userData,
-        avatar_url: null
+        avatar_url: null,
       });
-      Toast.show(t('register.dataSaved'), {
+      Toast.show(t("register.dataSaved"), {
         type: "custom_toast",
-        data: { title: t('common.success') },
+        data: { title: t("common.success") },
       });
       router.push("/");
-    } catch (error) {
-      console.error("Registration error:", error);
-      Toast.show(t('register.saveError'), {
-        type: "custom_toast",
-        data: { title: t('common.error') },
-      });
+    } catch (error: any) {
+      // Show server errors in the form
+      if (error.message?.includes("username")) {
+        setError("username", {
+          type: "manual",
+          message: error.message,
+        });
+      } else {
+        // If we can't determine which field caused the error, show it as a general form error
+        setError("root", {
+          type: "manual",
+          message: error.message || t("register.saveError"),
+        });
+      }
     }
   };
 
@@ -141,8 +150,10 @@ export default function Register() {
         style={styles.keyboardView}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t('register.completeProfile')}</Text>
-            <Text style={styles.subtitle}>{t('register.tellAboutYourself')}</Text>
+            <Text style={styles.title}>{t("register.completeProfile")}</Text>
+            <Text style={styles.subtitle}>
+              {t("register.tellAboutYourself")}
+            </Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -166,7 +177,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('register.name')}
+                      placeholder={t("register.name")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -174,7 +185,9 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
+                    <Text style={styles.errorText}>
+                      {t(`validation.${error.message}`)}
+                    </Text>
                   )}
                 </View>
               )}
@@ -200,7 +213,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('register.username')}
+                      placeholder={t("register.username")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -210,7 +223,9 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
+                    <Text style={styles.errorText}>
+                      {t(`validation.${error.message}`)}
+                    </Text>
                   )}
                 </View>
               )}
@@ -236,7 +251,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('register.phoneNumber')}
+                      placeholder={t("register.phoneNumber")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -245,7 +260,9 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
+                    <Text style={styles.errorText}>
+                      {t(`validation.${error.message}`)}
+                    </Text>
                   )}
                 </View>
               )}
@@ -271,7 +288,7 @@ export default function Register() {
                       style={styles.inputIcon}
                     />
                     <TextInput
-                      placeholder={t('register.addressOptional')}
+                      placeholder={t("register.addressOptional")}
                       placeholderTextColor="#666"
                       style={[styles.input, error && styles.inputError]}
                       value={value}
@@ -280,7 +297,9 @@ export default function Register() {
                     />
                   </View>
                   {error && (
-                    <Text style={styles.errorText}>{t(`validation.${error.message}`)}</Text>
+                    <Text style={styles.errorText}>
+                      {t(`validation.${error.message}`)}
+                    </Text>
                   )}
                 </View>
               )}
@@ -298,7 +317,7 @@ export default function Register() {
                       style={
                         value ? styles.genderActiveText : styles.genderText
                       }>
-                      {t('register.male')}
+                      {t("register.male")}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -308,12 +327,22 @@ export default function Register() {
                       style={
                         !value ? styles.genderActiveText : styles.genderText
                       }>
-                      {t('register.female')}
+                      {t("register.female")}
                     </Text>
                   </TouchableOpacity>
                 </View>
               )}
             />
+
+            {errors.root && (
+              <Text
+                style={[
+                  styles.errorText,
+                  { textAlign: "center", marginLeft: 0, marginBottom: 8 },
+                ]}>
+                {errors.root.message}
+              </Text>
+            )}
 
             <TouchableOpacity
               style={[styles.button, isSubmitting && styles.buttonDisabled]}
@@ -322,7 +351,9 @@ export default function Register() {
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>{t('register.saveProfile')}</Text>
+                <Text style={styles.buttonText}>
+                  {t("register.saveProfile")}
+                </Text>
               )}
             </TouchableOpacity>
           </View>
@@ -388,7 +419,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   inputGroupError: {
-    borderColor: "#FF6B6B",
+    backgroundColor: "#FFF0F0",
   },
   errorText: {
     color: "#FF6B6B",

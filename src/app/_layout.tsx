@@ -49,13 +49,12 @@ function RootLayoutNav() {
 
   // Setup notifikasi saat user login
   useEffect(() => {
-    setupNotificationHandlers();
-    if (session?.user?.id) {
+    if (session?.user?.id && appIsReady) {
       registerForPushNotificationsAsync(session.user.id).catch((error) =>
         console.error("Push registration failed:", error)
       );
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, appIsReady]);
 
   useEffect(() => {
     const subscription = Linking.addEventListener("url", ({ url }) => {
@@ -68,18 +67,12 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-    async function prepare() {
-      try {
-        // Lakukan inisialisasi di sini (jika ada)
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Contoh: delay 2 detik
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setAppIsReady(true);
-      }
-    }
-
-    prepare();
+    // Set app ready setelah setup notification selesai
+    const setupApp = async () => {
+      await setupNotificationHandlers();
+      setAppIsReady(true);
+    };
+    setupApp();
   }, []);
 
   if (mounting) {

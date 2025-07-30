@@ -269,35 +269,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_devices: {
-        Row: {
-          device_id: string
-          expo_push_token: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          device_id: string
-          expo_push_token?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          device_id?: string
-          expo_push_token?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_devices_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       users: {
         Row: {
           address: string | null
@@ -351,10 +322,6 @@ export type Database = {
       }
       decrement_product_quantity: {
         Args: { product_id: number; quantity: number }
-        Returns: undefined
-      }
-      handle_token_update: {
-        Args: { p_user_id: string; p_token: string; p_device_id: string }
         Returns: undefined
       }
       is_store_open: {

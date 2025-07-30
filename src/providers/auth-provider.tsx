@@ -89,13 +89,18 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     try {
       const { data: userData, error } = await supabase
         .from("users")
-        .select("*")
+        .select(
+          "id, email, name, phone, username, address, expo_notification_token"
+        )
         .eq("id", sessionUserId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching user:", error);
+        setUser(null);
+        return;
+      }
 
-      // Set user data directly
       setUser(userData as UserType);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -108,25 +113,26 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 
     const initializeAuth = async () => {
       try {
-        // Get stored session first
         const {
           data: { session },
           error,
         } = await supabase.auth.getSession();
 
-        if (mounted) {
-          if (error) throw error;
-          setSession(session);
+        if (error) {
+          console.error("Error getSession:", error);
+          setMounting(false);
+          return;
+        }
 
-          // Fetch user data if session exists
-          if (session?.user?.id) {
-            fetchUserData(session.user.id);
-          }
+        setSession(session);
+
+        if (session?.user?.id) {
+          await fetchUserData(session.user.id);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
       } finally {
-        if (mounted) setMounting(false);
+        setMounting(false);
       }
     };
 

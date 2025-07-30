@@ -33,7 +33,13 @@ export default function Auth() {
   const [secureEntry, setSecureEntry] = useState(true);
   const { t } = useTranslation();
 
-  const { control, handleSubmit, formState } = useForm({
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+    ...restForm
+  } = useForm({
     resolver: zodResolver(authSchema),
     defaultValues: {
       login: "",
@@ -64,7 +70,11 @@ export default function Auth() {
           .single();
 
         if (userError || !userData?.email) {
-          throw new Error("Invalid username or password");
+          setError("login", {
+            type: "manual",
+            message: "Username tidak ditemukan",
+          });
+          return;
         }
         emailToUse = userData.email;
       }
@@ -74,7 +84,18 @@ export default function Auth() {
         password: data.password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (
+          error.message?.toLowerCase().includes("invalid login credentials")
+        ) {
+          setError("password", {
+            type: "manual",
+            message: "Password salah",
+          });
+          return;
+        }
+        throw error;
+      }
 
       Toast.show("🎉 Anda berhasil masuk", {
         type: "custom_toast",
@@ -84,12 +105,10 @@ export default function Auth() {
         },
       });
     } catch (error: any) {
-      Toast.show("Login Gagal", {
-        type: "custom_toast",
-        duration: 3000,
-        data: {
-          title: "Login Gagal",
-        },
+      // If we can't determine which field caused the error, show it as a root error
+      setError("root", {
+        type: "manual",
+        message: error.message || "Login Gagal",
       });
     } finally {
       setIsLoading(false);
@@ -119,23 +138,42 @@ export default function Auth() {
                   field: { value, onChange, onBlur },
                   fieldState: { error },
                 }) => (
-                  <View style={styles.inputGroup}>
-                    <Feather
-                      name="user"
-                      size={20}
-                      color="#B17457"
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
-                      placeholder={t("auth.email") + " / " + t("auth.username")}
-                      placeholderTextColor="#666"
-                      style={[styles.input, error && styles.inputError]}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      autoCapitalize="none"
-                      editable={!isLoading}
-                    />
+                  <View style={styles.inputContainer}>
+                    <View
+                      style={[
+                        styles.inputGroup,
+                        error && styles.inputGroupError,
+                      ]}>
+                      <Feather
+                        name="user"
+                        size={20}
+                        color={error ? "#FF6B6B" : "#B17457"}
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        placeholder={
+                          t("auth.email") + " / " + t("auth.username")
+                        }
+                        placeholderTextColor="#666"
+                        style={[styles.input, error && styles.inputError]}
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                        autoCapitalize="none"
+                        editable={!isLoading}
+                      />
+                    </View>
+                    {error && (
+                      <Text style={styles.errorText}>
+                        <Feather
+                          name="alert-circle"
+                          size={12}
+                          color="#FF6B6B"
+                          style={styles.errorIcon}
+                        />{" "}
+                        {error.message}
+                      </Text>
+                    )}
                   </View>
                 )}
               />
@@ -147,36 +185,67 @@ export default function Auth() {
                   field: { value, onChange, onBlur },
                   fieldState: { error },
                 }) => (
-                  <View style={styles.inputGroup}>
-                    <Feather
-                      name="lock"
-                      size={20}
-                      color="#B17457"
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
-                      placeholder={t("auth.password")}
-                      placeholderTextColor="#666"
-                      style={[styles.input, error && styles.inputError]}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      secureTextEntry={secureEntry}
-                      autoCapitalize="none"
-                      editable={!isLoading}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeIcon}
-                      onPress={() => setSecureEntry(!secureEntry)}>
+                  <View style={styles.inputContainer}>
+                    <View
+                      style={[
+                        styles.inputGroup,
+                        error && styles.inputGroupError,
+                      ]}>
                       <Feather
-                        name={secureEntry ? "eye-off" : "eye"}
+                        name="lock"
                         size={20}
-                        color="#666"
+                        color={error ? "#FF6B6B" : "#B17457"}
+                        style={styles.inputIcon}
                       />
-                    </TouchableOpacity>
+                      <TextInput
+                        placeholder={t("auth.password")}
+                        placeholderTextColor="#666"
+                        style={[styles.input, error && styles.inputError]}
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                        secureTextEntry={secureEntry}
+                        autoCapitalize="none"
+                        editable={!isLoading}
+                      />
+                      <TouchableOpacity
+                        style={styles.eyeIcon}
+                        onPress={() => setSecureEntry(!secureEntry)}>
+                        <Feather
+                          name={secureEntry ? "eye-off" : "eye"}
+                          size={20}
+                          color={error ? "#FF6B6B" : "#666"}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    {error && (
+                      <Text style={styles.errorText}>
+                        <Feather
+                          name="alert-circle"
+                          size={12}
+                          color="#FF6B6B"
+                          style={styles.errorIcon}
+                        />{" "}
+                        {error.message}
+                      </Text>
+                    )}
                   </View>
                 )}
               />
+
+              {errors.root && (
+                <View style={styles.rootErrorContainer}>
+                  <Text style={[styles.errorText, { marginLeft: 0 }]}>
+                    <Feather
+                      name="alert-triangle"
+                      size={12}
+                      color="#FF6B6B"
+                      style={styles.errorIcon}
+                    />{" "}
+                    {errors.root.message}
+                  </Text>
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -207,6 +276,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  inputContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  inputGroupError: {
+    backgroundColor: "#FFF0F0",
   },
   keyboardView: {
     flex: 1,
@@ -266,8 +342,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   inputError: {
-    borderColor: "#ff4444",
-    borderWidth: 1,
+    color: "#FF6B6B",
   },
   eyeIcon: {
     padding: 8,
@@ -307,5 +382,23 @@ const styles = StyleSheet.create({
     color: "#B17457",
     fontWeight: "600",
     fontSize: 15,
+  },
+  errorText: {
+    color: "#FF6B6B",
+    fontSize: 12,
+    marginTop: 8,
+    marginLeft: 4,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  errorIcon: {
+    marginRight: 4,
+  },
+  rootErrorContainer: {
+    backgroundColor: "#FFE5E5",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    width: "100%",
   },
 });
