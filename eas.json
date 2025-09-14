@@ -7,24 +7,25 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
+      }
     },
     "preview": {
       "channel": "staging",
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       }
     },
-    "preview2": {
-      "android": {
-        "gradleCommand": ":app:assembleRelease"
-      },
-      "channel": "preview2"
-    },
     "production": {
-      "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "android": {
+        "gradleCommand": ":app:clean :app:bundleRelease",
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {

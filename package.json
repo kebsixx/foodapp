@@ -60,7 +60,8 @@
     "stripe": "^17.4.0",
     "websocket": "^1.0.35",
     "zod": "^3.23.8",
-    "zustand": "^5.0.0-rc.2"
+    "zustand": "^5.0.0-rc.2",
+    "expo-navigation-bar": "~4.2.7"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
